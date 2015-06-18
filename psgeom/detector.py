@@ -186,7 +186,7 @@ class CompoundDetector(moveable.MoveableObject, moveable.MoveableParent):
         
     
     @classmethod
-    def from_basisgrid(cls, bg):
+    def from_basisgrid(cls, bg, element_type=sensors.PixelArraySensor):
         """
         docstring
         """
@@ -215,14 +215,14 @@ class CompoundDetector(moveable.MoveableObject, moveable.MoveableParent):
             # translation is just p
             tr = p
             
-            pas = sensors.PixelArraySensor(shape, 
-                                           pixel_shape, 
-                                           type_name='grid_element_%dx%d' % shape, 
-                                           id_num=g, 
-                                           parent=cd,
-                                           rotation_angles=ra, 
-                                           translation=tr)
-        
+            pas = element_type(shape, 
+                               pixel_shape, 
+                               type_name='grid_element_%dx%d' % shape, 
+                               id_num=g, 
+                               parent=cd,
+                               rotation_angles=ra, 
+                               translation=tr)
+
         
         return cd
     
@@ -241,6 +241,86 @@ class CompoundDetector(moveable.MoveableObject, moveable.MoveableParent):
         return translate.load_psana(cls, filename)
         
     
+    def to_psf_text_file(self, filename):
+        """
+        """
+        translate.write_psf_text(self, filename)
+        return
+        
+        
+
+    
+
+# ---- specific detector implementations ---------------------------------------
+
+class Cspad(CompoundDetector):
+    """
+    This is for a 'full' size CSPAD.
+    """
+    
+    def enforce_heirarchy(self):
+        # need something that will create quads, etc
+        raise NotImplementedError()
+        
+    
+    @classmethod
+    def from_basisgrid(cls, bg):
+        """
+        doc me yo
+        """
+        
+        if not isinstance(bg, basisgrid.BasisGrid):
+            raise TypeError('`bg` argument must be instance of BasisGrid,'
+                            ' got: %s' % type(bg))
+        
+        raise NotImplementedError()
+        
+        
+        # if the grids are 2x1s, we simply need to deal with the fact that
+        # the 2x1 object is "centered"
+        if bg.num_grids == 32:
+            pass
+            
+        
+        # if the grids are asics, we can strip out every other one and then
+        # treat them like 2x1s
+        elif bg.num_grids == 64:
+            pass
+            
+        
+        else:
+            raise RuntimeError('`bg` BasisGrid object has an incompatible '
+                               'number of grids to be a full sized Cspad. '
+                               'Required: 32 (2x1s) or 64 (ASICS), '
+                               'got: %d' % bg.num_grids)
+        
+    
+    
+    def to_basisgrid(self):
+        """
+        Convet to a basisgrid where the individual ASICs are their own grids.
+        """
+        
+        bg = basisgrid.BasisGrid()
+        asic_shape = (185, 194)
+        
+        for sensor in self.leaves:
+            if not isinstance(sensor, sensors.Cspad2x1):
+                raise TypeError('basisgrid representation is only compatible '
+                                'with detectors that are entirely comprised of '
+                                'PixelArrayElements')
+                               
+            p, s, f = sensor.psf 
+            
+            # add the first ASIC of a 2x1...
+            bg.add_grid(p, s, f, (185, 194))
+            
+            # then translate along the fast-scan dimension and add the second
+            bg.add_grid(p + f * 194, s, f, (185, 194))
+        
+        return bg
+    
+        
     def to_crystfel_file(self, filename):
         """
         Write a geometry to disk in CrystFEL format. Note that some fields
@@ -254,12 +334,6 @@ class CompoundDetector(moveable.MoveableObject, moveable.MoveableParent):
         ----------
         filname : str
             The name of file to write. Will end in '.geom'
-
-        Optional Parameters
-        -------------------
-        intensity_file_type : str, {'cheetah'}
-            The kind of file this geometry file will be used with. Necessary to 
-            tell CrystFEL how intensity data map onto the detector
         """
         translate.write_crystfel(self, filename, intensity_file_type='cheetah')
         return
@@ -269,14 +343,6 @@ class CompoundDetector(moveable.MoveableObject, moveable.MoveableParent):
     def from_crystfel_file(cls, filename):
         # translate.load_crystfel(cls, filename)
         raise NotImplementedError()
-        
-        
-
-    
-
-# ---- specific detector implementations ---------------------------------------
-
-class CSPAD(CompoundDetector):
         
         
     def to_cheetah_file(self, filename):
@@ -297,8 +363,11 @@ class CSPAD(CompoundDetector):
         return
 
 
-    def from_cheetah_file(filename):
+    def from_cheetah_file(self, filename):
         raise NotImplementedError()
+        
+        
+
 
 
 

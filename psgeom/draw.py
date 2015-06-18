@@ -20,7 +20,7 @@ def sketch_2x1s(pixel_positions, mpl_axes=None):
         The x,y,z coordinates of the pixels on the CSPAD
     """
     
-    if pixel_positions.shape not in [(4,8,185,388,3), (4,8,185,388,3)]:
+    if pixel_positions.shape not in [(4,8,185,388,3), (4,8,185,388,3), (4,8,185,194,3)]:
         raise ValueError('`pixel_positions` has incorrect shape: '
                          '%s' % str(pixel_positions.shape))
 
