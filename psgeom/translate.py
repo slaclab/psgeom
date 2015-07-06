@@ -1,8 +1,37 @@
 
 
 """
-io.py
+translate.py
+
+Translate between different geometry file formats.
+
+-- psana
+extension:  .data
+format:     flat text
+units:      microns
+
+
+-- Cheetah
+extension:   .h5
+format:      HDF5
+units:       mm for x/y, microns for z
+
+
+-- CrystFEL
+extension:   .geom
+format:      flat text
+units:       all CrystFEL units are pixel units, 
+             except the sample-to-detector offset
+
+
+-- Thor
+extension:   .dtc
+format:      HDF5
+units:       intrinsic -- that is, any unit is allowed so long as it is
+             self-consistent (all units the same)
+
 """
+
 
 import os
 import getpass
@@ -91,7 +120,6 @@ def load_psana(obj, filename):
         
 
         # > if no children, is a SensorElement
-    
         if len(child_indices) == 0:
         
             # loop up what type of sensor element we have
@@ -218,16 +246,16 @@ def load_cheetah(obj, filename):
         raise IOError('File: %s is not a valid pixel map, should contain fields'
                       ' ["x", "y", "z"] exlusively' % filename)
 
-    # convert m --> mm
-    x = read.enforce_raw_img_shape( np.array(f['x']) * 1000.0 )
-    y = read.enforce_raw_img_shape( np.array(f['y']) * 1000.0 )
+    # convert m --> um
+    x = read.enforce_raw_img_shape( np.array(f['x']) * 1000000.0 )
+    y = read.enforce_raw_img_shape( np.array(f['y']) * 1000000.0 )
 
-    # for some reason z is in microns, so um --> mm
-    z = read.enforce_raw_img_shape( np.array(f['z']) / 1000.0 )
+    # for some reason z is in microns, so leave it
+    z = read.enforce_raw_img_shape( np.array(f['z']) )
 
     f.close()
 
-    bg = BasisGrid()
+    bg = basisgrid.BasisGrid()
     shape = (185, 194) # will always be this for each ASIC
 
     # loop over each ASIC, and convert it into a basis grid
@@ -312,9 +340,12 @@ def write_cheetah(detector, filename="pixelmap-cheetah-raw.h5"):
 
 # ---- crystfel ---------------------------------------------------------------- 
 
-def load_crystfel(obj, filename, verbose=False):
+def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
     """
     Convert a CrystFEL geom file to a CSPad object.
+    
+    NOTE ON UNITS: all CrystFEL units are pixel units, except the
+    sample-to-detector offset, which is typically in meters.
 
     Parameters
     ----------
@@ -336,13 +367,15 @@ def load_crystfel(obj, filename, verbose=False):
         raise IOError('Can only read flat text files with extension `.geom`.'
                       ' Got: %s' % filename)
 
-    if verbose: print "Converting CSPAD geometry in: %s ..." % filename
+    if verbose:
+        print "Converting CSPAD geometry in: %s ..." % filename
+        
     f = open(filename, 'r')
     geom_txt = f.read()
     f.close()
 
     # initialize an thor BasisGrid object -- will add ASICs to this
-    bg = BasisGrid()
+    bg = basisgrid.BasisGrid()
     shp = (185, 194) # this never changes for the CSPAD
 
 
@@ -353,7 +386,7 @@ def load_crystfel(obj, filename, verbose=False):
         print "WARNING: Could not find `coffset` field, defaulting z-offset to 0.0"
         p_z = 0.0
     else:
-        p_z = float(re_pz.group(1)) / 1000.0 # m --> mm
+        p_z = float(re_pz.group(1)) / 1000000.0 # m --> micron
 
     # iterate over each quad / ASIC
     for q in range(4):
@@ -405,7 +438,8 @@ def load_crystfel(obj, filename, verbose=False):
             # finally, add the ASIC to the thor basis grid
             bg.add_grid(p, s, f, shp)
 
-    if verbose: print " ... successfully converted geometry."
+    if verbose:
+        print " ... successfully converted geometry."
     
     geom_instance = obj.from_basisgrid(bg)
     

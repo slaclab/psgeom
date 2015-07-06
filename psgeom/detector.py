@@ -341,8 +341,7 @@ class Cspad(CompoundDetector):
         
     @classmethod
     def from_crystfel_file(cls, filename):
-        # translate.load_crystfel(cls, filename)
-        raise NotImplementedError()
+        return translate.load_crystfel(cls, filename)
         
         
     def to_cheetah_file(self, filename):
@@ -364,7 +363,7 @@ class Cspad(CompoundDetector):
 
 
     def from_cheetah_file(self, filename):
-        raise NotImplementedError()
+        raise translate.load_cheetah(cls, filename)
         
         
 
