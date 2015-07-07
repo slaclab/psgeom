@@ -216,6 +216,30 @@ class TestCompoundDetector(object):
         assert len(self.geom.leaves) == 32, 'got: %d' % len(self.geom.leaves)
         
     
+    
+class TestCspad(object):
+    
+    def setup(self):
+        self.cspad = detector.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        
+    def test_basisgrid_roundtrip(self):
+        bg = self.cspad.to_basisgrid()
+        cspad2 = detector.Cspad.from_basisgrid(bg)
+        
+        # import matplotlib.pyplot as plt
+        # from psgeom import draw
+        # 
+        # fig = plt.figure()
+        # ax = plt.subplot(111)
+        # draw.sketch_2x1s(np.squeeze(self.cspad.xyz), ax)
+        # draw.sketch_2x1s(cspad2.xyz, ax)
+        # plt.show()
+        
+        assert self.cspad.num_pixels == cspad2.num_pixels
+        np.testing.assert_allclose( np.squeeze(self.cspad.xyz), 
+                                    np.squeeze(cspad2.xyz) )
+    
+    
 
 # ---- translate.py ------------------------------------------------------------
     
@@ -246,58 +270,50 @@ class TestTranslate(object):
         # ax = plt.subplot(111)
         # draw.sketch_2x1s(xyz[:,::2,:,:], ax)
         # draw.sketch_2x1s(xyz[:,1::2,:,:], ax)
-        #plt.show()
+        # plt.show()
         
         
     def test_to_basis_grid(self):
-        
-        # VISUALLY CONFIRMED AS VERY CLOSE -- TJL June 17 2015
-        # still failing tho...
-        raise unittest.SkipTest()
         
         bg = self.cd.to_basisgrid()
         assert bg.num_grids == len(self.cd.leaves)
         
         xyz = np.squeeze(self.cd.xyz)
-        bg_xyz = np.array([ bg.grid_as_explicit(k) for k in range(32) ])
         
         for i in range(4):
             for j in range(8):
-                bg_xyz = bg.grid_as_explicit(i*4 + j)
-                cd_xyz = xyz[i,j]
-                print i, j, np.sum( np.abs(bg_xyz - cd_xyz)), bg_xyz - cd_xyz
-                np.testing.assert_allclose(bg_xyz, cd_xyz, atol=10.0)
+                
+                # only test first ASIC to avoid middle-row complications
+                bg_xyz_ij = bg.grid_as_explicit(i*8 + j)[:,:193,:]
+                cd_xyz_ij = xyz[i,j,:,:193,:]
+                print i, j, np.sum( np.abs(bg_xyz_ij - cd_xyz_ij))
+                np.testing.assert_allclose(bg_xyz_ij, cd_xyz_ij, atol=10.0)
+    
         
         
     def from_basis_grid(self):
         
-        # VISUALLY CONFIRMED AS VERY CLOSE -- TJL June 17 2015
-        # still failing tho...
-        raise unittest.SkipTest
-        
         bg = self.cd.to_basisgrid()
         new = detector.CompoundDetector.from_basisgrid(bg)
-                
-        # there is some error due to the fact that the bg repr doesnt know about
-        # the large middle rows
+        
+        cd_xyz  = self.cd.xyz
+        new_xyz = new.xyz
                 
         for i in range(4):
             for j in range(8):
-                print i, j, self.cd.xyz[0,i,j,:,:193] - new.xyz[i*4 + j,:,:193]
-                np.testing.assert_allclose(self.cd.xyz[0,i,j,:,:193], 
-                                           new.xyz[i*4 + j,:,:193],
+                np.testing.assert_allclose(cd_xyz[0,i,j,:,:193], 
+                                           new_xyz[i*8 + j,:,:193],
                                            rtol=1e-6, atol=10.0)
         
         
         
-        
     def test_psf_text(self):
-        self.cd.to_psf_text_file('ref_files/cd_psf.txt')
-        self.cspad.to_psf_text_file('ref_files/cspad_psf.txt')
+        self.cd.to_text_file('ref_files/cd_psf.txt')
+        self.cspad.to_text_file('ref_files/cspad_psf.txt')
         
         # todo : load & ensure consistent
-        # cd2 = detector.CompoundDetector.from_text_file('ref_files/cd_psf.txt')
-        # cspad2 = detector.CompoundDetector.from_text_file('ref_files/cd_psf.txt')
+        cd2 = detector.CompoundDetector.from_text_file('ref_files/cd_psf.txt')
+        cspad2 = detector.CompoundDetector.from_text_file('ref_files/cd_psf.txt')
         
         np.testing.assert_allclose(self.cd.xyz, cd2.xyz)
         np.testing.assert_allclose(self.cspad.xyz, cspad2.xyz)
@@ -307,15 +323,19 @@ class TestTranslate(object):
     
         
     def test_cheetah(self):
+        
         self.cspad.to_cheetah_file('ref_files/tmp_cheetah_geom.h5')
+        cspad2 = detector.Cspad.from_cheetah_file('ref_files/tmp_cheetah_geom.h5')
+        np.testing.assert_allclose( np.squeeze(self.cspad.xyz),
+                                    np.squeeze(cspad2.xyz),
+                                    err_msg='round trip fail' )
+        os.remove('ref_files/tmp_cheetah_geom.h5')
         
         ref = detector.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
-        np.testing.assert_allclose(self.cspad.xyz, ref.xyz)
+        np.testing.assert_allclose( np.squeeze(self.cspad.xyz), 
+                                    np.squeeze(ref.xyz),
+                                    err_msg='not same as ref file' )
         
-        cspad2 = detector.Cspad.from_cheetah_file('ref_files/tmp_cheetah_geom.h5')
-        np.testing.assert_allclose(self.cspad.xyz, cspad2.xyz)
-        
-        os.remove('ref_files/tmp_cheetah_geom.h5')
         
         
     def test_crystfel(self):
