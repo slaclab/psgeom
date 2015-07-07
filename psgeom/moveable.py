@@ -8,7 +8,7 @@ import abc
 import numpy as np
 
 
-class MoveableParent(object):
+class MoveableParent:
     """
     Just a flag that a specific class can be a parent.
     """
@@ -70,8 +70,8 @@ class MoveableObject:
         # TJL to self: should CompoundDetector be some placeholder class here?
         if parent is not None:
             if not isinstance(parent, MoveableParent):
-                raise TypeError('parents of MoveableObject may only be of type '
-                                'MoveableParent. Got: %s' % type(parent))
+                raise TypeError('parents of MoveableObject (%s) may only be of type '
+                                'MoveableParent. Got: %s' % (self.name, type(parent)))
             else:
                 parent.add_child(self)
         
@@ -324,10 +324,10 @@ def _angles_from_rotated_frame(xp, yp, zp, return_units='degrees'):
         if ans[i] < 0:
             ans[i] += 360.0
         
-    err = np.sum(errfunc(ans))
+    err = np.sum(np.square(errfunc(ans)))
     if err > 1e-8:
         raise RuntimeError('Could not find a consistent set of Cardan angles, '
-                           'check input and try again. Err: %f' % err)
+                           'check input and try again. Err: %e' % err)
     
     gamma, beta, alpha = ans
 

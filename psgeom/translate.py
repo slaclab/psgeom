@@ -34,6 +34,7 @@ units:       intrinsic -- that is, any unit is allowed so long as it is
 
 
 import os
+import re
 import getpass
 import datetime
 import h5py
@@ -233,7 +234,30 @@ def write_psana(detector, filename, title='geometry'):
 
 # ---- cheetah -----------------------------------------------------------------
     
-def load_cheetah(obj, filename):
+    
+def _cheetah_to_asics(cheetah_image):
+    
+    new_image = np.zeros((4,16,185,194), dtype=cheetah_image.dtype)
+    
+    for q in range(4):
+        for twoXone in range(8):
+            
+            x_start = 388 * q
+            x_stop  = 388 * (q+1)
+            
+            y_start = 185 * twoXone
+            y_stop  = 185 * (twoXone + 1)
+            
+            sec1, sec2 = np.hsplit(cheetah_image[y_start:y_stop,x_start:x_stop], 2)
+            
+            new_image[q,twoXone*2,:,:]   = sec1
+            new_image[q,twoXone*2+1,:,:] = sec2
+            
+            
+    return new_image
+    
+    
+def load_cheetah(obj, filename, pixel_size=109.92):
     """
     docstring
     """
@@ -246,12 +270,12 @@ def load_cheetah(obj, filename):
         raise IOError('File: %s is not a valid pixel map, should contain fields'
                       ' ["x", "y", "z"] exlusively' % filename)
 
-    # convert m --> um
-    x = read.enforce_raw_img_shape( np.array(f['x']) * 1000000.0 )
-    y = read.enforce_raw_img_shape( np.array(f['y']) * 1000000.0 )
+    # convert m --> um, ends up not mattering tho...
+    x = _cheetah_to_asics( np.array(f['x']) * 1000000.0 )
+    y = _cheetah_to_asics( np.array(f['y']) * 1000000.0 )
 
     # for some reason z is in microns, so leave it
-    z = read.enforce_raw_img_shape( np.array(f['z']) )
+    z = _cheetah_to_asics( np.array(f['z']) )
 
     f.close()
 

@@ -63,7 +63,7 @@ from psgeom import translate
 from psgeom import basisgrid
 
         
-class CompoundDetector(moveable.MoveableObject, moveable.MoveableParent):
+class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
     
     def __init__(self, type_name=None, id_num=0, parent=None,
                  rotation_angles=np.array([0.0, 0.0, 0.0]), 
@@ -241,13 +241,16 @@ class CompoundDetector(moveable.MoveableObject, moveable.MoveableParent):
         return translate.load_psana(cls, filename)
         
     
-    def to_psf_text_file(self, filename):
+    def to_text_file(self, filename):
         """
         """
         translate.write_psf_text(self, filename)
         return
         
-        
+    
+    @classmethod
+    def from_text_file(cls, filename):
+        raise NotImplementedError()
 
     
 
@@ -269,31 +272,79 @@ class Cspad(CompoundDetector):
         doc me yo
         """
         
+        cspad = cls(type_name='CSPAD')
+        
         if not isinstance(bg, basisgrid.BasisGrid):
             raise TypeError('`bg` argument must be instance of BasisGrid,'
                             ' got: %s' % type(bg))
         
-        raise NotImplementedError()
-        
-        
-        # if the grids are 2x1s, we simply need to deal with the fact that
-        # the 2x1 object is "centered"
-        if bg.num_grids == 32:
-            pass
-            
         
         # if the grids are asics, we can strip out every other one and then
-        # treat them like 2x1s
-        elif bg.num_grids == 64:
-            pass
+        # treat them like 2x1s        
+        if bg.num_grids == 32:
+            stride = 1
             
-        
+        elif bg.num_grids == 64:
+            stride = 2
+            
         else:
             raise RuntimeError('`bg` BasisGrid object has an incompatible '
                                'number of grids to be a full sized Cspad. '
-                               'Required: 32 (2x1s) or 64 (ASICS), '
+                               'Required: 32 (2x1s) or 64 (ASICs), '
                                'got: %d' % bg.num_grids)
         
+        for g in range(0, bg.num_grids, stride):
+            
+            
+            # find the quad geometry
+            quad_index = (g/stride) / 8
+            
+            # we just put the quads in a zero'd frame, no knowledge of absolute
+            # orientations
+            quad_rot = np.array([0.0, 0.0, 0.0])
+            quad_trs = np.array([0.0, 0.0, 0.0])
+                                 
+                                 
+            # add a new quad if necessary
+            if (g/stride) % 8 == 0:
+                quad = CompoundDetector(type_name='QUAD',
+                                        id_num=quad_index,
+                                        parent=cspad,
+                                        rotation_angles=quad_rot, 
+                                        translation=quad_trs)
+                                 
+            p, s, f, shape = bg.get_grid(g)
+            
+            pixel_shape = (np.linalg.norm(s),
+                           np.linalg.norm(f))
+            
+            # compute the rotation based on s/f vectors
+            us = s / pixel_shape[0] # unit vector
+            uf = f / pixel_shape[1] # unit vector
+            
+            # BIG WARNING: There is a minus sign on `us` below, which is needed
+            # to account for the fact that the slow scan is swapped in the
+            # sensors.Cspad2x1 class
+            
+            n  = np.cross(uf, -us)   # tested for orthog. in next fxn
+            ra = moveable._angles_from_rotated_frame(uf, -us, n)
+            
+            # translation is center of 2x1, less the quad center
+            # dont forget the big pixels!
+            # dont forget p/s/f here is only an ASIC!
+            # dont forget p points to the middle of a pixel!
+
+            tr = p + 184.0/2.0 * 109.92 * us + (192.5 * 109.92 + 274.8) * uf
+
+            
+            # construct the 2x1
+            pas = sensors.Cspad2x1(type_name='SENS2x1', 
+                                   id_num=g/stride, 
+                                   parent=quad,
+                                   rotation_angles=ra, 
+                                   translation=tr)
+                               
+        return cspad
     
     
     def to_basisgrid(self):
@@ -362,8 +413,9 @@ class Cspad(CompoundDetector):
         return
 
 
-    def from_cheetah_file(self, filename):
-        raise translate.load_cheetah(cls, filename)
+    @classmethod
+    def from_cheetah_file(cls, filename):
+        return translate.load_cheetah(cls, filename)
         
         
 

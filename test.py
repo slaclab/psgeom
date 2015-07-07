@@ -226,18 +226,10 @@ class TestCspad(object):
         bg = self.cspad.to_basisgrid()
         cspad2 = detector.Cspad.from_basisgrid(bg)
         
-        # import matplotlib.pyplot as plt
-        # from psgeom import draw
-        # 
-        # fig = plt.figure()
-        # ax = plt.subplot(111)
-        # draw.sketch_2x1s(np.squeeze(self.cspad.xyz), ax)
-        # draw.sketch_2x1s(cspad2.xyz, ax)
-        # plt.show()
-        
         assert self.cspad.num_pixels == cspad2.num_pixels
         np.testing.assert_allclose( np.squeeze(self.cspad.xyz), 
-                                    np.squeeze(cspad2.xyz) )
+                                    np.squeeze(cspad2.xyz),
+                                    atol=10.0 )
     
     
 
