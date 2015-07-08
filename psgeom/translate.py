@@ -303,13 +303,11 @@ def load_cheetah(obj, filename, pixel_size=109.92):
             # make them pixel-size magnitude
             f = f * (pixel_size / np.linalg.norm(f))
             s = s * (pixel_size / np.linalg.norm(s))
-
-            # center is just the average of the 4 corners
-            c = np.mean( corners, axis=0 )
-            assert c.shape == (3,)
-            # c[2] += distance_offset
-
-            bg.add_grid_using_center(c, s, f, shape)
+            
+            # p is just location of 1st pixel in memory, which is our 1st corner
+            p = corners[0,:]
+            bg.add_grid(p, s, f, shape)
+            
             
     geom_instance = obj.from_basisgrid(bg)
                  
@@ -351,8 +349,13 @@ def write_cheetah(detector, filename="pixelmap-cheetah-raw.h5"):
                 y_start = 185 * a
                 y_stop  = 185 * (a + 1)
 
-                # convert um --> m
-                cheetah_image[y_start:y_stop,x_start:x_stop] = pp[q,a,:,:,xyz] / 1000000.0
+                # unless z axis, convert um --> m ; z-axis in cheetah is in um
+                if xyz in [0,1]:
+                    unit_factor = 1000000.0
+                elif xyz == 2:
+                    unit_factor = 1.0
+                
+                cheetah_image[y_start:y_stop,x_start:x_stop] = pp[q,a,:,:,xyz] / unit_factor
 
 
         f['/%s' % coordinates[xyz]] = cheetah_image
@@ -459,7 +462,7 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
                 raise IOError('Geometry file incomplete -- cant parse one or '
                               'more corner fields for QUAD %d / ASIC %d' % (q, a))
 
-            # finally, add the ASIC to the thor basis grid
+            # finally, add the ASIC to the basis grid
             bg.add_grid(p, s, f, shp)
 
     if verbose:
@@ -495,7 +498,7 @@ def write_crystfel(detector, filename, intensity_file_type='cheetah'):
         CrystFEL how intensity data map onto the detector
     """
     
-    pixel_size = 0.10992 # in mm
+    pixel_size = 109.92 # in um
     bg = detector.to_basisgrid()
     
     def get_sign(v):

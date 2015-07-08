@@ -318,6 +318,7 @@ class Cspad(CompoundDetector):
             pixel_shape = (np.linalg.norm(s),
                            np.linalg.norm(f))
             
+            
             # compute the rotation based on s/f vectors
             us = s / pixel_shape[0] # unit vector
             uf = f / pixel_shape[1] # unit vector
@@ -328,6 +329,7 @@ class Cspad(CompoundDetector):
             
             n  = np.cross(uf, -us)   # tested for orthog. in next fxn
             ra = moveable._angles_from_rotated_frame(uf, -us, n)
+            
             
             # translation is center of 2x1, less the quad center
             # dont forget the big pixels!
