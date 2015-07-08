@@ -413,7 +413,7 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
         print "WARNING: Could not find `coffset` field, defaulting z-offset to 0.0"
         p_z = 0.0
     else:
-        p_z = float(re_pz.group(1)) / 1000000.0 # m --> micron
+        p_z = float(re_pz.group(1)) * 1000000.0 # m --> micron
 
     # iterate over each quad / ASIC
     for q in range(4):
@@ -454,6 +454,17 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
 
                 re_cy = re.search('q%da%d/corner_y =\s+((.)?\d+.\d+)' % (q, a), geom_txt)
                 p_y = (float( re_cy.group(1) ) + 0.5) * pixel_size
+                
+                
+                # it's allowed to also have individual z-offsets for
+                # each panel, so look for those (CrystFEL units: meters)                
+                re_cz = re.search('q%da%d/coffset =\s+((.)?\d+.\d+)' % (q, a), geom_txt)
+                if re_cz == None:
+                    # no data
+                    pass 
+                else:
+                    # add to the global offset
+                    p_z += float( re_cz.group(1) ) * 1000000.0 # m --> micron
 
                 p = np.array([p_x, p_y, p_z])
 
@@ -474,7 +485,8 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
     
     
 
-def write_crystfel(detector, filename, intensity_file_type='cheetah'):
+def write_crystfel(detector, filename, intensity_file_type='cheetah', 
+                   pixel_size=109.92):
     """
     Write a CSPAD geometry to disk in CrystFEL format. Note that some fields
     will be written but left blank -- these are fields you probably should
@@ -498,7 +510,6 @@ def write_crystfel(detector, filename, intensity_file_type='cheetah'):
         CrystFEL how intensity data map onto the detector
     """
     
-    pixel_size = 109.92 # in um
     bg = detector.to_basisgrid()
     
     def get_sign(v):
@@ -531,22 +542,63 @@ def write_crystfel(detector, filename, intensity_file_type='cheetah'):
     
         header = """
 ; --- VALUES YOU MAY WANT TO FILL IN MANUALLY ---
-; we cannot fill in these values for you :(
+; we cannot guarentee these values are what you desire
+; however they are filled in with some decent defaults
+; for the large CSPAD detector
 
-;clen = 
-;coffset = 
+; clen =  /LCLS/detector0-EncoderValue
+; photon_energy = /LCLS/photon_energy_eV
 
-;adu_per_eV = 
-;max_adu = 
+res = 9090.91
+adu_per_eV = 0.00338
 
-;mask = 
-;mask_good = 
-;mask_bad = 
+; data = /data/peakpowder
 
-;bad_jet/min_x = 
-;bad_jet/max_x = 
-;bad_jet/min_y = 
-;bad_jet/max_y = 
+dim0 = %
+dim1 = ss
+dim2 = fs
+
+rigid_group_q0 = q0a0,q0a1,q0a2,q0a3,q0a4,q0a5,q0a6,q0a7,q0a8,q0a9,q0a10,q0a11,q0a12,q0a13,q0a14,q0a15
+rigid_group_q1 = q1a0,q1a1,q1a2,q1a3,q1a4,q1a5,q1a6,q1a7,q1a8,q1a9,q1a10,q1a11,q1a12,q1a13,q1a14,q1a15
+rigid_group_q2 = q2a0,q2a1,q2a2,q2a3,q2a4,q2a5,q2a6,q2a7,q2a8,q2a9,q2a10,q2a11,q2a12,q2a13,q2a14,q2a15
+rigid_group_q3 = q3a0,q3a1,q3a2,q3a3,q3a4,q3a5,q3a6,q3a7,q3a8,q3a9,q3a10,q3a11,q3a12,q3a13,q3a14,q3a15
+
+rigid_group_a0 = q0a0,q0a1
+rigid_group_a1 = q0a2,q0a3
+rigid_group_a2 = q0a4,q0a5
+rigid_group_a3 = q0a6,q0a7
+rigid_group_a4 = q0a8,q0a9
+rigid_group_a5 = q0a10,q0a11
+rigid_group_a6 = q0a12,q0a13
+rigid_group_a7 = q0a14,q0a15
+rigid_group_a8 = q1a0,q1a1
+rigid_group_a9 = q1a2,q1a3
+rigid_group_a10 = q1a4,q1a5
+rigid_group_a11 = q1a6,q1a7
+rigid_group_a12 = q1a8,q1a9
+rigid_group_a13 = q1a10,q1a11
+rigid_group_a14 = q1a12,q1a13
+rigid_group_a15 = q1a14,q1a15
+rigid_group_a16 = q2a0,q2a1
+rigid_group_a17 = q2a2,q2a3
+rigid_group_a18 = q2a4,q2a5
+rigid_group_a19 = q2a6,q2a7
+rigid_group_a20 = q2a8,q2a9
+rigid_group_a21 = q2a10,q2a11
+rigid_group_a22 = q2a12,q2a13
+rigid_group_a23 = q2a14,q2a15
+rigid_group_a24 = q3a0,q3a1
+rigid_group_a25 = q3a2,q3a3
+rigid_group_a26 = q3a4,q3a5
+rigid_group_a27 = q3a6,q3a7
+rigid_group_a28 = q3a8,q3a9
+rigid_group_a29 = q3a10,q3a11
+rigid_group_a30 = q3a12,q3a13
+rigid_group_a31 = q3a14,q3a15
+
+rigid_group_collection_quadrants = q0,q1,q2,q3
+rigid_group_collection_asics = a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31
+
 ; -----------------------------------------------
 
 
@@ -566,10 +618,6 @@ def write_crystfel(detector, filename, intensity_file_type='cheetah'):
                 # tell crystFEL how read intensity values in a file
                 print >> of, intensity_map[grid_index].strip()
                 
-                # these are constant for the CSPAD
-                print >> of, "%s/badrow_direction = -" % panel_name
-                print >> of, "%s/res = 9097.525473" % panel_name
-                
                 # write the basis vectors           
                 sqt = math.sqrt(f[0]**2 + f[1]**2) 
                 print >> of, "%s/fs = %s%fx %s%fy" % ( panel_name,
@@ -583,11 +631,15 @@ def write_crystfel(detector, filename, intensity_file_type='cheetah'):
                 # write the corner positions
                 tagcx = "%s/corner_x" % panel_name
                 tagcy = "%s/corner_y" % panel_name
+                tagcz = "%s/coffset"
             
                 # CrystFEL measures the corner from the actual *corner*, and not
                 # the center of the corner pixel, hence the 0.5's
                 print >> of, "%s = %f" % (tagcx, float(p[0])/pixel_size - 0.5 )
                 print >> of, "%s = %f" % (tagcy, float(p[1])/pixel_size - 0.5 )
+                
+                # the z-axis is in *** meters *** (so, um --> m)
+                print >> of, "%s = %f" % (tagcz, float(p[2]) / 1000000.0 )
                 
                 # this tells CrystFEL to use this panel
                 print >> of, "%s/no_index = 0" % panel_name

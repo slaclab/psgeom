@@ -350,13 +350,11 @@ class TestTranslate(object):
         
     def test_crystfel(self):
         
-        # note: no real z-axis info is stored in the CrystFEL geometry
-        
         self.cspad.to_crystfel_file('ref_files/tmp_crystfel.geom')
         
         cd2 = detector.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
-        np.testing.assert_allclose(np.squeeze(self.cd.xyz)[...,:2],
-                                   np.squeeze(cd2.xyz)[...,:2],
+        np.testing.assert_allclose(np.squeeze(self.cd.xyz),
+                                   np.squeeze(cd2.xyz),
                                    err_msg='round trip fail',
                                    atol=10.0)
                                    
