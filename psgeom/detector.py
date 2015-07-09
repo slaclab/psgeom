@@ -272,7 +272,7 @@ class Cspad(CompoundDetector):
         doc me yo
         """
         
-        cspad = cls(type_name='CSPAD')
+        cspad = cls(type_name='CSPAD:V1')
         
         if not isinstance(bg, basisgrid.BasisGrid):
             raise TypeError('`bg` argument must be instance of BasisGrid,'
@@ -295,9 +295,10 @@ class Cspad(CompoundDetector):
         
         for g in range(0, bg.num_grids, stride):
             
+            asic_id = (g/stride) # index from 0 to 7
             
             # find the quad geometry
-            quad_index = (g/stride) / 8
+            quad_index = asic_id / 8
             
             # we just put the quads in a zero'd frame, no knowledge of absolute
             # orientations
@@ -306,8 +307,8 @@ class Cspad(CompoundDetector):
                                  
                                  
             # add a new quad if necessary
-            if (g/stride) % 8 == 0:
-                quad = CompoundDetector(type_name='QUAD',
+            if asic_id % 8 == 0:
+                quad = CompoundDetector(type_name='QUAD:V1',
                                         id_num=quad_index,
                                         parent=cspad,
                                         rotation_angles=quad_rot, 
@@ -340,8 +341,8 @@ class Cspad(CompoundDetector):
 
             
             # construct the 2x1
-            pas = sensors.Cspad2x1(type_name='SENS2x1', 
-                                   id_num=g/stride, 
+            pas = sensors.Cspad2x1(type_name='SENS2X1:V1', 
+                                   id_num=int(asic_id % 8), 
                                    parent=quad,
                                    rotation_angles=ra, 
                                    translation=tr)

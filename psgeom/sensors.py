@@ -158,7 +158,8 @@ class Cspad2x1(PixelArraySensor):
 # define a "type map" that maps a list of known object identifier strings to
 # the corresponding types
 
-type_map = {'SENS2X1:V1' : Cspad2x1}
+type_map = {'SENS2X1:V1' : Cspad2x1,
+            'SENS2X1'    : Cspad2x1}
 
 
 
