@@ -429,13 +429,13 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
             try:
 
                 # match f/s vectors
-                re_fs = re.search('q%da%d/fs =\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % (q, a), geom_txt)
+                re_fs = re.search('q%da%d/fs\s+=\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % (q, a), geom_txt)
                 f_x = - float( re_fs.group(1) )
                 f_y = float( re_fs.group(3) )
                 f = np.array([f_x, f_y, 0.0])
                 f = f * (pixel_size / np.linalg.norm(f))
 
-                re_ss = re.search('q%da%d/ss =\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % (q, a), geom_txt)
+                re_ss = re.search('q%da%d/ss\s+=\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % (q, a), geom_txt)
                 s_x = - float( re_ss.group(1) )
                 s_y = float( re_ss.group(3) )
                 s = np.array([s_x, s_y, 0.0])
@@ -453,16 +453,16 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
             
             try:
                 
-                re_cx = re.search('q%da%d/corner_x =\s+((.)?\d+.\d+)' % (q, a), geom_txt)
+                re_cx = re.search('q%da%d/corner_x\s+=\s+((.)?\d+.\d+)' % (q, a), geom_txt)
                 p_x = - (float( re_cx.group(1) ) + 0.5) * pixel_size
 
-                re_cy = re.search('q%da%d/corner_y =\s+((.)?\d+.\d+)' % (q, a), geom_txt)
+                re_cy = re.search('q%da%d/corner_y\s+=\s+((.)?\d+.\d+)' % (q, a), geom_txt)
                 p_y = (float( re_cy.group(1) ) + 0.5) * pixel_size
                 
                 
                 # it's allowed to also have individual z-offsets for
                 # each panel, so look for those (CrystFEL units: meters)                
-                re_cz = re.search('q%da%d/coffset =\s+((.)?\d+.\d+)' % (q, a), geom_txt)
+                re_cz = re.search('q%da%d/coffset\s+=\s+((.)?\d+.\d+)' % (q, a), geom_txt)
                 if re_cz == None:
                     # no data
                     pass 
