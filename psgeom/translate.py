@@ -635,7 +635,7 @@ rigid_group_collection_asics = a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14
                 # write the corner positions
                 tagcx = "%s/corner_x" % panel_name
                 tagcy = "%s/corner_y" % panel_name
-                tagcz = "%s/coffset"
+                tagcz = "%s/coffset"  % panel_name
             
                 # CrystFEL measures the corner from the actual *corner*, and not
                 # the center of the corner pixel, hence the 0.5's
