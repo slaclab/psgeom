@@ -159,6 +159,38 @@ def load_psana(obj, filename):
     return root_object
     
     
+def _mikhail_ordering(list_of_lines):
+    """
+    for legacy! aka, hopefully we can remove this confusing code soon...
+    """
+    
+    # ordering we're going for starts with all the sensor elements, followed
+    # by the quads, followed by whatever else
+    
+    # assume that the ordering we're dealing with is depth-first
+    
+    sensors = []
+    quads   = []
+    
+    for line in list_of_lines:
+        if 'QUAD' in line[16:]:
+            quads.append(line)
+        elif 'SENS' in line[16:]:
+            sensors.append(line)
+    
+    other = list_of_lines[:-36]
+    other.reverse()
+    
+    ordered_list = sensors + quads + other
+    
+    assert len(ordered_list) == len(list_of_lines)
+    for e in list_of_lines:
+        assert e in ordered_list
+    
+    return ordered_list
+    
+    
+    
 def write_psana(detector, filename, title='geometry'):
     """
     write me
@@ -203,6 +235,7 @@ def write_psana(detector, filename, title='geometry'):
     # write a line for the root node
     root_data = ['IP', 0, detector.type_name, detector.id] + [0.0]*9
     root_line = fmt_line % tuple(root_data)
+    
     #f.write(root_line)
     lines.append(root_line)
 
@@ -223,6 +256,7 @@ def write_psana(detector, filename, title='geometry'):
                 assert len(child_data) == 13
             
                 line = fmt_line % tuple(child_data)
+                
                 #f.write(line)
                 lines.append(line)
         
@@ -233,7 +267,8 @@ def write_psana(detector, filename, title='geometry'):
     # temporary -- for compatability with legacy code -- todo
     # flip the ordering of the lines so that the sensor elements come first,
     # as a lot of existing code requires this ordering
-    for l in reversed(lines):
+    #print lines, '\n\n'
+    for l in _mikhail_ordering(lines):
         f.write(l)
 
     f.close()

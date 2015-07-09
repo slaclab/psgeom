@@ -174,11 +174,11 @@ class TestCompoundDetector(object):
 
         self.geom.to_psana_file('test.data')
         geom2 = detector.CompoundDetector.from_psana_file('test.data')
-        os.remove('test.data')
         
         assert self.geom.xyz.shape == geom2.xyz.shape, 'shape/element mismatch'            
         np.testing.assert_allclose(self.geom.xyz, geom2.xyz, rtol=1e-3)
-    
+
+        os.remove('test.data')
     
     def test_xyz_vs_old_implementation(self):
     
