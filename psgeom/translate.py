@@ -196,13 +196,15 @@ def write_psana(detector, filename, title='geometry'):
 
     f.write(header)
 
+    lines = [] # container for data lines
 
     fmt_line = '%12s   %d     %12s    %d' + ' %12.6f'*9 + '\n'
 
     # write a line for the root node
     root_data = ['IP', 0, detector.type_name, detector.id] + [0.0]*9
     root_line = fmt_line % tuple(root_data)
-    f.write(root_line)
+    #f.write(root_line)
+    lines.append(root_line)
 
     # write a line for each child node in the CompoundDetector tree
     def write_children(node):
@@ -221,11 +223,18 @@ def write_psana(detector, filename, title='geometry'):
                 assert len(child_data) == 13
             
                 line = fmt_line % tuple(child_data)
-                f.write(line)
+                #f.write(line)
+                lines.append(line)
         
                 write_children(child)
 
     write_children(detector)
+    
+    # temporary -- for compatability with legacy code -- todo
+    # flip the ordering of the lines so that the sensor elements come first,
+    # as a lot of existing code requires this ordering
+    for l in reversed(lines):
+        f.write(l)
 
     f.close()
     
