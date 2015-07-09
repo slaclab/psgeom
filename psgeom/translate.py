@@ -271,7 +271,8 @@ def load_cheetah(obj, filename, pixel_size=109.92):
                       ' ["x", "y", "z"] exlusively' % filename)
 
     # convert m --> um, ends up not mattering tho...
-    x = _cheetah_to_asics( np.array(f['x']) * 1000000.0 )
+    # also flip the sign of x : cheetah uses +x away from hutch door
+    x = -1.0 * _cheetah_to_asics( np.array(f['x']) * 1000000.0 )
     y = _cheetah_to_asics( np.array(f['y']) * 1000000.0 )
 
     # for some reason z is in microns, so leave it
@@ -349,13 +350,16 @@ def write_cheetah(detector, filename="pixelmap-cheetah-raw.h5"):
                 y_start = 185 * a
                 y_stop  = 185 * (a + 1)
 
+                # if x axis, flip sign
                 # unless z axis, convert um --> m ; z-axis in cheetah is in um
-                if xyz in [0,1]:
-                    unit_factor = 1000000.0
+                if xyz == 0:
+                    unit_factor = - 1.0 / 1000000.0
+                elif xyz == 1:
+                    unit_factor = 1.0 / 1000000.0
                 elif xyz == 2:
                     unit_factor = 1.0
                 
-                cheetah_image[y_start:y_stop,x_start:x_stop] = pp[q,a,:,:,xyz] / unit_factor
+                cheetah_image[y_start:y_stop,x_start:x_stop] = unit_factor * pp[q,a,:,:,xyz]
 
 
         f['/%s' % coordinates[xyz]] = cheetah_image
@@ -426,13 +430,13 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
 
                 # match f/s vectors
                 re_fs = re.search('q%da%d/fs =\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % (q, a), geom_txt)
-                f_x = float( re_fs.group(1) )
+                f_x = - float( re_fs.group(1) )
                 f_y = float( re_fs.group(3) )
                 f = np.array([f_x, f_y, 0.0])
                 f = f * (pixel_size / np.linalg.norm(f))
 
                 re_ss = re.search('q%da%d/ss =\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % (q, a), geom_txt)
-                s_x = float( re_ss.group(1) )
+                s_x = - float( re_ss.group(1) )
                 s_y = float( re_ss.group(3) )
                 s = np.array([s_x, s_y, 0.0])
                 s = s * (pixel_size / np.linalg.norm(s))
@@ -450,7 +454,7 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
             try:
                 
                 re_cx = re.search('q%da%d/corner_x =\s+((.)?\d+.\d+)' % (q, a), geom_txt)
-                p_x = (float( re_cx.group(1) ) + 0.5) * pixel_size
+                p_x = - (float( re_cx.group(1) ) + 0.5) * pixel_size
 
                 re_cy = re.search('q%da%d/corner_y =\s+((.)?\d+.\d+)' % (q, a), geom_txt)
                 p_y = (float( re_cy.group(1) ) + 0.5) * pixel_size
@@ -621,11 +625,11 @@ rigid_group_collection_asics = a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14
                 # write the basis vectors           
                 sqt = math.sqrt(f[0]**2 + f[1]**2) 
                 print >> of, "%s/fs = %s%fx %s%fy" % ( panel_name,
-                                                       get_sign(f[0]/sqt), abs(f[0]/sqt), 
+                                                       get_sign(-f[0]/sqt), abs(f[0]/sqt), 
                                                        get_sign(f[1]/sqt), abs(f[1]/sqt) )
                 sqt = math.sqrt(s[0]**2 + s[1]**2)
                 print >> of, "%s/ss = %s%fx %s%fy" % ( panel_name,
-                                                       get_sign(s[0]/sqt), abs(s[0]/sqt), 
+                                                       get_sign(-s[0]/sqt), abs(s[0]/sqt), 
                                                        get_sign(s[1]/sqt), abs(s[1]/sqt) )
                 
                 # write the corner positions
@@ -635,7 +639,7 @@ rigid_group_collection_asics = a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14
             
                 # CrystFEL measures the corner from the actual *corner*, and not
                 # the center of the corner pixel, hence the 0.5's
-                print >> of, "%s = %f" % (tagcx, float(p[0])/pixel_size - 0.5 )
+                print >> of, "%s = %f" % (tagcx, - float(p[0])/pixel_size - 0.5 )
                 print >> of, "%s = %f" % (tagcy, float(p[1])/pixel_size - 0.5 )
                 
                 # the z-axis is in *** meters *** (so, um --> m)

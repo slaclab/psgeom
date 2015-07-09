@@ -317,7 +317,7 @@ class TestTranslate(object):
         os.remove('ref_files/cspad_psf.txt')
     
         
-    def test_cheetah(self):
+    def test_cheetah_roundtrip(self):
         
         self.cspad.to_cheetah_file('ref_files/tmp_cheetah_geom.h5')
         cspad2 = detector.Cspad.from_cheetah_file('ref_files/tmp_cheetah_geom.h5')
@@ -328,19 +328,48 @@ class TestTranslate(object):
                                     atol=10.0)
         os.remove('ref_files/tmp_cheetah_geom.h5')
         
+        
+    def test_cheetah_reference(self):
+        
         # Note by TJL, 7/7/15
         # cheetah reference geometry is wacky/incorrect
         # regardless, highly suspect there is a sign error in x between
         # cheetah and the current psgeom implementation
         
-        # ref = detector.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
-        # np.testing.assert_allclose( np.squeeze(self.cspad.xyz), 
-        #                             np.squeeze(ref.xyz),
-        #                             err_msg='not same as ref file' )
+        ref = detector.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
+        raise NotImplementedError('test not done')
         
         
         
-    def test_crystfel(self):
+    def test_cheetah_crystfel_consistency(self):
+        
+        # the following two files were generated using the "make_pixelmap"
+        # program by TAW, the cheetah file being generated from the CrystFEL
+        # conversion done by TJL 7/8/15
+        
+        raise unittest.SkipTest
+        
+        # very close but ~1/2 pixel off. Does cheetah plot pixel corners or
+        # centers? -- TJL 7/8/15
+        
+        cheetah  = detector.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
+        crystfel = detector.Cspad.from_crystfel_file('ref_files/refgeom_crystfel.geom')
+                
+        import matplotlib.pyplot as plt
+        from psgeom import draw
+        
+        fig = plt.figure()
+        ax = plt.subplot(111)
+        draw.sketch_2x1s(cheetah.xyz, ax)
+        draw.sketch_2x1s(crystfel.xyz, ax)
+        plt.show()
+        
+        np.testing.assert_allclose(np.squeeze(cheetah.xyz)[...,:2],
+                                   np.squeeze(crystfel.xyz)[...,:2],
+                                   atol=10.0)
+       
+        
+    def test_crystfel_roundtrip(self):
         
         self.cspad.to_crystfel_file('ref_files/tmp_crystfel.geom')
         
@@ -359,18 +388,7 @@ class TestTranslate(object):
         #                            err_msg='round trip fail',
         #                            atol=10.0,
         #                            rtol=1e-4)
-                                   
-        # Note by TJL, 7/8/15
-        # crystfel reference geometry is wacky/incorrect
-        # regardless, highly suspect there is a sign error in x between
-        # crystfel and the current psgeom implementation
-                                   
-        # ref = detector.Cspad.from_crystfel_file('ref_files/refgeom_crystfel.geom') 
-        # np.testing.assert_allclose( np.squeeze(self.cd.xyz)[...,:2],
-        #                             np.squeeze(ref.xyz)[...,:2],
-        #                             err_msg='not same as ref file',
-        #                             atol=10.0)
-        
+                                           
         os.remove('ref_files/tmp_crystfel.geom')
         
         
