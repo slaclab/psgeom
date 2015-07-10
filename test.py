@@ -370,9 +370,7 @@ class TestTranslate(object):
         
         # the following two files were generated using the "make_pixelmap"
         # program by TAW, the cheetah file being generated from the CrystFEL
-        # conversion done by TJL 7/8/15
-        
-        #raise unittest.SkipTest
+        # conversion done by TJL 7/10/15
         
         # very close but ~1/2 pixel off. Does cheetah plot pixel corners or
         # centers? -- TJL 7/8/15
@@ -380,8 +378,11 @@ class TestTranslate(object):
         cheetah  = detector.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
         crystfel = detector.Cspad.from_crystfel_file('ref_files/refgeom_crystfel.geom')
         
-        np.testing.assert_allclose(np.squeeze(cheetah.xyz),
-                                   np.squeeze(crystfel.xyz),
+        print np.squeeze(cheetah.xyz) - np.squeeze(crystfel.xyz)
+        
+        # cheetah z-values are screwed up, so ignore those
+        np.testing.assert_allclose(np.squeeze(cheetah.xyz)[...,:2],
+                                   np.squeeze(crystfel.xyz)[...,:2],
                                    atol=PIXEL_TOLERANCE_um)
        
         
