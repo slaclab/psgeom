@@ -27,21 +27,6 @@ In practice, both are performed using matrices.
 
 Author: TJ Lane <tjlane@slac.stanford.edu>
 June 11, 2015
-
-
-
-To Fix
-------
---> fill in legacy.py
---> think about the mapping of intensity data onto the detector
-
-To Do
------
-1) implement more general sketch, assemble
-2) implement show image on 2d projection
-3) think: should mask be included?
-5) dynamically expose leaf properties to parents?
-
 """
 
 import warnings
@@ -54,10 +39,42 @@ from psgeom import basisgrid
 
         
 class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
+    """
+    The compound detector class contains its own local rotation and translation
+    operations that provide a local frame for a set of children. The children
+    can either be SensorElements or other CompoundDetectors.
+    """
     
     def __init__(self, type_name=None, id_num=0, parent=None,
                  rotation_angles=np.array([0.0, 0.0, 0.0]), 
-                 translation=np.array([0.0, 0.0, 0.0])):
+                 translation=np.array([0.0, 0.0, 0.0])):         
+        """
+        Create a CompoundDetector.
+        
+        Parameters
+        ----------
+        type_name : str
+            Give this detector a descriptive name. Often there might be
+            two different instances of CompoundDetector with the same name,
+            if they are identical units. E.g., "QUAD:V1".
+            
+        id_num : int
+            The unit should have an index. This is not only a unique identifier
+            but helps order elements within the camera tree, which can change
+            the way someone wants to map pixel intensities (somewhere else in
+            memory) onto the camera geometry.
+            
+        parent : CompoundDetector
+            The parent frame, specified by an instance of CompoundDetector.
+            
+        rotation_angles : np.ndarray
+            Three Cardan angles specifying the local frame rotation operator.
+            Argument must be a one-D 3-vector.
+            
+        translation : np.ndarray
+            The xyz translation of the local frame. Argument must be a one-D 
+            3-vector.
+        """
         
         self._type_name = type_name
         self._id        = id_num
@@ -105,6 +122,10 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
         
         
     def draw_tree(self):
+        """
+        Sketch the camera tree, with this node as the root (higher levels in
+        the heirarchy will not be shown)
+        """
 
         print "--- " + str(self.name)
         
@@ -178,6 +199,16 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
     # begin interfaces -----
     
     def to_basisgrid(self):
+        """
+        Convert this object to a BasisGrid object, which represents the camera
+        geometry as a set of vectors specifying the slow-scan and fast-scan
+        edges of a set of panels
+        
+        Returns
+        -------
+        bg : basisgrid.BasisGrid
+            The basisgrid object.
+        """
         
         bg = basisgrid.BasisGrid()
         
@@ -196,7 +227,20 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
     @classmethod
     def from_basisgrid(cls, bg, element_type=sensors.PixelArraySensor):
         """
-        docstring
+        Convert a BasisGrid object to a CompoundDetector.
+        
+        Parameters
+        ----------
+        bg : basisgrid.BasisGrid
+            The basisgrid object to convert.
+            
+        element_type : sensors.PixelArraySensor
+            The SensorElement type to populate the camera with.
+            
+        Returns
+        -------
+        cd : CompoundDetector
+            The compound detector instance.
         """
         
         if not isinstance(bg, basisgrid.BasisGrid):
@@ -237,6 +281,16 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
     
     def to_psana_file(self, filename, title='geometry'):
         """
+        Write a geometry in psana format.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+            
+        References
+        ----------
+        ..[1] https://confluence.slac.stanford.edu/display/PSDM/Detector+Geometry
         """
         translate.write_psana(self, filename, title)
         return
@@ -245,6 +299,21 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
     @classmethod
     def from_psana_file(cls, filename):
         """
+        Load a geometry in psana format.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+
+        Returns
+        -------
+        root : detector.CompoundDetector
+            The CompoundDetector instance
+            
+        References
+        ----------
+        ..[1] https://confluence.slac.stanford.edu/display/PSDM/Detector+Geometry
         """
         ret = translate.load_psana(cls, filename)
         ret._sort_tree()
@@ -253,6 +322,12 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
     
     def to_text_file(self, filename):
         """
+        Write a geometry in raw text psf format.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
         """
         translate.write_psf_text(self, filename)
         return
@@ -260,6 +335,19 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
     
     @classmethod
     def from_text_file(cls, filename):
+        """
+        Load a geometry in raw-text psf format.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+
+        Returns
+        -------
+        root : detector.CompoundDetector
+            The CompoundDetector instance
+        """
         raise NotImplementedError()
 
     
@@ -268,14 +356,27 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
 
 class Cspad(CompoundDetector):
     """
-    This is for a 'full' size CSPAD.
+    This is for a 'full' size CSPAD. The need for a specific CSPAD object is
+    rather unfortunate, but necessitated by assumptions made by other software
+    we want to interact with.
     """
             
     
     @classmethod
     def from_basisgrid(cls, bg):
         """
-        doc me yo
+        Convert a BasisGrid object to a Cspad. The BasisGrid must have 64 grids/
+        panels, one for each CSPAD ASIC.
+        
+        Parameters
+        ----------
+        bg : basisgrid.BasisGrid
+            The basisgrid object to convert.
+            
+        Returns
+        -------
+        cspad : Cspad
+            The Cspad instance.
         """
         
         cspad = cls(type_name='CSPAD:V1')
@@ -359,6 +460,11 @@ class Cspad(CompoundDetector):
     def to_basisgrid(self):
         """
         Convet to a basisgrid where the individual ASICs are their own grids.
+        
+        Returns
+        -------
+        bg : basisgrid.BasisGrid
+            The basisgrid object.
         """
         
         bg = basisgrid.BasisGrid()
@@ -401,6 +507,19 @@ class Cspad(CompoundDetector):
         
     @classmethod
     def from_crystfel_file(cls, filename):
+        """
+        Load a geometry in crystfel format.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+
+        Returns
+        -------
+        cspad : Cspad
+            The Cspad instance
+        """
         return translate.load_crystfel(cls, filename)
         
         
@@ -424,6 +543,19 @@ class Cspad(CompoundDetector):
 
     @classmethod
     def from_cheetah_file(cls, filename):
+        """
+        Load a geometry in cheetah format.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+
+        Returns
+        -------
+        cspad : Cspad
+            The Cspad instance
+        """
         return translate.load_cheetah(cls, filename)
         
         

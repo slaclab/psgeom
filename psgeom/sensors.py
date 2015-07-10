@@ -13,6 +13,14 @@ from psgeom import moveable
 # ---- abstract sensor class  --------------------------------------------------
 
 class SensorElement(moveable.MoveableObject):
+    """
+    Abstract base class specifying a SensorElement. These elements are the
+    actual detecting units of the camera (e.g. a two-by-one for a CSPAD). Many
+    such elements usually form a camera.
+    
+    These objects specify the location of pixels within a sensing element and
+    a few other basic facts about them.
+    """
             
     @abc.abstractproperty
     def num_pixels(self):
@@ -44,15 +52,57 @@ class SensorElement(moveable.MoveableObject):
 # ---- specific sensor implementations  ----------------------------------------
     
 class PixelArraySensor(SensorElement):
+    """
+    The PixelArraySensor is an implementation of a rectangular array sensor.
+    Likely most cameras can be generated from instances of this element.
+    """
 
     def __init__(self, shape, pixel_shape, 
                  type_name='None', id_num=0, parent=None,
                  rotation_angles=np.array([0.0, 0.0, 0.0]), 
                  translation=np.array([0.0, 0.0, 0.0])):
         """
-        fill me in
+        Create a PixelArraySensor.
         
-        shape is (slow, fast)
+        Parameters
+        ----------
+        shape : tuple of ints
+            The shape of the rectangular array of pixels. The ordering of the
+            shape is (slow, fast), where fast indicates the direction that is
+            most rapidly scanned across when mapping intensities stored in
+            a linear memory array onto the camera.
+            
+        pixel_shape : tuple of floats
+            The size of the rectangular pixels that make up the detector, also
+            in (slow, fast) directions. Note that units in psgeom are arbitrary,
+            but that you need to be consistent!
+        
+        type_name : str
+            Give this detector a descriptive name. Often there might be
+            two different instances of CompoundDetector with the same name,
+            if they are identical units. E.g., "QUAD:V1".
+            
+        id_num : int
+            The unit should have an index. This is not only a unique identifier
+            but helps order elements within the camera tree, which can change
+            the way someone wants to map pixel intensities (somewhere else in
+            memory) onto the camera geometry.
+            
+        parent : CompoundDetector
+            The parent frame, specified by an instance of CompoundDetector.
+            
+        rotation_angles : np.ndarray
+            Three Cardan angles specifying the local frame rotation operator.
+            Argument must be a one-D 3-vector.
+            
+        translation : np.ndarray
+            The xyz translation of the local frame. Argument must be a one-D 
+            3-vector.
+            
+        Returns
+        -------
+        self : PixelArraySensor
+            The sensor element.
         """
         
         self._type_name = type_name
@@ -76,6 +126,10 @@ class PixelArraySensor(SensorElement):
 
     @property
     def untransformed_xyz(self):
+        """
+        Return the xyz coordinates of the element in the reference frame, that
+        is before any translation/rotation operations have been applied.
+        """
                 
         # convention that x is the quickly varying dimension (fast), y is slow
         # and z is perpendicular to the sensor in the untransformed view
@@ -94,6 +148,21 @@ class PixelArraySensor(SensorElement):
     @property
     def psf(self):
         """
+        Return basis grids for this object.
+        
+        Returns
+        -------
+        p : np.ndarray
+            A 3-vector pointing from the interaction site to the first pixel
+            read out from memory for this element.
+            
+        s : np.ndarray
+            A 3-vector pointing along the slow scan direction. The size of the
+            vector is the size of the pixel in this direction.
+            
+        f : np.ndarray
+            A 3-vector pointing along the slow scan direction. The size of the
+            vector is the size of the pixel in this direction.
         """
         
         xyz = self.xyz
@@ -109,11 +178,42 @@ class PixelArraySensor(SensorElement):
 
 class Cspad2x1(PixelArraySensor):
     """
-    
-    https://confluence.slac.stanford.edu/display/PSDM/CSPAD+Geometry+and+Alignment
+    A specific PixelArraySensor representing a CSPAD 2x1.
     """
     
     def __init__(self, **kwargs):
+        """
+        Create a Cspad2x1.
+        
+        Parameters
+        ----------
+        type_name : str
+            Give this detector a descriptive name. Often there might be
+            two different instances of CompoundDetector with the same name,
+            if they are identical units. E.g., "QUAD:V1".
+            
+        id_num : int
+            The unit should have an index. This is not only a unique identifier
+            but helps order elements within the camera tree, which can change
+            the way someone wants to map pixel intensities (somewhere else in
+            memory) onto the camera geometry.
+            
+        parent : CompoundDetector
+            The parent frame, specified by an instance of CompoundDetector.
+            
+        rotation_angles : np.ndarray
+            Three Cardan angles specifying the local frame rotation operator.
+            Argument must be a one-D 3-vector.
+            
+        translation : np.ndarray
+            The xyz translation of the local frame. Argument must be a one-D 
+            3-vector.
+            
+        Returns
+        -------
+        self : Cspad2x1
+            The sensor element.
+        """
                  
         shape = (185, 388)
         pixel_shape = np.array([109.92, 109.92])
@@ -125,6 +225,10 @@ class Cspad2x1(PixelArraySensor):
         
     @property
     def untransformed_xyz(self):
+        """
+        Return the xyz coordinates of the element in the reference frame, that
+        is before any translation/rotation operations have been applied.
+        """
 
         # convention that x is the quickly varying dimension (fast), y is slow
         # and z is perpendicular to the sensor in the untransformed view

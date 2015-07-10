@@ -59,10 +59,25 @@ def _check_obj(obj):
 
 def load_psana(obj, filename):
     """
+    Load a geometry in psana format.
+    
+    Parameters
+    ----------
+    filename : str
+        The path of the file on disk.
+        
+    Returns
+    -------
+    root : detector.CompoundDetector
+        The CompoundDetector instance
+        
+    References
+    ----------
+    ..[1] https://confluence.slac.stanford.edu/display/PSDM/Detector+Geometry
     """
     
     _check_obj(obj)
-
+    
     print 'Loading: %s' % filename
 
     # ---- load information into 2 tables: id_info (names) & trt (data)
@@ -193,7 +208,16 @@ def _mikhail_ordering(list_of_lines):
     
 def write_psana(detector, filename, title='geometry'):
     """
-    write me
+    Write a geometry in psana format.
+
+    Parameters
+    ----------
+    filename : str
+        The path of the file on disk.
+        
+    References
+    ----------
+    ..[1] https://confluence.slac.stanford.edu/display/PSDM/Detector+Geometry
     """
     
     f = open(filename, 'w')
@@ -323,7 +347,17 @@ def _cheetah_to_twobyones(cheetah_image):
     
 def load_cheetah(obj, filename, pixel_size=109.92):
     """
-    docstring
+    Load a geometry in cheetah format.
+    
+    Parameters
+    ----------
+    filename : str
+        The path of the file on disk.
+        
+    Returns
+    -------
+    root : detector.Cspad
+        The Cspad instance
     """
     
     _check_obj(obj)
@@ -381,7 +415,14 @@ def load_cheetah(obj, filename, pixel_size=109.92):
 
 def write_cheetah(detector, filename="pixelmap-cheetah-raw.h5"):
     """
-    docstring
+    Write a geometry in cheetah format.
+
+    Parameters
+    ----------
+    detector : detector.Cspad
+    
+    filename : str
+        The path of the file on disk.
     """
 
     coordinates = ['x', 'y', 'z']
@@ -437,20 +478,21 @@ def write_cheetah(detector, filename="pixelmap-cheetah-raw.h5"):
 
 def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
     """
-    Convert a CrystFEL geom file to a CSPad object.
+    Convert a CrystFEL geom file to a Cspad object.
     
     NOTE ON UNITS: all CrystFEL units are pixel units, except the
     sample-to-detector offset, which is typically in meters.
-
+    
+    
     Parameters
     ----------
     filename : str
-        The path to the geom text file.
-
+        The path of the file on disk.
+        
     Returns
     -------
-    cspad : CSPad
-        An CSPad object.
+    root : detector.Cspad
+        The Cspad instance
     """
     
     _check_obj(obj)
@@ -570,7 +612,7 @@ def write_crystfel(detector, filename, intensity_file_type='cheetah',
         The detector geometry to write to disk
         
     filname : str
-        The name of file to write. Will end in '.dtc'
+        The name of file to write. Should end in '.geom'
         
     Optional Parameters
     -------------------

@@ -17,6 +17,9 @@ class MoveableParent:
 
 
 class MoveableObject:
+    """
+    An abstract base class for moveable objects.
+    """
     
     __metaclass__ = abc.ABCMeta
     
