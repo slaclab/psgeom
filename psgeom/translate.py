@@ -292,11 +292,31 @@ def _cheetah_to_asics(cheetah_image):
             y_start = 185 * twoXone
             y_stop  = 185 * (twoXone + 1)
             
-            sec1, sec2 = np.hsplit(cheetah_image[y_start:y_stop,x_start:x_stop], 2)
+            sec1, sec2 = np.hsplit(cheetah_image[y_start:y_stop,
+                                                 x_start:x_stop], 2)
             
             new_image[q,twoXone*2,:,:]   = sec1
             new_image[q,twoXone*2+1,:,:] = sec2
             
+            
+    return new_image
+    
+    
+def _cheetah_to_twobyones(cheetah_image):
+    
+    new_image = np.zeros((32,185,388), dtype=cheetah_image.dtype)
+    
+    for q in range(4):
+        for twoXone in range(8):
+            
+            x_start = 388 * q
+            x_stop  = 388 * (q+1)
+            
+            y_start = 185 * twoXone
+            y_stop  = 185 * (twoXone + 1)
+            
+            new_image[q*8 + twoXone,:,:] = cheetah_image[y_start:y_stop,
+                                                         x_start:x_stop]
             
     return new_image
     
@@ -599,7 +619,7 @@ def write_crystfel(detector, filename, intensity_file_type='cheetah',
 ; photon_energy = /LCLS/photon_energy_eV
 
 clen = 0.0
-res = 9090.91
+res = 9097.52
 adu_per_eV = 0.00338
 
 ; data = /data/peakpowder

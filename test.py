@@ -3,11 +3,15 @@
 import numpy as np
 import os
 import unittest
+import h5py
 
 from psgeom import moveable
 from psgeom import sensors
 from psgeom import translate
 from psgeom import detector
+from psgeom.translate import _cheetah_to_twobyones
+
+PIXEL_TOLERANCE_um = 10.0
 
 
 
@@ -229,7 +233,7 @@ class TestCspad(object):
         assert self.cspad.num_pixels == cspad2.num_pixels
         np.testing.assert_allclose( np.squeeze(self.cspad.xyz), 
                                     np.squeeze(cspad2.xyz),
-                                    atol=10.0 )
+                                    atol=PIXEL_TOLERANCE_um )
     
     
 
@@ -279,7 +283,8 @@ class TestTranslate(object):
                 bg_xyz_ij = bg.grid_as_explicit(i*8 + j)[:,:193,:]
                 cd_xyz_ij = xyz[i,j,:,:193,:]
                 print i, j, np.sum( np.abs(bg_xyz_ij - cd_xyz_ij))
-                np.testing.assert_allclose(bg_xyz_ij, cd_xyz_ij, atol=10.0)
+                np.testing.assert_allclose(bg_xyz_ij, cd_xyz_ij, 
+                                           atol=PIXEL_TOLERANCE_um)
     
         
         
@@ -295,7 +300,7 @@ class TestTranslate(object):
             for j in range(8):
                 np.testing.assert_allclose(cd_xyz[0,i,j,:,:193], 
                                            new_xyz[i*8 + j,:,:193],
-                                           rtol=1e-6, atol=10.0)
+                                           rtol=1e-6, atol=PIXEL_TOLERANCE_um)
         
         
         
@@ -325,16 +330,37 @@ class TestTranslate(object):
         np.testing.assert_allclose( np.squeeze(self.cspad.xyz),
                                     np.squeeze(cspad2.xyz),
                                     err_msg='round trip fail',
-                                    atol=10.0)
+                                    atol=PIXEL_TOLERANCE_um)
         os.remove('ref_files/tmp_cheetah_geom.h5')
         
         
-    def test_cheetah_reference(self):
+    def test_cheetah_values(self):
         
-        raise unittest.SkipTest        
-        ref = detector.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
-        raise NotImplementedError('test not done')
+        # the cheetah pixels are just the xyz, so we can load them and use them
+        # to compare to our implementation
         
+        f = h5py.File('ref_files/refgeom_cheetah.h5', 'r')
+        
+        x = -1.0 * _cheetah_to_twobyones( np.array(f['x']) * 1000000.0 )
+        y = _cheetah_to_twobyones( np.array(f['y']) * 1000000.0 )
+        z = _cheetah_to_twobyones( np.array(f['z']) )
+        
+        f.close()
+        
+        ref_xyz = np.rollaxis( np.array([x,y,z]), 0, 4) # to shape (32,...,3)
+        tst = detector.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
+        tst_xyz = tst.xyz.reshape(32,185,388,3)
+                
+        np.testing.assert_allclose(tst_xyz[:,0,0,:],
+                                   ref_xyz[:,0,0,:],
+                                   atol=PIXEL_TOLERANCE_um,
+                                   err_msg='panel 1st pixels off')
+                                   
+        print tst_xyz - ref_xyz
+                                   
+        np.testing.assert_allclose(tst_xyz, ref_xyz,
+                                   atol=PIXEL_TOLERANCE_um,
+                                   err_msg='panels off in general')
         
         
     def test_cheetah_crystfel_consistency(self):
@@ -350,19 +376,10 @@ class TestTranslate(object):
         
         cheetah  = detector.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
         crystfel = detector.Cspad.from_crystfel_file('ref_files/refgeom_crystfel.geom')
-                
-        import matplotlib.pyplot as plt
-        from psgeom import draw
         
-        fig = plt.figure()
-        ax = plt.subplot(111)
-        draw.sketch_2x1s(cheetah.xyz, ax)
-        draw.sketch_2x1s(crystfel.xyz, ax)
-        plt.show()
-        
-        np.testing.assert_allclose(np.squeeze(cheetah.xyz)[...,:2],
-                                   np.squeeze(crystfel.xyz)[...,:2],
-                                   atol=10.0)
+        np.testing.assert_allclose(np.squeeze(cheetah.xyz),
+                                   np.squeeze(crystfel.xyz),
+                                   atol=PIXEL_TOLERANCE_um)
        
         
     def test_crystfel_roundtrip(self):
@@ -385,18 +402,11 @@ class TestTranslate(object):
         np.testing.assert_allclose(np.squeeze(self.cd.xyz),
                                    np.squeeze(cd2.xyz),
                                    err_msg='round trip fail',
-                                   atol=1.0,
+                                   atol=PIXEL_TOLERANCE_um,
                                    rtol=1e-3)
                                            
         os.remove('ref_files/tmp_crystfel.geom')
-        
-        
-    def test_thor(self):
-        pass
-        
-        
-    def test_cctbx(self):
-        pass
+
     
     
     
