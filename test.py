@@ -378,16 +378,15 @@ class TestTranslate(object):
         cd2 = detector.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
         
         
-        #print np.squeeze(self.cspad.xyz)
-        print np.squeeze(cd2.xyz)
-        print np.abs( np.squeeze(self.cspad.xyz) - np.squeeze(cd2.xyz) )
+        # be sure error is less than 1 micron in x/y, 0.2 mm in z
+        assert np.max(np.abs( np.squeeze(self.cspad.xyz[...,:2]) - np.squeeze(cd2.xyz[...,:2]) )) < 1.0
         assert np.max(np.abs( np.squeeze(self.cspad.xyz) - np.squeeze(cd2.xyz) )) < 200.0
         
-        # np.testing.assert_allclose(np.squeeze(self.cd.xyz),
-        #                            np.squeeze(cd2.xyz),
-        #                            err_msg='round trip fail',
-        #                            atol=10.0,
-        #                            rtol=1e-4)
+        np.testing.assert_allclose(np.squeeze(self.cd.xyz),
+                                   np.squeeze(cd2.xyz),
+                                   err_msg='round trip fail',
+                                   atol=1.0,
+                                   rtol=1e-3)
                                            
         os.remove('ref_files/tmp_crystfel.geom')
         
