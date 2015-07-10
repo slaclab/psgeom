@@ -456,12 +456,13 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
 
     # measure the absolute detector offset
     # right now this appears to be the only z-information in the geometry...
-    re_pz = re.search('coffset = (\d+.\d+..\d+)', geom_txt)
-    if re_pz == None:
+    #    match -> start at beginning of line
+    re_pz_global = re.search('\ncoffset\s+=\s+(\d+.\d+..\d+)', geom_txt) 
+    if re_pz_global == None:
         print "WARNING: Could not find `coffset` field, defaulting z-offset to 0.0"
-        p_z = 0.0
+        p_z_global = 0.0
     else:
-        p_z = float(re_pz.group(1)) * 1000000.0 # m --> micron
+        p_z_global = float(re_pz_global.group(1)) * 1e6 # m --> micron
 
     # iterate over each quad / ASIC
     for q in range(4):
@@ -512,7 +513,7 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
                     pass 
                 else:
                     # add to the global offset
-                    p_z += float( re_cz.group(1) ) * 1000000.0 # m --> micron
+                    p_z = p_z_global + float( re_cz.group(1) ) * 1e6 # m --> micron
 
                 p = np.array([p_x, p_y, p_z])
 
@@ -597,6 +598,7 @@ def write_crystfel(detector, filename, intensity_file_type='cheetah',
 ; clen =  /LCLS/detector0-EncoderValue
 ; photon_energy = /LCLS/photon_energy_eV
 
+clen = 0.0
 res = 9090.91
 adu_per_eV = 0.00338
 
@@ -687,7 +689,7 @@ rigid_group_collection_asics = a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14
                 print >> of, "%s = %f" % (tagcy, float(p[1])/pixel_size - 0.5 )
                 
                 # the z-axis is in *** meters *** (so, um --> m)
-                print >> of, "%s = %f" % (tagcz, float(p[2]) / 1000000.0 )
+                print >> of, "%s = %f" % (tagcz, float(p[2]) / 1e6 )
                 
                 # this tells CrystFEL to use this panel
                 print >> of, "%s/no_index = 0" % panel_name

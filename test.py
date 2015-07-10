@@ -376,8 +376,12 @@ class TestTranslate(object):
         # verified
         
         cd2 = detector.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
-        print np.max(np.abs( np.squeeze(self.cd.xyz) - np.squeeze(cd2.xyz) ))
-        assert np.max(np.abs( np.squeeze(self.cd.xyz) - np.squeeze(cd2.xyz) )) < 200.0
+        
+        
+        #print np.squeeze(self.cspad.xyz)
+        print np.squeeze(cd2.xyz)
+        print np.abs( np.squeeze(self.cspad.xyz) - np.squeeze(cd2.xyz) )
+        assert np.max(np.abs( np.squeeze(self.cspad.xyz) - np.squeeze(cd2.xyz) )) < 200.0
         
         # np.testing.assert_allclose(np.squeeze(self.cd.xyz),
         #                            np.squeeze(cd2.xyz),
