@@ -32,17 +32,7 @@ June 11, 2015
 
 To Fix
 ------
---> mikhail file z/y/x & euler angle conventions
---> document slow/fast scan x/y conventions
---> think about how to separate sensors out
---> test export methods
---> connect BasisGrid, test read methods
-
 --> fill in legacy.py
-
---> write "cspad class" to recognize slight variants (4,16,...), flat 
-    hierarchies and convert them to cannonical CSPAD form
-
 --> think about the mapping of intensity data onto the detector
 
 To Do
@@ -128,6 +118,24 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
         draw_child_tree(self, 1)
         
         return
+        
+        
+    def _sort_tree(self):
+        """
+        Order the tree by the id_num of each tree node.
+        """
+        
+        self._children = sorted(self._children, key=lambda x : x.id_num)
+        for c in self.children:
+            if hasattr(c, '_sort_tree'):
+                c._sort_tree()
+        
+        return
+        
+    
+    @property
+    def id_num(self):
+        return self._id
     
         
     @property
@@ -238,7 +246,9 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
     def from_psana_file(cls, filename):
         """
         """
-        return translate.load_psana(cls, filename)
+        ret = translate.load_psana(cls, filename)
+        ret._sort_tree()
+        return ret
         
     
     def to_text_file(self, filename):
@@ -260,11 +270,7 @@ class Cspad(CompoundDetector):
     """
     This is for a 'full' size CSPAD.
     """
-    
-    def enforce_heirarchy(self):
-        # need something that will create quads, etc
-        raise NotImplementedError()
-        
+            
     
     @classmethod
     def from_basisgrid(cls, bg):

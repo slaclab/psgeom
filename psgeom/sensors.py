@@ -35,6 +35,11 @@ class SensorElement(moveable.MoveableObject):
         T = self.global_transform
         return self._evaluate_transform(T, uxyz)
         
+        
+    @property
+    def id_num(self):
+        return self._id
+        
     
 # ---- specific sensor implementations  ----------------------------------------
     

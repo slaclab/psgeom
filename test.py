@@ -206,7 +206,7 @@ class TestCompoundDetector(object):
         print 'Mean Absolute Error: %f um / px' % err
         num_more_than_1px_err = np.sum( np.abs(xyz_new - xyz_old) > 109.92 )
     
-        assert err < 10.0, 'error greater than 10um avg per px'
+        assert err < 10.0, 'error greater than 10um avg per px (%f)' % err
         assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px'
     
         #np.testing.assert_allclose(xyz_new, xyz_old, atol=2 * 110.0)
@@ -331,11 +331,7 @@ class TestTranslate(object):
         
     def test_cheetah_reference(self):
         
-        # Note by TJL, 7/7/15
-        # cheetah reference geometry is wacky/incorrect
-        # regardless, highly suspect there is a sign error in x between
-        # cheetah and the current psgeom implementation
-        
+        raise unittest.SkipTest        
         ref = detector.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
         raise NotImplementedError('test not done')
         
@@ -347,7 +343,7 @@ class TestTranslate(object):
         # program by TAW, the cheetah file being generated from the CrystFEL
         # conversion done by TJL 7/8/15
         
-        raise unittest.SkipTest
+        #raise unittest.SkipTest
         
         # very close but ~1/2 pixel off. Does cheetah plot pixel corners or
         # centers? -- TJL 7/8/15
