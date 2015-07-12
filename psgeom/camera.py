@@ -9,11 +9,11 @@ that compose the leaves of a tree. These represent arbitrary objects that
 actually measure e.g. photon intensities of scattered x-rays. An example of
 such an element is an ASIC on a Pilatus, or a 2x1 on a CSPAD.
 
-These elements are then "mounted" onto `CompoundDetector`s, which represent
+These elements are then "mounted" onto `CompoundCamera`s, which represent
 physical units that translate and rotate together. For example, 8 CSPAD 2x1s
 are mounted on a single "Quad", that moves as a collective unit. The elements
-composing a CompoundDetector` instance can be SensorElements or other 
-CompoundDetectors.
+composing a CompoundCamera` instance can be SensorElements or other 
+CompoundCameras.
 
 A note about how the heirarchical geometry orientation is applied. Each node
 in the graph contains a rotation and translation with respect to it's parent.
@@ -38,24 +38,24 @@ from psgeom import translate
 from psgeom import basisgrid
 
         
-class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
+class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
     """
-    The compound detector class contains its own local rotation and translation
+    The compound camera class contains its own local rotation and translation
     operations that provide a local frame for a set of children. The children
-    can either be SensorElements or other CompoundDetectors.
+    can either be SensorElements or other CompoundCameras.
     """
     
     def __init__(self, type_name=None, id_num=0, parent=None,
                  rotation_angles=np.array([0.0, 0.0, 0.0]), 
                  translation=np.array([0.0, 0.0, 0.0])):         
         """
-        Create a CompoundDetector.
+        Create a CompoundCamera.
         
         Parameters
         ----------
         type_name : str
             Give this detector a descriptive name. Often there might be
-            two different instances of CompoundDetector with the same name,
+            two different instances of CompoundCamera with the same name,
             if they are identical units. E.g., "QUAD:V1".
             
         id_num : int
@@ -64,8 +64,8 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
             the way someone wants to map pixel intensities (somewhere else in
             memory) onto the camera geometry.
             
-        parent : CompoundDetector
-            The parent frame, specified by an instance of CompoundDetector.
+        parent : CompoundCamera
+            The parent frame, specified by an instance of CompoundCamera.
             
         rotation_angles : np.ndarray
             Three Cardan angles specifying the local frame rotation operator.
@@ -90,19 +90,19 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
         
     def add_child(self, child):
         """
-        Add a child to the compound detector. This can either be a
-        `SensorElement` or another `CompoundDetector`.
+        Add a child to the compound camera. This can either be a
+        `SensorElement` or another `CompoundCamera`.
         
         Parameters
         ----------
-        child : SensorElement or CompoundDetector
-            The child object to add to this CompundDetector node.
+        child : SensorElement or CompoundCamera
+            The child object to add to this CompoundCamera node.
         """
         
-        if not (isinstance(child, CompoundDetector) or \
+        if not (isinstance(child, CompoundCamera) or \
                 isinstance(child, sensors.SensorElement)):
                 raise TypeError('`child` must be type: SensorElement or '
-                                'CompoundDetector')
+                                'CompoundCamera')
         
         for c in self.children:
             if c.name == child.name:
@@ -227,7 +227,7 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
     @classmethod
     def from_basisgrid(cls, bg, element_type=sensors.PixelArraySensor):
         """
-        Convert a BasisGrid object to a CompoundDetector.
+        Convert a BasisGrid object to a CompoundCamera.
         
         Parameters
         ----------
@@ -239,8 +239,8 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
             
         Returns
         -------
-        cd : CompoundDetector
-            The compound detector instance.
+        cd : CompoundCamera
+            The compound camera instance.
         """
         
         if not isinstance(bg, basisgrid.BasisGrid):
@@ -308,8 +308,8 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
 
         Returns
         -------
-        root : detector.CompoundDetector
-            The CompoundDetector instance
+        root : CompoundCamera
+            The CompoundCamera instance
             
         References
         ----------
@@ -345,8 +345,8 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
 
         Returns
         -------
-        root : detector.CompoundDetector
-            The CompoundDetector instance
+        root : detector.CompoundCamera
+            The CompoundCamera instance
         """
         raise NotImplementedError()
 
@@ -354,7 +354,7 @@ class CompoundDetector(moveable.MoveableParent, moveable.MoveableObject):
 
 # ---- specific detector implementations ---------------------------------------
 
-class Cspad(CompoundDetector):
+class Cspad(CompoundCamera):
     """
     This is for a 'full' size CSPAD. The need for a specific CSPAD object is
     rather unfortunate, but necessitated by assumptions made by other software
@@ -415,7 +415,7 @@ class Cspad(CompoundDetector):
                                  
             # add a new quad if necessary
             if asic_id % 8 == 0:
-                quad = CompoundDetector(type_name='QUAD:V1',
+                quad = CompoundCamera(type_name='QUAD:V1',
                                         id_num=quad_index,
                                         parent=cspad,
                                         rotation_angles=quad_rot, 
@@ -525,9 +525,9 @@ class Cspad(CompoundDetector):
         
     def to_cheetah_file(self, filename):
         """
-        Convert a CompoundDetector object to a Cheetah h5 pixel map.
+        Convert a CompoundCamera object to a Cheetah h5 pixel map.
 
-        The CompoundDetector must be the a (4,8,185,388) shape representing a
+        The CompoundCamera must be the a (4,8,185,388) shape representing a
         CSPAD -- cheetah can only understand CSPAD geometries. 
 
         Parameters

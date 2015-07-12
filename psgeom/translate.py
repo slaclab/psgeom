@@ -68,8 +68,8 @@ def load_psana(obj, filename):
         
     Returns
     -------
-    root : detector.CompoundDetector
-        The CompoundDetector instance
+    root : detector.CompoundCamera
+        The CompoundCamera instance
         
     References
     ----------
@@ -155,7 +155,7 @@ def load_psana(obj, filename):
                        rotation_angles=rotations[cni], 
                        translation=translations[cni])
         
-        # > else, is a CompoundDetector
+        # > else, is a CompoundCamera
         else:
             curr = obj(type_name=id_info[cni][2],
                        id_num=id_info[cni][3],
@@ -263,7 +263,7 @@ def write_psana(detector, filename, title='geometry'):
     #f.write(root_line)
     lines.append(root_line)
 
-    # write a line for each child node in the CompoundDetector tree
+    # write a line for each child node in the CompoundCamera tree
     def write_children(node):
     
         if hasattr(node, 'children'):
@@ -356,7 +356,7 @@ def load_cheetah(obj, filename, pixel_size=109.92):
         
     Returns
     -------
-    root : detector.Cspad
+    root : camera.Cspad
         The Cspad instance
     """
     
@@ -419,7 +419,7 @@ def write_cheetah(detector, filename="pixelmap-cheetah-raw.h5"):
 
     Parameters
     ----------
-    detector : detector.Cspad
+    detector : camera.Cspad
     
     filename : str
         The path of the file on disk.
@@ -491,7 +491,7 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
         
     Returns
     -------
-    root : detector.Cspad
+    root : camera.Cspad
         The Cspad instance
     """
     

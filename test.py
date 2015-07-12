@@ -8,7 +8,7 @@ import h5py
 from psgeom import moveable
 from psgeom import sensors
 from psgeom import translate
-from psgeom import detector
+from psgeom import camera
 from psgeom.translate import _cheetah_to_twobyones
 
 PIXEL_TOLERANCE_um = 10.0
@@ -108,7 +108,7 @@ class TestPixelArraySensor(object):
         Rp = moveable._rotation_matrix_from_angles(*ra_p, dummy_dimension=True)
         Tp = moveable._translation_matrix_from_vector(t_p)
         
-        parent_obj = detector.CompoundDetector(type_name='daddy', 
+        parent_obj = camera.CompoundCamera(type_name='daddy', 
                                                id_num=0, parent=None,
                                                rotation_angles=ra_p, 
                                                translation=t_p)
@@ -132,14 +132,14 @@ class TestPixelArraySensor(object):
         Rz = moveable._rotation_matrix_from_angles(90.0, 0.0, 0.0, 
                                                    dummy_dimension=True)                                         
         ref = np.array([[0.0, 1.0, 0.0]])
-        ans = detector.CompoundDetector._evaluate_transform(Rz, x)
+        ans = camera.CompoundCamera._evaluate_transform(Rz, x)
         np.testing.assert_array_almost_equal(ans, ref, err_msg='rotation')
                                          
         # for translation
         x = np.random.randint(0,5,size=(1,3))    
         y = np.random.randint(0,5,size=(1,3))    
         T = moveable._translation_matrix_from_vector(x)    
-        assert np.all( detector.CompoundDetector._evaluate_transform(T, y) == x + y )
+        assert np.all( camera.CompoundCamera._evaluate_transform(T, y) == x + y )
     
     
     def test_untransformed_xyz(self):
@@ -166,18 +166,18 @@ class TestPixelArraySensor(object):
     
 
 
-# ---- detector.py -------------------------------------------------------------
+# ---- camera.py -------------------------------------------------------------
 
-class TestCompoundDetector(object):
+class TestCompoundCamera(object):
     
     def setup(self):
-        self.geom = detector.CompoundDetector.from_psana_file('ref_files/refgeom_psana.data')
+        self.geom = camera.CompoundCamera.from_psana_file('ref_files/refgeom_psana.data')
         
     
     def test_read_write(self):
 
         self.geom.to_psana_file('test.data')
-        geom2 = detector.CompoundDetector.from_psana_file('test.data')
+        geom2 = camera.CompoundCamera.from_psana_file('test.data')
         
         assert self.geom.xyz.shape == geom2.xyz.shape, 'shape/element mismatch'            
         np.testing.assert_allclose(self.geom.xyz, geom2.xyz, rtol=1e-3)
@@ -201,7 +201,7 @@ class TestCompoundDetector(object):
         xyz_old = np.rollaxis(np.array(xyz_old), 0, 7) # send 0 --> 7
         xyz_old = np.squeeze(xyz_old)
     
-        geom = detector.CompoundDetector.from_psana_file('ref_files/refgeom_psana.data')
+        geom = camera.CompoundCamera.from_psana_file('ref_files/refgeom_psana.data')
         xyz_new = np.squeeze(geom.xyz)
     
         assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
@@ -224,11 +224,11 @@ class TestCompoundDetector(object):
 class TestCspad(object):
     
     def setup(self):
-        self.cspad = detector.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        self.cspad = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
         
     def test_basisgrid_roundtrip(self):
         bg = self.cspad.to_basisgrid()
-        cspad2 = detector.Cspad.from_basisgrid(bg)
+        cspad2 = camera.Cspad.from_basisgrid(bg)
         
         assert self.cspad.num_pixels == cspad2.num_pixels
         np.testing.assert_allclose( np.squeeze(self.cspad.xyz), 
@@ -245,8 +245,8 @@ class TestTranslate(object):
     """
     
     def setup(self):
-        self.cd = detector.CompoundDetector.from_psana_file('ref_files/refgeom_psana.data')
-        self.cspad = detector.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        self.cd = camera.CompoundCamera.from_psana_file('ref_files/refgeom_psana.data')
+        self.cspad = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
         
         
     def test_asic_basis_grid(self):
@@ -291,7 +291,7 @@ class TestTranslate(object):
     def from_basis_grid(self):
         
         bg = self.cd.to_basisgrid()
-        new = detector.CompoundDetector.from_basisgrid(bg)
+        new = camera.CompoundCamera.from_basisgrid(bg)
         
         cd_xyz  = self.cd.xyz
         new_xyz = new.xyz
@@ -312,8 +312,8 @@ class TestTranslate(object):
         self.cspad.to_text_file('ref_files/cspad_psf.txt')
         
         # todo : load & ensure consistent
-        cd2 = detector.CompoundDetector.from_text_file('ref_files/cd_psf.txt')
-        cspad2 = detector.CompoundDetector.from_text_file('ref_files/cd_psf.txt')
+        cd2 = camera.CompoundCamera.from_text_file('ref_files/cd_psf.txt')
+        cspad2 = camera.CompoundCamera.from_text_file('ref_files/cd_psf.txt')
         
         np.testing.assert_allclose(self.cd.xyz, cd2.xyz)
         np.testing.assert_allclose(self.cspad.xyz, cspad2.xyz)
@@ -325,7 +325,7 @@ class TestTranslate(object):
     def test_cheetah_roundtrip(self):
         
         self.cspad.to_cheetah_file('ref_files/tmp_cheetah_geom.h5')
-        cspad2 = detector.Cspad.from_cheetah_file('ref_files/tmp_cheetah_geom.h5')
+        cspad2 = camera.Cspad.from_cheetah_file('ref_files/tmp_cheetah_geom.h5')
                 
         np.testing.assert_allclose( np.squeeze(self.cspad.xyz),
                                     np.squeeze(cspad2.xyz),
@@ -348,7 +348,7 @@ class TestTranslate(object):
         f.close()
         
         ref_xyz = np.rollaxis( np.array([x,y,z]), 0, 4) # to shape (32,...,3)
-        tst = detector.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
+        tst = camera.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
         tst_xyz = tst.xyz.reshape(32,185,388,3)
                 
         np.testing.assert_allclose(tst_xyz[:,0,0,:],
@@ -375,8 +375,8 @@ class TestTranslate(object):
         # very close but ~1/2 pixel off. Does cheetah plot pixel corners or
         # centers? -- TJL 7/8/15
         
-        cheetah  = detector.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
-        crystfel = detector.Cspad.from_crystfel_file('ref_files/refgeom_crystfel.geom')
+        cheetah  = camera.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
+        crystfel = camera.Cspad.from_crystfel_file('ref_files/refgeom_crystfel.geom')
         
         print np.squeeze(cheetah.xyz) - np.squeeze(crystfel.xyz)
         
@@ -396,7 +396,7 @@ class TestTranslate(object):
         # are orthogonal to the beam (no z-info), but that remains to be
         # verified
         
-        cd2 = detector.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
+        cd2 = camera.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
         
         
         # be sure error is less than 1 micron in x/y, 0.2 mm in z
