@@ -54,6 +54,11 @@ def _check_obj(obj):
     return
 
 
+def _natural_sort(l): 
+    convert = lambda text: int(text) if text.isdigit() else text.lower() 
+    alphanum_key = lambda key: [ convert(c) for c in re.split('([0-9]+)', key) ] 
+    return sorted(l, key = alphanum_key)
+
 
 # ---- psana -------------------------------------------------------------------
 
@@ -186,14 +191,16 @@ def _mikhail_ordering(list_of_lines):
     
     sensors = []
     quads   = []
+    other   = []
     
     for line in list_of_lines:
         if 'QUAD' in line[16:]:
             quads.append(line)
         elif 'SENS' in line[16:]:
             sensors.append(line)
+        else:
+            other.append(line)
     
-    other = list_of_lines[:-36]
     other.reverse()
     
     ordered_list = sensors + quads + other
@@ -328,10 +335,22 @@ def _cheetah_to_asics(cheetah_image):
     
 def _cheetah_to_twobyones(cheetah_image):
     
-    new_image = np.zeros((32,185,388), dtype=cheetah_image.dtype)
+    shape = (185, 388)
     
-    for q in range(4):
-        for twoXone in range(8):
+    num_quads = cheetah_image.shape[1] / shape[1]
+    if cheetah_image.shape[1] % shape[1] != 0:
+        raise IOError('Unexpected geometry array shape: %s. Could not infer '
+                      'number of quads.' % str(cheetah_image.shape))
+    
+    num_twoXones = cheetah_image.shape[0] / shape[0]
+    if cheetah_image.shape[0] % shape[0] != 0:
+        raise IOError('Unexpected geometry array shape: %s. Could not infer '
+                      'number of two-by-ones.' % str(cheetah_image.shape))
+    
+    new_image = np.zeros((num_quads*num_twoXones,185,388), dtype=cheetah_image.dtype)
+    
+    for q in range(num_quads):
+        for twoXone in range(num_twoXones):
             
             x_start = 388 * q
             x_stop  = 388 * (q+1)
@@ -368,30 +387,45 @@ def load_cheetah(obj, filename, pixel_size=109.92):
         raise IOError('File: %s is not a valid pixel map, should contain fields'
                       ' ["x", "y", "z"] exlusively' % filename)
 
+    cheetah_shape = f['x'].shape
+
     # convert m --> um, ends up not mattering tho...
     # also flip the sign of x : cheetah uses +x away from hutch door
-    x = -1.0 * _cheetah_to_asics( np.array(f['x']) * 1000000.0 )
-    y = _cheetah_to_asics( np.array(f['y']) * 1000000.0 )
+    x = -1.0 * _cheetah_to_twobyones( np.array(f['x']) * 1000000.0 )
+    y =        _cheetah_to_twobyones( np.array(f['y']) * 1000000.0 )
 
     # for some reason z is in microns, so leave it
-    z = _cheetah_to_asics( np.array(f['z']) )
+    z = _cheetah_to_twobyones( np.array(f['z']) )
 
     f.close()
 
     bg = basisgrid.BasisGrid()
-    shape = (185, 194) # will always be this for each ASIC
+    shape = (185, 388) # will always be this for each two-by-one
+    
+    # find out how many quads/asics we expect based on the size of the maps
+    num_quads = cheetah_shape[1] / shape[1]
+    if cheetah_shape[1] % shape[1] != 0:
+        raise IOError('Unexpected geometry array shape: %s. Could not infer '
+                      'number of quads.' % str(cheetah_shape))
+    
+    num_twoXones = cheetah_shape[0] / shape[0]
+    if cheetah_shape[0] % shape[0] != 0:
+        raise IOError('Unexpected geometry array shape: %s. Could not infer '
+                      'number of two-by-ones.' % str(cheetah_shape))
 
-    # loop over each ASIC, and convert it into a basis grid
-    for i in range(4):
-        for j in range(16):
+    # loop over each twoXones, and convert it into a basis grid
+    for i in range(num_quads):
+        for j in range(num_twoXones):
+
+            k = i * num_twoXones + j
 
             # extract all the corner positions (code ineligant but explicit)
             # corners are numbered 0 -> 4, starting top left and continuing cw
             corners = np.zeros(( 4, 3 ))
-            corners[0,:] = ( x[i,j,0,0],   y[i,j,0,0],   z[i,j,0,0]   )
-            corners[1,:] = ( x[i,j,0,-1],  y[i,j,0,-1],  z[i,j,0,-1]  )
-            corners[2,:] = ( x[i,j,-1,-1], y[i,j,-1,-1], z[i,j,-1,-1] )
-            corners[3,:] = ( x[i,j,-1,0],  y[i,j,-1,0],  z[i,j,-1,0]  )
+            corners[0,:] = ( x[k,0,0],   y[k,0,0],   z[k,0,0]   )
+            corners[1,:] = ( x[k,0,-1],  y[k,0,-1],  z[k,0,-1]  )
+            corners[2,:] = ( x[k,-1,-1], y[k,-1,-1], z[k,-1,-1] )
+            corners[3,:] = ( x[k,-1,0],  y[k,-1,0],  z[k,-1,0]  )
 
             # average the vectors formed by the corners to find f/s vects
             # the fast scan direction is the last index, s is next
@@ -431,9 +465,16 @@ def write_cheetah(detector, filename="pixelmap-cheetah-raw.h5"):
         raise TypeError('passed `detector` object must have an xyz attr')
 
     pp = np.squeeze(detector.xyz)
-    if not pp.shape == (4, 8, 185, 388, 3):
-        raise ValueError('Geometry does not appear to be a CSPAD. Expected xyz '
-                         'shape (4, 8, 185, 388, 3), got: %s' % str(pp.shape))
+    if pp.shape == (4, 8, 185, 388, 3):
+        num_quads = 4
+        num_twoXones = 8
+    elif pp.shape == (2, 185, 388, 3):
+        num_quads = 1
+        num_twoXones = 2
+        pp = pp.reshape(1, 2, 185, 388, 3) # dummy quad axis
+    else:
+        raise ValueError('Geometry does not appear to be a CSPAD. xyz '
+                         'shape: %s' % str(pp.shape))
 
     # write an h5
     f = h5py.File(filename, 'w')
@@ -444,10 +485,8 @@ def write_cheetah(detector, filename="pixelmap-cheetah-raw.h5"):
         cheetah_image = np.zeros((1480, 1552), dtype=np.float32)
 
         # iterate over each 2x1/quad (note switch)
-
-        # new
-        for q in range(4):
-            for a in range(8): # which 2x1
+        for q in range(num_quads):
+            for a in range(num_twoXones): # which 2x1
 
                 x_start = 388 * q
                 x_stop  = 388 * (q+1)
@@ -505,20 +544,20 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
                       ' Got: %s' % filename)
 
     if verbose:
-        print "Converting CSPAD geometry in: %s ..." % filename
+        print "Converting geometry in: %s ..." % filename
         
     f = open(filename, 'r')
     geom_txt = f.read()
     f.close()
 
-    # initialize an thor BasisGrid object -- will add ASICs to this
+
     bg = basisgrid.BasisGrid()
     shp = (185, 194) # this never changes for the CSPAD
 
 
     # measure the absolute detector offset
     # right now this appears to be the only z-information in the geometry...
-    #    match -> start at beginning of line
+    
     re_pz_global = re.search('\ncoffset\s+=\s+(\d+.\d+..\d+)', geom_txt) 
     if re_pz_global == None:
         print "WARNING: Could not find `coffset` field, defaulting z-offset to 0.0"
@@ -526,66 +565,74 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
     else:
         p_z_global = float(re_pz_global.group(1)) * 1e6 # m --> micron
 
-    # iterate over each quad / ASIC
-    for q in range(4):
-        for a in range(16):
+    
+    # find out which panels we have to look for
+    panels = re.findall('q\d+a\d+', geom_txt)
+    panels = _natural_sort(list(set(panels))) # set makes unique        
+    
+    
+    # iterate over each quad / ASIC    
+    for panel in panels:
 
-            if verbose:
-                print "Reading geometry for: QUAD %d / ASIC %d" % (q, a)
+        if verbose:
+            print "Reading geometry for: %s" % panel
 
-            try:
+        try:
 
-                # match f/s vectors
-                re_fs = re.search('q%da%d/fs\s+=\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % (q, a), geom_txt)
-                f_x = - float( re_fs.group(1) )
-                f_y = float( re_fs.group(3) )
-                f = np.array([f_x, f_y, 0.0])
-                f = f * (pixel_size / np.linalg.norm(f))
+            # match f/s vectors
+            re_fs = re.search('%s/fs\s+=\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % panel, geom_txt)
+            f_x = - float( re_fs.group(1) )
+            f_y = float( re_fs.group(3) )
+            f = np.array([f_x, f_y, 0.0])
+            f = f * (pixel_size / np.linalg.norm(f))
 
-                re_ss = re.search('q%da%d/ss\s+=\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % (q, a), geom_txt)
-                s_x = - float( re_ss.group(1) )
-                s_y = float( re_ss.group(3) )
-                s = np.array([s_x, s_y, 0.0])
-                s = s * (pixel_size / np.linalg.norm(s))
-                
-            except AttributeError as e:
-                print e
-                raise IOError('Geometry file incomplete -- cant parse one or '
-                              'more basis vector fields (ss/fs) QUAD %d / ASIC %d' % (q, a))
-
-            # match corner postions, that become the p vector
-            # note we have to convert from pixel units to mm
-            # and also that CrystFEL measures the corner from the actual
-            # *corner*, and not the center of the corner pixel!
+            re_ss = re.search('%s/ss\s+=\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % panel, geom_txt)
+            s_x = - float( re_ss.group(1) )
+            s_y = float( re_ss.group(3) )
+            s = np.array([s_x, s_y, 0.0])
+            s = s * (pixel_size / np.linalg.norm(s))
             
-            try:
-                
-                re_cx = re.search('q%da%d/corner_x\s+=\s+((.)?\d+.\d+)' % (q, a), geom_txt)
-                p_x = - (float( re_cx.group(1) ) + 0.5) * pixel_size
+        except AttributeError as e:
+            print e
+            raise IOError('Geometry file incomplete -- cant parse one or '
+                          'more basis vector fields (ss/fs) for panel: %s' % panel)
 
-                re_cy = re.search('q%da%d/corner_y\s+=\s+((.)?\d+.\d+)' % (q, a), geom_txt)
-                p_y = (float( re_cy.group(1) ) + 0.5) * pixel_size
-                
-                
-                # it's allowed to also have individual z-offsets for
-                # each panel, so look for those (CrystFEL units: meters)                
-                re_cz = re.search('q%da%d/coffset\s+=\s+((.)?\d+.\d+)' % (q, a), geom_txt)
-                if re_cz == None:
-                    # no data
-                    pass 
-                else:
-                    # add to the global offset
-                    p_z = p_z_global + float( re_cz.group(1) ) * 1e6 # m --> micron
+        # match corner postions, that become the p vector
+        # note we have to convert from pixel units to mm
+        # and also that CrystFEL measures the corner from the actual
+        # *corner*, and not the center of the corner pixel!
+        
+        try:
+            
+            re_cx = re.search('%s/corner_x\s+=\s+((.)?\d+(.\d+)?)' % panel, geom_txt)
+            #p_x = - (float( re_cx.group(1) ) + 0.5) * pixel_size
+            p_x = - float( re_cx.group(1) ) * pixel_size
 
-                p = np.array([p_x, p_y, p_z])
+            re_cy = re.search('%s/corner_y\s+=\s+((.)?\d+(.\d+)?)' % panel, geom_txt)
+            #p_y = (float( re_cy.group(1) ) + 0.5) * pixel_size
+            p_y = float( re_cy.group(1) ) * pixel_size
+            
+            
+            # it's allowed to also have individual z-offsets for
+            # each panel, so look for those (CrystFEL units: meters)                
+            re_cz = re.search('%s/coffset\s+=\s+((.)?\d+.\d+)' % panel, geom_txt)
+            if re_cz == None:
+                if verbose:
+                    print 'Could not find z data for %s' % panel
+                p_z = p_z_global 
+            else:
+                # add to the global offset
+                p_z = p_z_global + float( re_cz.group(1) ) * 1e6 # m --> micron
 
-            except AttributeError as e:
-                print e
-                raise IOError('Geometry file incomplete -- cant parse one or '
-                              'more corner fields for QUAD %d / ASIC %d' % (q, a))
+            p = np.array([p_x, p_y, p_z])
 
-            # finally, add the ASIC to the basis grid
-            bg.add_grid(p, s, f, shp)
+        except AttributeError as e:
+            print e
+            raise IOError('Geometry file incomplete -- cant parse one or '
+                          'more corner fields for panel: %s' % panel)
+
+        # finally, add the ASIC to the basis grid
+        bg.add_grid(p, s, f, shp)
 
     if verbose:
         print " ... successfully converted geometry."
@@ -666,50 +713,9 @@ adu_per_eV = 0.00338
 
 ; data = /data/peakpowder
 
-dim0 = %
-dim1 = ss
-dim2 = fs
-
-rigid_group_q0 = q0a0,q0a1,q0a2,q0a3,q0a4,q0a5,q0a6,q0a7,q0a8,q0a9,q0a10,q0a11,q0a12,q0a13,q0a14,q0a15
-rigid_group_q1 = q1a0,q1a1,q1a2,q1a3,q1a4,q1a5,q1a6,q1a7,q1a8,q1a9,q1a10,q1a11,q1a12,q1a13,q1a14,q1a15
-rigid_group_q2 = q2a0,q2a1,q2a2,q2a3,q2a4,q2a5,q2a6,q2a7,q2a8,q2a9,q2a10,q2a11,q2a12,q2a13,q2a14,q2a15
-rigid_group_q3 = q3a0,q3a1,q3a2,q3a3,q3a4,q3a5,q3a6,q3a7,q3a8,q3a9,q3a10,q3a11,q3a12,q3a13,q3a14,q3a15
-
-rigid_group_a0 = q0a0,q0a1
-rigid_group_a1 = q0a2,q0a3
-rigid_group_a2 = q0a4,q0a5
-rigid_group_a3 = q0a6,q0a7
-rigid_group_a4 = q0a8,q0a9
-rigid_group_a5 = q0a10,q0a11
-rigid_group_a6 = q0a12,q0a13
-rigid_group_a7 = q0a14,q0a15
-rigid_group_a8 = q1a0,q1a1
-rigid_group_a9 = q1a2,q1a3
-rigid_group_a10 = q1a4,q1a5
-rigid_group_a11 = q1a6,q1a7
-rigid_group_a12 = q1a8,q1a9
-rigid_group_a13 = q1a10,q1a11
-rigid_group_a14 = q1a12,q1a13
-rigid_group_a15 = q1a14,q1a15
-rigid_group_a16 = q2a0,q2a1
-rigid_group_a17 = q2a2,q2a3
-rigid_group_a18 = q2a4,q2a5
-rigid_group_a19 = q2a6,q2a7
-rigid_group_a20 = q2a8,q2a9
-rigid_group_a21 = q2a10,q2a11
-rigid_group_a22 = q2a12,q2a13
-rigid_group_a23 = q2a14,q2a15
-rigid_group_a24 = q3a0,q3a1
-rigid_group_a25 = q3a2,q3a3
-rigid_group_a26 = q3a4,q3a5
-rigid_group_a27 = q3a6,q3a7
-rigid_group_a28 = q3a8,q3a9
-rigid_group_a29 = q3a10,q3a11
-rigid_group_a30 = q3a12,q3a13
-rigid_group_a31 = q3a14,q3a15
-
-rigid_group_collection_quadrants = q0,q1,q2,q3
-rigid_group_collection_asics = a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14,a15,a16,a17,a18,a19,a20,a21,a22,a23,a24,a25,a26,a27,a28,a29,a30,a31
+; dim0 = %
+; dim1 = ss
+; dim2 = fs
 
 ; -----------------------------------------------
 
@@ -719,44 +725,49 @@ rigid_group_collection_asics = a0,a1,a2,a3,a4,a5,a6,a7,a8,a9,a10,a11,a12,a13,a14
         print >> of, header
         
         # iterate over each basis grid object
-        for quad in range(4):
-            for asic in range(16):
+        # for a full CSPAD, this will be 64 elements
+        # for a 2x2, it will be 4 elements and the "quad" will always be 0
+        for grid_index in range(bg.num_grids):
                 
-                grid_index = quad * 16 + asic
-                p, s, f, sp = bg.get_grid(grid_index)
-    
-                panel_name = "q%da%d" % (quad, asic)
-                
-                # tell crystFEL how read intensity values in a file
-                print >> of, intensity_map[grid_index].strip()
-                
-                # write the basis vectors           
-                sqt = math.sqrt(f[0]**2 + f[1]**2) 
-                print >> of, "%s/fs = %s%fx %s%fy" % ( panel_name,
-                                                       get_sign(-f[0]/sqt), abs(f[0]/sqt), 
-                                                       get_sign(f[1]/sqt), abs(f[1]/sqt) )
-                sqt = math.sqrt(s[0]**2 + s[1]**2)
-                print >> of, "%s/ss = %s%fx %s%fy" % ( panel_name,
-                                                       get_sign(-s[0]/sqt), abs(s[0]/sqt), 
-                                                       get_sign(s[1]/sqt), abs(s[1]/sqt) )
-                
-                # write the corner positions
-                tagcx = "%s/corner_x" % panel_name
-                tagcy = "%s/corner_y" % panel_name
-                tagcz = "%s/coffset"  % panel_name
+            asic = grid_index % 16
+            quad = grid_index / 16
             
-                # CrystFEL measures the corner from the actual *corner*, and not
-                # the center of the corner pixel, hence the 0.5's
-                print >> of, "%s = %f" % (tagcx, - float(p[0])/pixel_size - 0.5 )
-                print >> of, "%s = %f" % (tagcy, float(p[1])/pixel_size - 0.5 )
-                
-                # the z-axis is in *** meters *** (so, um --> m)
-                print >> of, "%s = %f" % (tagcz, float(p[2]) / 1e6 )
-                
-                # this tells CrystFEL to use this panel
-                print >> of, "%s/no_index = 0" % panel_name
-                
-                print >> of, "" # new line
+            p, s, f, sp = bg.get_grid(grid_index)
+
+            panel_name = "q%da%d" % (quad, asic)
+            
+            # tell crystFEL how read intensity values in a file
+            print >> of, intensity_map[grid_index].strip()
+            
+            # write the basis vectors           
+            sqt = math.sqrt(f[0]**2 + f[1]**2) 
+            print >> of, "%s/fs = %s%fx %s%fy" % ( panel_name,
+                                                   get_sign(-f[0]/sqt), abs(f[0]/sqt), 
+                                                   get_sign(f[1]/sqt), abs(f[1]/sqt) )
+            sqt = math.sqrt(s[0]**2 + s[1]**2)
+            print >> of, "%s/ss = %s%fx %s%fy" % ( panel_name,
+                                                   get_sign(-s[0]/sqt), abs(s[0]/sqt), 
+                                                   get_sign(s[1]/sqt), abs(s[1]/sqt) )
+            
+            # write the corner positions
+            tagcx = "%s/corner_x" % panel_name
+            tagcy = "%s/corner_y" % panel_name
+            tagcz = "%s/coffset"  % panel_name
+        
+            # CrystFEL measures the corner from the actual *corner*, and not
+            # the center of the corner pixel, hence the 0.5's
+            # print >> of, "%s = %f" % (tagcx, - float(p[0])/pixel_size - 0.5 )
+            # print >> of, "%s = %f" % (tagcy, float(p[1])/pixel_size - 0.5 )
+            print >> of, "%s = %f" % (tagcx, - float(p[0])/pixel_size)
+            print >> of, "%s = %f" % (tagcy, float(p[1])/pixel_size)
+            
+            # the z-axis is in *** meters *** (so, um --> m)
+            print >> of, "%s = %f" % (tagcz, float(p[2]) / 1e6 )
+            
+            # this tells CrystFEL to use this panel
+            print >> of, "%s/no_index = 0" % panel_name
+            
+            print >> of, "" # new line
     
     return    
 

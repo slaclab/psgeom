@@ -234,6 +234,7 @@ class TestCspad(object):
         np.testing.assert_allclose( np.squeeze(self.cspad.xyz), 
                                     np.squeeze(cspad2.xyz),
                                     atol=PIXEL_TOLERANCE_um )
+                                    
     
     
 
@@ -410,8 +411,45 @@ class TestTranslate(object):
                                    rtol=1e-3)
                                            
         os.remove('ref_files/tmp_crystfel.geom')
-
+        
     
+    def test_2x2_cheetah_roundtrip(self):
+        
+        cheetah  = camera.Cspad.from_cheetah_file('ref_files/cspad-2x2-approx1.h5')
+        cheetah.to_psana_file('ref_files/tmp_psana.data')
+        cheetah2 = camera.Cspad.from_psana_file('ref_files/tmp_psana.data')
+        
+        np.testing.assert_allclose(np.squeeze(cheetah.xyz),
+                                   np.squeeze(cheetah2.xyz),
+                                   atol=PIXEL_TOLERANCE_um)
+                                   
+        os.remove('ref_files/tmp_psana.data')
+        
+        
+    def test_2x2_crystfel_roundtrip(self):
+        
+        crystfel  = camera.Cspad.from_crystfel_file('ref_files/cspad-2x2-approx1.geom')
+        crystfel.to_psana_file('ref_files/tmp_psana.data')
+        crystfel2 = camera.Cspad.from_psana_file('ref_files/tmp_psana.data')
+        
+        np.testing.assert_allclose(np.squeeze(crystfel.xyz),
+                                   np.squeeze(crystfel2.xyz),
+                                   atol=PIXEL_TOLERANCE_um)
+                                   
+        os.remove('ref_files/tmp_psana.data')
+        
+        
+    def test_2x2_consistency(self):
+        
+        # TJL: I have not verified that these are in fact the same geom
+        #      they were provided by users
+        crystfel = camera.Cspad.from_crystfel_file('ref_files/cspad-2x2-approx1.geom')
+        cheetah  = camera.Cspad.from_cheetah_file('ref_files/cspad-2x2-approx1.h5')
+        
+        np.testing.assert_allclose(np.squeeze(crystfel.xyz),
+                                   np.squeeze(cheetah.xyz),
+                                   atol=100.0)
+        
     
     
 if __name__ == '__main__':

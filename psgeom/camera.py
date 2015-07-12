@@ -388,17 +388,16 @@ class Cspad(CompoundCamera):
         
         # if the grids are asics, we can strip out every other one and then
         # treat them like 2x1s        
-        if bg.num_grids == 32:
+        if bg.num_pixels / bg.num_grids == 185 * 388: # two-by-one grids
             stride = 1
             
-        elif bg.num_grids == 64:
+        elif bg.num_pixels / bg.num_grids == 185 * 194: # asic grids
             stride = 2
             
         else:
-            raise RuntimeError('`bg` BasisGrid object has an incompatible '
-                               'number of grids to be a full sized Cspad. '
-                               'Required: 32 (2x1s) or 64 (ASICs), '
-                               'got: %d' % bg.num_grids)
+            raise RuntimeError('Could not tell if BasisGrid grid elements are '
+                               'CSPAD 2x1s or ASICs. Pixels per element:'
+                               '%d' % (bg.num_pixels / bg.num_grids,))
         
         for g in range(0, bg.num_grids, stride):
             
@@ -558,9 +557,3 @@ class Cspad(CompoundCamera):
         """
         return translate.load_cheetah(cls, filename)
         
-        
-
-
-
-
-
