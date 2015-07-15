@@ -582,13 +582,13 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
             # match f/s vectors
             re_fs = re.search('%s/fs\s+=\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % panel, geom_txt)
             f_x = - float( re_fs.group(1) )
-            f_y = float( re_fs.group(3) )
+            f_y =   float( re_fs.group(3) )
             f = np.array([f_x, f_y, 0.0])
             f = f * (pixel_size / np.linalg.norm(f))
 
             re_ss = re.search('%s/ss\s+=\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % panel, geom_txt)
             s_x = - float( re_ss.group(1) )
-            s_y = float( re_ss.group(3) )
+            s_y =   float( re_ss.group(3) )
             s = np.array([s_x, s_y, 0.0])
             s = s * (pixel_size / np.linalg.norm(s))
             
@@ -602,15 +602,15 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
         # and also that CrystFEL measures the corner from the actual
         # *corner*, and not the center of the corner pixel!
         
+        # also, remember the s[0] and f[0] have already been x-flipped
+        
         try:
             
             re_cx = re.search('%s/corner_x\s+=\s+((.)?\d+(.\d+)?)' % panel, geom_txt)
-            #p_x = - (float( re_cx.group(1) ) + 0.5) * pixel_size
-            p_x = - float( re_cx.group(1) ) * pixel_size
+            p_x = - float( re_cx.group(1) ) * pixel_size + 0.5 * (s[0] + f[0])
 
             re_cy = re.search('%s/corner_y\s+=\s+((.)?\d+(.\d+)?)' % panel, geom_txt)
-            #p_y = (float( re_cy.group(1) ) + 0.5) * pixel_size
-            p_y = float( re_cy.group(1) ) * pixel_size
+            p_y =   float( re_cy.group(1) ) * pixel_size + 0.5 * (s[1] + f[1])
             
             
             # it's allowed to also have individual z-offsets for
@@ -743,11 +743,11 @@ adu_per_eV = 0.00338
             sqt = math.sqrt(f[0]**2 + f[1]**2) 
             print >> of, "%s/fs = %s%fx %s%fy" % ( panel_name,
                                                    get_sign(-f[0]/sqt), abs(f[0]/sqt), 
-                                                   get_sign(f[1]/sqt), abs(f[1]/sqt) )
+                                                   get_sign( f[1]/sqt), abs(f[1]/sqt) )
             sqt = math.sqrt(s[0]**2 + s[1]**2)
             print >> of, "%s/ss = %s%fx %s%fy" % ( panel_name,
                                                    get_sign(-s[0]/sqt), abs(s[0]/sqt), 
-                                                   get_sign(s[1]/sqt), abs(s[1]/sqt) )
+                                                   get_sign( s[1]/sqt), abs(s[1]/sqt) )
             
             # write the corner positions
             tagcx = "%s/corner_x" % panel_name
@@ -755,11 +755,13 @@ adu_per_eV = 0.00338
             tagcz = "%s/coffset"  % panel_name
         
             # CrystFEL measures the corner from the actual *corner*, and not
-            # the center of the corner pixel, hence the 0.5's
-            # print >> of, "%s = %f" % (tagcx, - float(p[0])/pixel_size - 0.5 )
-            # print >> of, "%s = %f" % (tagcy, float(p[1])/pixel_size - 0.5 )
-            print >> of, "%s = %f" % (tagcx, - float(p[0])/pixel_size)
-            print >> of, "%s = %f" % (tagcy, float(p[1])/pixel_size)
+            # the center of the corner pixel (dont forget to x-flip s[0], f[0])
+            
+            cx = - float(p[0])/pixel_size + 0.5 * (f[0] + s[0])/pixel_size
+            cy =   float(p[1])/pixel_size - 0.5 * (f[1] + s[1])/pixel_size
+            
+            print >> of, "%s = %f" % (tagcx, cx)
+            print >> of, "%s = %f" % (tagcy, cy)
             
             # the z-axis is in *** meters *** (so, um --> m)
             print >> of, "%s = %f" % (tagcz, float(p[2]) / 1e6 )

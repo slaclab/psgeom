@@ -17,7 +17,7 @@
 
 clen =  /LCLS/detector0-EncoderValue
 photon_energy = /LCLS/photon_energy_eV
-res = 9090.91
+res = 9097.52
 adu_per_eV = 0.00338
 ;data = /data/peakpowder
 
