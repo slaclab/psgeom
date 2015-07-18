@@ -247,7 +247,11 @@ class Cspad2x1(PixelArraySensor):
         # 109.92 x 274.8 um. By translating the 2nd ASIC, we get most of the
         # pixels right, but the central columns will be a bit off
         
-        xy[:,193:,0] += 2.0 * (274.8 - 109.92)        
+        # this is equivalent to a 3-pixel shift
+        # note that 2 * (274.80 - 109.92) = 329.76
+        # gap is between pixel indices 193 & 194
+        
+        xy[:,194:,0] += 2.0 * (274.8 - 109.92)        
 
         # and, finally, for some reason M measures rotations from the
         # center of the 2x1 but the corner of the quad. So we center the

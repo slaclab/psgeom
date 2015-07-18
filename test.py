@@ -165,6 +165,22 @@ class TestPixelArraySensor(object):
         np.testing.assert_array_almost_equal(self.PAS.xyz, xyz_ans[...,:3])
     
 
+class TestSens2x1(TestPixelArraySensor):
+    
+    def test_2x1_central_gap(self):
+        
+        # regression test for the size of the big pixels
+        
+        s = sensors.Cspad2x1()
+        
+        small1 = s.xyz[0,193,0] - s.xyz[0,192,0]
+        big    = s.xyz[0,194,0] - s.xyz[0,193,0]
+        small2 = s.xyz[0,195,0] - s.xyz[0,194,0]
+        
+        np.testing.assert_array_almost_equal(small1, 109.92) # px size
+        np.testing.assert_array_almost_equal(small2, 109.92)
+        np.testing.assert_array_almost_equal(big,    439.68) # gap size        
+
 
 # ---- camera.py -------------------------------------------------------------
 
@@ -299,8 +315,8 @@ class TestTranslate(object):
                 
         for i in range(4):
             for j in range(8):
-                np.testing.assert_allclose(cd_xyz[0,i,j,:,:193], 
-                                           new_xyz[i*8 + j,:,:193],
+                np.testing.assert_allclose(cd_xyz[0,i,j,:,:], 
+                                           new_xyz[i*8 + j,:,:],
                                            rtol=1e-6, atol=PIXEL_TOLERANCE_um)
         
         
@@ -362,7 +378,7 @@ class TestTranslate(object):
         # cheetah does not deal correctly with the large center pixels, so
         # we test around that
         assert np.max( np.abs(tst_xyz - ref_xyz) ) < 500.0
-        np.testing.assert_allclose(tst_xyz[:,:,:193,:], ref_xyz[:,:,:193,:],
+        np.testing.assert_allclose(tst_xyz[:,:,:,:], ref_xyz[:,:,:,:],
                                    atol=PIXEL_TOLERANCE_um,
                                    err_msg='panels off in general')
         
