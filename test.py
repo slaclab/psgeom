@@ -11,6 +11,9 @@ from psgeom import translate
 from psgeom import camera
 from psgeom.translate import _cheetah_to_twobyones
 
+import warnings
+#camera._STRICT = True
+
 PIXEL_TOLERANCE_um = 10.0
 
 
@@ -405,21 +408,39 @@ class TestTranslate(object):
         
     def test_crystfel_roundtrip(self):
         
+        # first test with no weird z stuff
+        
         self.cspad.to_crystfel_file('ref_files/tmp_crystfel.geom')
-        
-        # Note by TJL, 7/8/15
-        # there is a round-trip error of less than 1 micron per pixel
-        # I believe this is due to the fact that CrystFEL assumes sensors
-        # are orthogonal to the beam (no z-info), but that remains to be
-        # verified
-        
         cd2 = camera.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
-        
         
         # be sure error is less than 1 micron in x/y, 0.2 mm in z
         assert np.max(np.abs( np.squeeze(self.cspad.xyz[...,:2]) - np.squeeze(cd2.xyz[...,:2]) )) < 1.0
         assert np.max(np.abs( np.squeeze(self.cspad.xyz) - np.squeeze(cd2.xyz) )) < 200.0
         
+        
+        # CrystFEL's geometry assumes all panels are orthogonal to the beam. To
+        # do a fair comparison, therefore, we set all the z-rotations to zero
+        # note: we remove rotations around the x- & y-axes to get rid of z
+        
+        for c in self.cspad.children:
+            c._rotation_angles[1:] = 0.0
+            for q in c.children:
+                q._rotation_angles[1:] = 0.0
+                for t in q.children:
+                    t._rotation_angles[1:] = 0.0
+        self.cspad._rotation_angles[1:] = 0.0
+        
+        for l in self.cspad.leaves:
+            assert [v[2] == 0.0 for v in l.psf[1:]]
+        
+        
+        self.cspad.to_crystfel_file('ref_files/tmp_crystfel.geom')
+        cd2 = camera.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
+        
+        assert np.max(np.abs( np.squeeze(self.cspad.xyz) - np.squeeze(cd2.xyz) )) < 1.0
+        
+        
+        # finally just check all pixels are straight up reasonable
         np.testing.assert_allclose(np.squeeze(self.cd.xyz),
                                    np.squeeze(cd2.xyz),
                                    err_msg='round trip fail',

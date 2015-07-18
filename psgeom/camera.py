@@ -37,6 +37,8 @@ from psgeom import sensors
 from psgeom import translate
 from psgeom import basisgrid
 
+_STRICT = False # global used for some testing purposes, ignore this
+
         
 class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
     """
@@ -452,6 +454,37 @@ class Cspad(CompoundCamera):
                                    parent=quad,
                                    rotation_angles=ra, 
                                    translation=tr)
+                        
+                                   
+            # if we skipped a grid (ASIC), we'll check to make sure that
+            # the p-vector from that grid points to the correct pixel on
+            # our newly oriented 2x1 -- allow 10 um error in x/y, 200 um in z
+            
+            if stride == 2:
+                
+                p_skipped, _, _, _ = bg.get_grid(g + 1)
+                
+                # be more lenient in z, since some programs are not general
+                # enough to handle it
+                
+                if (np.linalg.norm(p_skipped[:2] - pas.xyz[0,194,:2]) > 10.0) or \
+                   (np.abs(p_skipped[2] - pas.xyz[0,194,2]) > 200.0):
+                    
+                    print 'quad %d / 2x1 %d' % (quad_index, asic_id % 8)
+                    print 'grid p-vector:   ', p_skipped
+                    print 'pixel (0, 194):  ', pas.xyz[0,194,:]
+                    print ''
+                    
+                    warnings.warn('The two ASICs making up the %d-th 2x1 on '
+                                  'the %d-th quad (grids %d, %d) do not conform'
+                                  ' to the geometric requirements of a 2x1 '
+                                  'unit. Check your geometry! Do not ignore this'
+                                  ' warning unless you were expecting it!!'
+                                  '' % (asic_id % 8, quad_index, g, g+1))
+                                  
+                    if _STRICT:
+                        raise RuntimeError('_STRICT set, no warnings allowed')
+                               
                                
         return cspad
     
@@ -481,7 +514,9 @@ class Cspad(CompoundCamera):
             bg.add_grid(p, s, f, (185, 194))
             
             # then translate along the fast-scan dimension and add the second
-            bg.add_grid(p + f * 194, s, f, (185, 194))
+            # DONT FORGET THE BIG PIXELS!!! (+3 pixels for gap)
+            
+            bg.add_grid(p + f * 197, s, f, (185, 194))
         
         return bg
     
