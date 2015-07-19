@@ -238,24 +238,59 @@ class TestCompoundCamera(object):
     def test_leaves(self):
         assert len(self.geom.leaves) == 32, 'got: %d' % len(self.geom.leaves)
         
-    
-    
-class TestCspad(object):
+        
+        
+class TestCompoundAreaCamera(TestCompoundCamera):
     
     def setup(self):
-        self.cspad = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        self.geom = camera.CompoundAreaCamera.from_psana_file('ref_files/refgeom_psana.data')
+        self.klass = camera.CompoundAreaCamera
         
+        
+    # tests for this class todo, not implemented yet
+    
+    
+class TestCspad(TestCompoundAreaCamera):
+    
+    def setup(self):
+        self.geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        self.klass = camera.Cspad
+    
+        
+    def test_to_basis_grid(self):
+
+        bg = self.geom.to_basisgrid()
+        xyz = np.squeeze(self.geom.xyz)
+
+        for i in range(4):
+            for j in range(8):
+
+                bg_xyz_ij_1 = bg.grid_as_explicit(i*16 + j*2)
+                bg_xyz_ij_2 = bg.grid_as_explicit(i*16 + j*2 + 1)
+                
+                cd_xyz_ij = xyz[i,j,:,:,:]
+                
+                np.testing.assert_allclose(bg_xyz_ij_1, cd_xyz_ij[:,:194,:], 
+                                           atol=PIXEL_TOLERANCE_um)
+                np.testing.assert_allclose(bg_xyz_ij_2, cd_xyz_ij[:,194:,:], 
+                                           atol=PIXEL_TOLERANCE_um)
+                                           
+    
     def test_basisgrid_roundtrip(self):
-        bg = self.cspad.to_basisgrid()
-        cspad2 = camera.Cspad.from_basisgrid(bg)
+
+        bg = self.geom.to_basisgrid()
+        new = self.klass.from_basisgrid(bg)
+
+        ref_xyz = np.squeeze(self.geom.xyz)
+        new_xyz = new.xyz.reshape(ref_xyz.shape)
+
+        assert self.geom.num_pixels == new.num_pixels
         
-        assert self.cspad.num_pixels == cspad2.num_pixels
-        np.testing.assert_allclose( np.squeeze(self.cspad.xyz), 
-                                    np.squeeze(cspad2.xyz),
-                                    atol=PIXEL_TOLERANCE_um )
-                                    
-    
-    
+        np.testing.assert_allclose(ref_xyz, 
+                                   new_xyz,
+                                   atol=PIXEL_TOLERANCE_um)
+        
+
 
 # ---- translate.py ------------------------------------------------------------
     
@@ -267,62 +302,7 @@ class TestTranslate(object):
     def setup(self):
         self.cd = camera.CompoundCamera.from_psana_file('ref_files/refgeom_psana.data')
         self.cspad = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
-        
-        
-    def test_asic_basis_grid(self):
-        # this is the method to_basisgrid implemented by the class Cspad
-        asic_bg = self.cspad.to_basisgrid()
-        
-        xyz = asic_bg.to_explicit().reshape(4,16,185,194,3)
-        print xyz.shape
-        
-        # VISUALLY CONFIRMED AS VERY CLOSE -- TJL June 17 2015
-        # still need real test
-        
-        # import matplotlib.pyplot as plt
-        # from psgeom import draw
-        # 
-        # fig = plt.figure()
-        # ax = plt.subplot(111)
-        # draw.sketch_2x1s(xyz[:,::2,:,:], ax)
-        # draw.sketch_2x1s(xyz[:,1::2,:,:], ax)
-        # plt.show()
-        
-        
-    def test_to_basis_grid(self):
-        
-        bg = self.cd.to_basisgrid()
-        assert bg.num_grids == len(self.cd.leaves)
-        
-        xyz = np.squeeze(self.cd.xyz)
-        
-        for i in range(4):
-            for j in range(8):
                 
-                # only test first ASIC to avoid middle-row complications
-                bg_xyz_ij = bg.grid_as_explicit(i*8 + j)[:,:193,:]
-                cd_xyz_ij = xyz[i,j,:,:193,:]
-                print i, j, np.sum( np.abs(bg_xyz_ij - cd_xyz_ij))
-                np.testing.assert_allclose(bg_xyz_ij, cd_xyz_ij, 
-                                           atol=PIXEL_TOLERANCE_um)
-    
-        
-        
-    def from_basis_grid(self):
-        
-        bg = self.cd.to_basisgrid()
-        new = camera.CompoundCamera.from_basisgrid(bg)
-        
-        cd_xyz  = self.cd.xyz
-        new_xyz = new.xyz
-                
-        for i in range(4):
-            for j in range(8):
-                np.testing.assert_allclose(cd_xyz[0,i,j,:,:], 
-                                           new_xyz[i*8 + j,:,:],
-                                           rtol=1e-6, atol=PIXEL_TOLERANCE_um)
-        
-        
         
     def test_psf_text(self):
         

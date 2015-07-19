@@ -198,89 +198,6 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         return np.array([ c.xyz for c in self._children ])
 
 
-    # begin interfaces -----
-    
-    def to_basisgrid(self):
-        """
-        Convert this object to a BasisGrid object, which represents the camera
-        geometry as a set of vectors specifying the slow-scan and fast-scan
-        edges of a set of panels
-        
-        Returns
-        -------
-        bg : basisgrid.BasisGrid
-            The basisgrid object.
-        """
-        
-        bg = basisgrid.BasisGrid()
-        
-        for sensor in self.leaves:
-            if not isinstance(sensor, sensors.PixelArraySensor):
-                raise TypeError('basisgrid representation is only compatible '
-                                'with detectors that are entirely comprised of '
-                                'PixelArrayElements')
-                               
-            p, s, f = sensor.psf 
-            bg.add_grid(p, s, f, sensor.shape)
-        
-        return bg
-        
-    
-    @classmethod
-    def from_basisgrid(cls, bg, element_type=sensors.PixelArraySensor):
-        """
-        Convert a BasisGrid object to a CompoundCamera.
-        
-        Parameters
-        ----------
-        bg : basisgrid.BasisGrid
-            The basisgrid object to convert.
-            
-        element_type : sensors.PixelArraySensor
-            The SensorElement type to populate the camera with.
-            
-        Returns
-        -------
-        cd : CompoundCamera
-            The compound camera instance.
-        """
-        
-        if not isinstance(bg, basisgrid.BasisGrid):
-            raise TypeError('`bg` argument must be instance of BasisGrid,'
-                            ' got: %s' % type(bg))
-        
-        cd = cls(type_name='root_frame', id_num=0, parent=None)
-        
-        
-        for g in range(bg.num_grids):
-            
-            p, s, f, shape = bg.get_grid(g)
-            
-            pixel_shape = (np.linalg.norm(s),
-                           np.linalg.norm(f))
-            
-            # to compute the rotation, find the 
-            us = s / pixel_shape[0] # unit vector
-            uf = f / pixel_shape[1] # unit vector
-            n  = np.cross(uf, us)   # tested for orthog. in next fxn
-            
-            ra = moveable._angles_from_rotated_frame(uf, us, n)
-
-            # translation is just p
-            tr = p
-            
-            pas = element_type(shape, 
-                               pixel_shape, 
-                               type_name='grid_element_%dx%d' % shape, 
-                               id_num=g, 
-                               parent=cd,
-                               rotation_angles=ra, 
-                               translation=tr)
-
-        
-        return cd
-    
-    
     def to_psana_file(self, filename, title='geometry'):
         """
         Write a geometry in psana format.
@@ -320,7 +237,9 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         ret = translate.load_psana(cls, filename)
         ret._sort_tree()
         return ret
-        
+            
+    
+class CompoundAreaCamera(CompoundCamera):
     
     def to_text_file(self, filename):
         """
@@ -351,12 +270,92 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
             The CompoundCamera instance
         """
         raise NotImplementedError()
+    
 
+    def to_basisgrid(self):
+        """
+        Convert this object to a BasisGrid object, which represents the camera
+        geometry as a set of vectors specifying the slow-scan and fast-scan
+        edges of a set of panels
+    
+        Returns
+        -------
+        bg : basisgrid.BasisGrid
+            The basisgrid object.
+        """
+    
+        bg = basisgrid.BasisGrid()
+    
+        for sensor in self.leaves:
+            if not isinstance(sensor, sensors.PixelArraySensor):
+                raise TypeError('basisgrid representation is only compatible '
+                                'with detectors that are entirely comprised of '
+                                'PixelArrayElements')
+                           
+            p, s, f = sensor.psf 
+            bg.add_grid(p, s, f, sensor.shape)
+    
+        return bg
+    
+
+    @classmethod
+    def from_basisgrid(cls, bg, element_type=sensors.PixelArraySensor):
+        """
+        Convert a BasisGrid object to a CompoundCamera.
+    
+        Parameters
+        ----------
+        bg : basisgrid.BasisGrid
+            The basisgrid object to convert.
+        
+        element_type : sensors.PixelArraySensor
+            The SensorElement type to populate the camera with.
+        
+        Returns
+        -------
+        cd : CompoundCamera
+            The compound camera instance.
+        """
+    
+        if not isinstance(bg, basisgrid.BasisGrid):
+            raise TypeError('`bg` argument must be instance of BasisGrid,'
+                            ' got: %s' % type(bg))
+    
+        cd = cls(type_name='root_frame', id_num=0, parent=None)
+    
+    
+        for g in range(bg.num_grids):
+        
+            p, s, f, shape = bg.get_grid(g)
+        
+            pixel_shape = (np.linalg.norm(s),
+                           np.linalg.norm(f))
+        
+            # to compute the rotation, find the 
+            us = s / pixel_shape[0] # unit vector
+            uf = f / pixel_shape[1] # unit vector
+            n  = np.cross(uf, us)   # tested for orthog. in next fxn
+        
+            ra = moveable._angles_from_rotated_frame(uf, us, n)
+
+            # translation is just p
+            tr = p
+        
+            pas = element_type(shape, 
+                               pixel_shape, 
+                               type_name='grid_element_%dx%d' % shape, 
+                               id_num=g, 
+                               parent=cd,
+                               rotation_angles=ra, 
+                               translation=tr)
+
+    
+        return cd
     
 
 # ---- specific detector implementations ---------------------------------------
 
-class Cspad(CompoundCamera):
+class Cspad(CompoundAreaCamera):
     """
     This is for a 'full' size CSPAD. The need for a specific CSPAD object is
     rather unfortunate, but necessitated by assumptions made by other software
