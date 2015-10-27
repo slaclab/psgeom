@@ -307,7 +307,22 @@ class BasisGrid(object):
 
         return xyz
 
+    
+    def as_array(self):
+        """
+        Return the entire BasisGrid object as a 2D numpy array.
         
+        Returns
+        -------
+        psfs : np.ndarray, float
+            A 2D array where the first axis is the grid number, the second
+            is p_x/p_y/p_z/s_x/s_y/s_z/f_x/f_y/f_z/shape_s/shape_f
+        """
         
+        psfs = np.zeros((self.num_grids, 11))
         
+        for g in range(self.num_grids):
+            psfs[g] = np.concatenate(self.get_grid(g))
+        
+        return psfs
         

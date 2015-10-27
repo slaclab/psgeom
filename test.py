@@ -466,8 +466,16 @@ class TestTranslate(object):
         np.testing.assert_allclose(np.squeeze(crystfel.xyz),
                                    np.squeeze(cheetah.xyz),
                                    atol=100.0)
-        
+
     
+def test_bg_as_array():
+    # prob not necessary
+    geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+    bg = geom.to_basisgrid()
+    assert bg.as_array().shape == (64, 11)
+    
+
+
     
 if __name__ == '__main__':
     #test_create_cspad()
