@@ -9,6 +9,7 @@ from psgeom import moveable
 from psgeom import sensors
 from psgeom import translate
 from psgeom import camera
+from psgeom import basisgrid
 from psgeom.translate import _cheetah_to_twobyones
 
 import warnings
@@ -473,6 +474,12 @@ def test_bg_as_array():
     geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
     bg = geom.to_basisgrid()
     assert bg.as_array().shape == (64, 11)
+
+def test_bg_from_array():
+    geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+    bg = geom.to_basisgrid()
+    bg2 = basisgrid.BasisGrid.from_array( bg.as_array() )
+    assert np.all( bg.to_explicit() == bg2.to_explicit() )
     
 
 

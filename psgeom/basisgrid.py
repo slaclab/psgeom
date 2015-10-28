@@ -5,7 +5,6 @@ basisgrid.py
 
 import numpy as np
 
-
 class BasisGrid(object):
     """
     A class representing a set of rectangular grids in space -- specifically,
@@ -257,6 +256,11 @@ class BasisGrid(object):
         return corners
 
 
+    @property
+    def xyz(self):
+        return self.to_explicit()
+
+
     def to_explicit(self):
         """
         Return the entire grid as an n x 3 array, defining the x,y,z positions
@@ -326,3 +330,27 @@ class BasisGrid(object):
         
         return psfs
         
+        
+    @classmethod
+    def from_array(cls, arr):
+        """
+        Create a BasisGrid object from an appropriate 2D numpy array.
+        
+        Parameters
+        ----------
+        psfs : np.ndarray, float
+            A 2D array where the first axis is the grid number, the second
+            is p_x/p_y/p_z/s_x/s_y/s_z/f_x/f_y/f_z/shape_s/shape_f
+        """
+        
+        if not arr.shape[1] == 11:
+            raise ValueError('`arr` argument must be shape N x 11')
+        
+        instance = cls()
+        for g in range(arr.shape[0]):
+            instance.add_grid(arr[g,0:3],
+                              arr[g,3:6],
+                              arr[g,6:9],
+                              arr[g,9:11].astype(np.int))
+        
+        return instance
