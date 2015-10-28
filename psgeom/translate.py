@@ -556,14 +556,13 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
 
 
     # measure the absolute detector offset
-    # right now this appears to be the only z-information in the geometry...
-    
-    re_pz_global = re.search('\ncoffset\s+=\s+(\d+.\d+..\d+)', geom_txt) 
+    re_pz_global = re.search('\ncoffset\s+=\s+(\d+.\d+)', geom_txt) 
     if re_pz_global == None:
         print "WARNING: Could not find `coffset` field, defaulting z-offset to 0.0"
         p_z_global = 0.0
     else:
         p_z_global = float(re_pz_global.group(1)) * 1e6 # m --> micron
+        print 'Found global z-offset (coffset): %f' % p_z_global
 
     
     # find out which panels we have to look for

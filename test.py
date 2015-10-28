@@ -9,6 +9,8 @@ from psgeom import moveable
 from psgeom import sensors
 from psgeom import translate
 from psgeom import camera
+from psgeom import basisgrid
+from psgeom import fitting
 from psgeom.translate import _cheetah_to_twobyones
 
 import warnings
@@ -208,7 +210,7 @@ class TestCompoundCamera(object):
         # ---- get the geometry Mikhail-style
         try:
             from PSCalib.GeometryAccess import GeometryAccess
-            ga = GeometryAccess('refgeom_psana.data')
+            ga = GeometryAccess('ref_files/refgeom_psana.data')
             xyz_old = ga.get_pixel_coords()
                 
         except:
@@ -463,11 +465,65 @@ class TestTranslate(object):
         crystfel = camera.Cspad.from_crystfel_file('ref_files/cspad-2x2-approx1.geom')
         cheetah  = camera.Cspad.from_cheetah_file('ref_files/cspad-2x2-approx1.h5')
         
-        np.testing.assert_allclose(np.squeeze(crystfel.xyz),
-                                   np.squeeze(cheetah.xyz),
+        # compare only x/y, not z
+        np.testing.assert_allclose(np.squeeze(crystfel.xyz)[...,:2],
+                                   np.squeeze(cheetah.xyz)[...,:2],
                                    atol=100.0)
-        
+
+
+class TestFitting(object):
+    def test_basis_grid_interpolator(self):
+        new_z = 0.75
+
+        # load 3x geometires
+        filenames = ['origin.geom', 'coffset05.geom', 'coffset10.geom']
+        cameras = [camera.Cspad.from_crystfel_file('ref_files/distance_series/' + f) for f in filenames]
+        motor_z = np.array([0.0, 0.5, 1.0])
+
+        bgi = fitting.BasisGridInterpolator([g.to_basisgrid() for g in cameras], motor_z)
+        prediction = bgi.predict( np.array([new_z]) )
+
+        #print 'm:x (p/s/f)', bgi._coefficient_matrix[0,0::3]
+        #print 'm:y (p/s/f)', bgi._coefficient_matrix[0,1::3]
+        #print 'm:z (p/s/f)', bgi._coefficient_matrix[0,2::3]
+
+        #print 'b:x (p/s/f)', bgi._coefficient_matrix[1,0::3]
+        #print 'b:y (p/s/f)', bgi._coefficient_matrix[1,1::3]
+        #print 'b:z (p/s/f)', bgi._coefficient_matrix[1,2::3]
+
+        # the predicted bg should be the same as any other in x/y
+        bg0 = cameras[0].to_basisgrid()
+        xy_diff = np.sum(np.abs( prediction.xyz[...,:2] - bg0.xyz[...,:2] ))
+        assert xy_diff < 1.0
+
+        # and have a specific z-value
+        #print prediction.xyz[...,2]
+        bg2 = cameras[2].to_basisgrid()
+        z_diff = (bg2.xyz[...,2] - bg0.xyz[...,2])
+        z_expt = z_diff * 0.75 + bg0.xyz[...,2]
+        #print z_expt
+        z_diff = np.sum(np.abs(z_expt - prediction.xyz[...,2]))
+        assert z_diff < 1.0
+
+        return
+
     
+def test_bg_as_array():
+    # prob not necessary
+    geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+    bg = geom.to_basisgrid()
+    assert bg.as_array().shape == (64, 11)
+
+def test_bg_from_array():
+    geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+    bg = geom.to_basisgrid()
+    bg2 = basisgrid.BasisGrid.from_array( bg.as_array() )
+    assert np.all( bg.to_explicit() == bg2.to_explicit() )
+
+
+    
+
+
     
 if __name__ == '__main__':
     #test_create_cspad()
