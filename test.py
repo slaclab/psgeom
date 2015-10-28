@@ -464,8 +464,9 @@ class TestTranslate(object):
         crystfel = camera.Cspad.from_crystfel_file('ref_files/cspad-2x2-approx1.geom')
         cheetah  = camera.Cspad.from_cheetah_file('ref_files/cspad-2x2-approx1.h5')
         
-        np.testing.assert_allclose(np.squeeze(crystfel.xyz),
-                                   np.squeeze(cheetah.xyz),
+        # compare only x/y, not z
+        np.testing.assert_allclose(np.squeeze(crystfel.xyz)[...,:2],
+                                   np.squeeze(cheetah.xyz)[...,:2],
                                    atol=100.0)
 
     
