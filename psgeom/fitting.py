@@ -100,6 +100,17 @@ class BasisGridInterpolator(object):
     @property 
     def num_indept_vars(self):
         return self.independent_variables.shape[1]
+
+
+    @property
+    def p_slopes(self):
+        """
+        Return the infered slopes for each p-vector, final shape is (parameter, xyz)
+        """
+        px = self._coefficient_matrix[:,0::9]
+        py = self._coefficient_matrix[:,1::9]
+        pz = self._coefficient_matrix[:,2::9]
+        return np.vstack([px, py, pz]).T
     
 
     def _interpolate_basis_grids(self):
@@ -138,21 +149,3 @@ class BasisGridInterpolator(object):
         return X
     
     
-def test():
-    
-    import camera
-    
-    # load 3x geometires
-    filenames = ['origin.geom', 'coffset05.geom', 'coffset10.geom']
-    cameras = [camera.Cspad.from_crystfel_file('../ref_files/distance_series/' + f) for f in filenames]
-    motor_z = np.array([0.0, 0.5, 1.0])
-    
-    
-    bgi = BasisGridInterpolator([g.to_basisgrid() for g in cameras], motor_z)
-    print bgi.predict( np.array([0.75]) )
-    
-    return
-
-
-if __name__ == '__main__':
-    test()
