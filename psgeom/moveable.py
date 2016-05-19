@@ -328,7 +328,7 @@ def _angles_from_rotated_frame(xp, yp, zp, return_units='degrees'):
             ans[i] += 360.0
         
     err = np.sum(np.square(errfunc(ans)))
-    if err > 1e-8:
+    if err > 1e-6:
         raise RuntimeError('Could not find a consistent set of Cardan angles, '
                            'check input and try again. There is a small chance '
                            'this error is due to a random number, so try running'
