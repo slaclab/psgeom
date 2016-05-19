@@ -704,18 +704,20 @@ def write_crystfel(detector, filename, intensity_file_type='cheetah',
 ; however they are filled in with some decent defaults
 ; for the large CSPAD detector
 
-; clen =  /LCLS/detector0-EncoderValue
-; photon_energy = /LCLS/photon_energy_eV
-
-clen = 0.0
+clen =  /LCLS/detector_1/EncoderValue
+photon_energy = /LCLS/photon_energy_eV
 res = 9097.52
 adu_per_eV = 0.00338
 
-; data = /data/peakpowder
+data = /entry_1/data_1/data
 
-; dim0 = %
-; dim1 = ss
-; dim2 = fs
+; mask = /entry_1/data_1/mask
+; mask_good = 0x0000
+; mask_bad = 0xffff
+
+dim0 = %
+dim1 = ss
+dim2 = fs
 
 ; -----------------------------------------------
 
