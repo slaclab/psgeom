@@ -590,6 +590,10 @@ def load_crystfel(obj, filename, pixel_size=109.92, verbose=False):
             s_y =   float( re_ss.group(3) )
             s = np.array([s_x, s_y, 0.0])
             s = s * (pixel_size / np.linalg.norm(s))
+
+            sf_angle = np.degrees( np.arccos( np.dot(s, f) / np.square(pixel_size) ) )
+
+            print panel, sf_angle
             
         except AttributeError as e:
             print e

@@ -273,7 +273,8 @@ def _rotation_matrix_from_angles(gamma, beta, alpha, dummy_dimension=False,
 
 
 
-def _angles_from_rotated_frame(xp, yp, zp, return_units='degrees'):
+def _angles_from_rotated_frame(xp, yp, zp, return_units='degrees',
+                               orthog_tol=1e-2, cardan_tol=1e-5):
     """
     Compute the Cardan angles alpha/beta/gamma from a rotated frame.
 
@@ -308,9 +309,10 @@ def _angles_from_rotated_frame(xp, yp, zp, return_units='degrees'):
 
     # check orthogonality
     n = np.cross(xp, yp)
-    if not np.abs(np.linalg.norm(n) - 1.0) < 1e-6:
+    err = np.abs(np.linalg.norm(n) - 1.0)
+    if not err < orthog_tol:
         raise RuntimeError('Basis grid element %d is not a rectangular '
-                           'array - s and f vectors are not orthogonal')
+                           'array - s and f vectors are not orthogonal' % err)
 
 
     def errfunc(args):
@@ -328,7 +330,7 @@ def _angles_from_rotated_frame(xp, yp, zp, return_units='degrees'):
             ans[i] += 360.0
         
     err = np.sum(np.square(errfunc(ans)))
-    if err > 1e-8:
+    if err > cardan_tol:
         raise RuntimeError('Could not find a consistent set of Cardan angles, '
                            'check input and try again. There is a small chance '
                            'this error is due to a random number, so try running'

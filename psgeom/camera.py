@@ -39,6 +39,37 @@ from psgeom import basisgrid
 
 _STRICT = False # global used for some testing purposes, ignore this
 
+
+def load_cspad(filename):
+    """
+    Load a saved camera from disk, attempting to interpert the format from
+    the file extension.
+
+    Parameters
+    ----------
+    filename : str
+        A path to the camera file on disk.
+
+    Returns
+    -------
+    camera : camera.CompoundCamera
+        The loaded camera object.
+    """
+
+    if filename.endswith('.data'):
+        camera = Cspad.load_psana_file(filename)
+    elif filename.endswith('.txt'):
+        camera = Cspad.load_text_file(filename)
+    elif filename.endswith('.geom'):
+        camera = Cspad.load_crystfel_file(filename)
+    elif filename.endswith('.h5'):
+        camera = Cspad.load_cheetah_file(filename)
+    else:
+        ext = filename.split('.')[-1]
+        raise IOError('Could not understand extension: %s' % ext)
+
+    return camera
+
         
 class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
     """
