@@ -57,13 +57,13 @@ def load_cspad(filename):
     """
 
     if filename.endswith('.data'):
-        camera = Cspad.load_psana_file(filename)
+        camera = Cspad.from_psana_file(filename)
     elif filename.endswith('.txt'):
-        camera = Cspad.load_text_file(filename)
+        camera = Cspad.from_text_file(filename)
     elif filename.endswith('.geom'):
-        camera = Cspad.load_crystfel_file(filename)
+        camera = Cspad.from_crystfel_file(filename)
     elif filename.endswith('.h5'):
-        camera = Cspad.load_cheetah_file(filename)
+        camera = Cspad.from_cheetah_file(filename)
     else:
         ext = filename.split('.')[-1]
         raise IOError('Could not understand extension: %s' % ext)

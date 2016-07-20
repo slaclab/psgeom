@@ -4,4 +4,30 @@
 Convert between two different geometry types
 """
 
+from psgeom import camera
+import argparse
+
+parser = argparse.ArgumentParser(description='Convert geometry files between two different formats.')
+parser.add_argument('infile',
+                    help='Input geometry file path.')
+parser.add_argument('outfile',
+                    help='Output geometry file path.')
+parser.add_argument('-f', '--format', choices=['psana', 'crystfel', 'cheetah'],
+                    help='Output file format, one of: "psana", "crystfel", "cheetah"')
+args = parser.parse_args()
+
+
+geom = camera.load_cspad(args.infile)
+
+if args.format == 'psana':
+    geom.to_psana_file(args.outfile)
+elif args.format == 'cheetah':
+    geom.to_cheetah_file(args.outfile)
+elif args.format == 'crystfel':
+    geom.to_crystfel_file(args.outfile)
+else:
+    raise IOError('File format "%s" not supported' % args.format)
+
+print 'Wrote: %s in %s format' % (args.outfile, args.format)
+
 
