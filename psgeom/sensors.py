@@ -135,20 +135,12 @@ class PixelArraySensor(SensorElement):
         # y/column/second-index is FAST and z is perpendicular to the sensor 
         # completing a right handed coordinate system in the untransformed view
         
-        # xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])]
-        # xy = np.rollaxis(xy, 0, start=3)
-        #
-        # xy[:,:,0] *= self.pixel_shape[0]
-        # xy[:,:,1] *= self.pixel_shape[1]
-
-        # "new"
         xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])].T
         xy[:,:,0] *= self.pixel_shape[0]
         xy[:,:,1] *= self.pixel_shape[1]
         xy[:,:,:] = xy[::-1,:,:]
         
         # add the z dimension (just flat)
-        #z = np.zeros([self.shape[1], self.shape[0], 1])
         z = np.zeros([self.shape[0], self.shape[1], 1])
         xyz = np.concatenate([xy, z], axis=-1)
         
@@ -240,17 +232,7 @@ class Cspad2x1(PixelArraySensor):
         is before any translation/rotation operations have been applied.
         """
 
-        # convention that x is the quickly varying dimension (fast), y is slow
-        # and z is perpendicular to the sensor in the untransformed view
-
-        xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])].T
-        xy[:,:,0] *= self.pixel_shape[0]
-        xy[:,:,1] *= self.pixel_shape[1]
-
-        # swap the slow-scan dimension to remain consistent with psana
-        # TJL -- think -- does this violate the spec? it is documented at least.
-        
-        xy[:,:,:] = xy[::-1,:,:]
+        xyz = super(Cspad2x1, self).untransformed_xyz
         
         # the CSPAD's central pixels are bigger than usual along the x dim
         # normal pixels are 109.92 x 109.92 um, the middle two columns are
@@ -261,18 +243,14 @@ class Cspad2x1(PixelArraySensor):
         # note that 2 * (274.80 - 109.92) = 329.76
         # gap is between pixel indices 193 & 194
         
-        xy[:,194:,0] += 2.0 * (274.8 - 109.92)        
+        xyz[:,194:,0] += 2.0 * (274.8 - 109.92)        
 
         # and, finally, for some reason M measures rotations from the
         # center of the 2x1 but the corner of the quad. So we center the
         # sensor elements
         
-        xy[:,:,0] -= np.mean(xy[:,:,0])
-        xy[:,:,1] -= np.mean(xy[:,:,1])
-
-        z = np.zeros([self.shape[0], self.shape[1], 1])
-
-        xyz = np.concatenate([xy, z], axis=-1)
+        xyz[:,:,0] -= np.mean(xyz[:,:,0])
+        xyz[:,:,1] -= np.mean(xyz[:,:,1])
 
         return xyz
         
