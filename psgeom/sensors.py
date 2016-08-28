@@ -113,7 +113,7 @@ class PixelArraySensor(SensorElement):
         self._rotation_angles = rotation_angles
         self._translation     = translation
         
-        self.shape       = tuple(shape)
+        self.shape        = tuple(shape)
         self._pixel_shape = np.array(pixel_shape)
         
         return
@@ -131,15 +131,25 @@ class PixelArraySensor(SensorElement):
         is before any translation/rotation operations have been applied.
         """
                 
-        # convention that x is the quickly varying dimension (fast), y is slow
-        # and z is perpendicular to the sensor in the untransformed view
+        # convention that x/row/first-index is the SLOW varying dimension
+        # y/column/second-index is FAST and z is perpendicular to the sensor 
+        # completing a right handed coordinate system in the untransformed view
         
+        # xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])]
+        # xy = np.rollaxis(xy, 0, start=3)
+        #
+        # xy[:,:,0] *= self.pixel_shape[0]
+        # xy[:,:,1] *= self.pixel_shape[1]
+
+        # "new"
         xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])].T
         xy[:,:,0] *= self.pixel_shape[0]
         xy[:,:,1] *= self.pixel_shape[1]
+        xy[:,:,:] = xy[::-1,:,:]
         
+        # add the z dimension (just flat)
+        #z = np.zeros([self.shape[1], self.shape[0], 1])
         z = np.zeros([self.shape[0], self.shape[1], 1])
-        
         xyz = np.concatenate([xy, z], axis=-1)
         
         return xyz
@@ -266,13 +276,108 @@ class Cspad2x1(PixelArraySensor):
 
         return xyz
         
+
+class RayonixMtrx(PixelArraySensor):
+    """
+    A specific PixelArraySensor representing a Rayonix sensor element.
+    """
+    
+    def __init__(self, **kwargs):
+        """
+        Create a RayonixMtrx.
         
+        Parameters
+        ----------
+        type_name : str
+            Give this detector a descriptive name. Often there might be
+            two different instances of CompoundDetector with the same name,
+            if they are identical units. E.g., "RYONIX:V1".
+            
+        id_num : int
+            The unit should have an index. This is not only a unique identifier
+            but helps order elements within the camera tree, which can change
+            the way someone wants to map pixel intensities (somewhere else in
+            memory) onto the camera geometry.
+            
+        parent : CompoundDetector
+            The parent frame, specified by an instance of CompoundDetector.
+            
+        rotation_angles : np.ndarray
+            Three Cardan angles specifying the local frame rotation operator.
+            Argument must be a one-D 3-vector.
+            
+        translation : np.ndarray
+            The xyz translation of the local frame. Argument must be a one-D 
+            3-vector.
+            
+        Returns
+        -------
+        self : RayonixMtrx
+            The sensor element.
+        """
+                 
+        shape = (1920, 1920)
+        pixel_shape = np.array([89.00, 89.00]) # micron
+                 
+        super(RayonixMtrx, self).__init__(shape, pixel_shape, **kwargs)
+                                       
+        return
+        
+        
+class PnccdQuad(PixelArraySensor):
+    """
+    A specific PixelArraySensor representing a pnCCD quad.
+    """
+    
+    def __init__(self, **kwargs):
+        """
+        Create a PnccdQuad.
+        
+        Parameters
+        ----------
+        type_name : str
+            Give this detector a descriptive name. Often there might be
+            two different instances of CompoundDetector with the same name,
+            if they are identical units. E.g., "PNCCD:V1".
+            
+        id_num : int
+            The unit should have an index. This is not only a unique identifier
+            but helps order elements within the camera tree, which can change
+            the way someone wants to map pixel intensities (somewhere else in
+            memory) onto the camera geometry.
+            
+        parent : CompoundDetector
+            The parent frame, specified by an instance of CompoundDetector.
+            
+        rotation_angles : np.ndarray
+            Three Cardan angles specifying the local frame rotation operator.
+            Argument must be a one-D 3-vector.
+            
+        translation : np.ndarray
+            The xyz translation of the local frame. Argument must be a one-D 
+            3-vector.
+            
+        Returns
+        -------
+        self : PnccdQuad
+            The sensor element.
+        """
+                 
+        shape = (512, 512)
+        pixel_shape = np.array([75.0, 75.0]) # microns
+                 
+        super(PnccdQuad, self).__init__(shape, pixel_shape, **kwargs)
+                                       
+        return
+                
 # ------------------------------------------------------------------------------
 # define a "type map" that maps a list of known object identifier strings to
 # the corresponding types
 
-type_map = {'SENS2X1:V1' : Cspad2x1,
-            'SENS2X1'    : Cspad2x1}
+type_map = {'SENS2X1:V1' :           Cspad2x1,
+            'SENS2X1'    :           Cspad2x1,
+            'MTRX:1920:1920:89:89' : RayonixMtrx,
+            'PNCCD:V1' :             PnccdQuad}
 
 
 

@@ -271,6 +271,10 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
             
     
 class CompoundAreaCamera(CompoundCamera):
+    """
+    A specific kind of CompoundCamera, one with sensor elements that are
+    planar rectangles. Most detectors should be CompoundAreaCameras.
+    """
     
     def to_text_file(self, filename):
         """
@@ -383,6 +387,42 @@ class CompoundAreaCamera(CompoundCamera):
     
         return cd
     
+    
+    def to_crystfel_file(self, filename):
+        """
+        Write a geometry to disk in CrystFEL format. Note that some fields
+        will be written but left blank -- these are fields you probably should
+        fill in before performing any computations in CrystFEL, but are 
+        information that we have no handle on (e.g. detector gain).
+
+        Thanks to Rick Kirian & Tom White for assistance with this function.
+
+        Parameters
+        ----------
+        filname : str
+            The name of file to write. Will end in '.geom'
+        """
+        translate.write_crystfel(self, filename, intensity_file_type='cheetah')
+        return
+        
+        
+    @classmethod
+    def from_crystfel_file(cls, filename):
+        """
+        Load a geometry in crystfel format.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+
+        Returns
+        -------
+        cspad : Cspad
+            The Cspad instance
+        """
+        return translate.load_crystfel(cls, filename)
+        
 
 # ---- specific detector implementations ---------------------------------------
 
