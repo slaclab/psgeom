@@ -149,10 +149,10 @@ class TestPixelArraySensor(object):
     
     def test_untransformed_xyz(self):
         uxyz = self.PAS.untransformed_xyz
-        assert uxyz.shape[:-1] == self.shape
+        assert uxyz.shape[:-1] == self.shape, '%s %s' % (uxyz.shape, self.shape)
         # remember, slow is x convention... (changed 8-28-16 by TJL)
-        assert np.max(uxyz[...,1]) == (self.shape[0]-1) * self.pixel_shape[0]
-        assert np.max(uxyz[...,0]) == (self.shape[1]-1) * self.pixel_shape[1]
+        assert np.max(uxyz[...,0]) == (self.shape[0]-1) * self.pixel_shape[0]
+        assert np.max(uxyz[...,1]) == (self.shape[1]-1) * self.pixel_shape[1]
         
     
     def test_xyz(self):
@@ -250,7 +250,7 @@ class TestCompoundAreaCamera(TestCompoundCamera):
         
     def test_rayonix_vs_geometry_access(self):
         
-        raise unittest.SkipTest
+        #raise unittest.SkipTest
     
         # ---- get the geometry Mikhail-style
         try:
@@ -263,22 +263,22 @@ class TestCompoundAreaCamera(TestCompoundCamera):
             print 'could not use GeometryAccess, loading saved xyz'
             xyz_old = np.load('ref_files/rayonix_saved.npy')
         
-        xyz_old = np.rollaxis(np.array(xyz_old), 0, 7) # send 0 --> 7
+        xyz_old = np.rollaxis(np.array(xyz_old), 0, 5) # send 0 --> 7
         xyz_old = np.squeeze(xyz_old)
     
         geom = camera.CompoundCamera.from_psana_file('ref_files/rayonix.data')
         xyz_new = np.squeeze(geom.xyz)
-        
-        geom = camera.CompoundCamera.from_psana_file('ref_files/refgeom_psana.data')
-        xyz_new = np.squeeze(geom.xyz)
     
-        assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
+        assert xyz_new.shape == xyz_old.shape, 'shape mismatch %s / %s' % (xyz_new.shape, xyz_old.shape)
     
         err = np.sum( np.abs(xyz_new - xyz_old) ) / float(np.product(xyz_new.shape))
         print 'Mean Absolute Error: %f um / px' % err
         num_more_than_1px_err = np.sum( np.abs(xyz_new - xyz_old) > 89.0 )
     
-        assert err < 10.0, 'error greater than 10um avg per px (%f)' % err
+        print 'new', xyz_new
+        print 'old', xyz_old
+    
+        assert err < 10.0, 'error greater than 10 um avg per px (%f)' % err
         assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px'
         
     

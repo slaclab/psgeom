@@ -135,10 +135,11 @@ class PixelArraySensor(SensorElement):
         # y/column/second-index is FAST and z is perpendicular to the sensor 
         # completing a right handed coordinate system in the untransformed view
         
-        xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])].T
+        xy = np.mgrid[0.0:float(self.shape[0]),0.0:float(self.shape[1])]
+        xy = np.rollaxis(xy, 0, start=3)
+        
         xy[:,:,0] *= self.pixel_shape[0]
         xy[:,:,1] *= self.pixel_shape[1]
-        xy[:,:,:] = xy[::-1,:,:]
         
         # add the z dimension (just flat)
         z = np.zeros([self.shape[0], self.shape[1], 1])
@@ -232,7 +233,15 @@ class Cspad2x1(PixelArraySensor):
         is before any translation/rotation operations have been applied.
         """
 
-        xyz = super(Cspad2x1, self).untransformed_xyz
+        # of course, the CSPAD layout is different
+        xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])].T
+        xy[:,:,:] = xy[::-1,:,:]
+        xy[:,:,0] *= self.pixel_shape[0]
+        xy[:,:,1] *= self.pixel_shape[1]
+        
+        # add the z dimension (just flat)
+        z = np.zeros([self.shape[0], self.shape[1], 1])
+        xyz = np.concatenate([xy, z], axis=-1)
         
         # the CSPAD's central pixels are bigger than usual along the x dim
         # normal pixels are 109.92 x 109.92 um, the middle two columns are
