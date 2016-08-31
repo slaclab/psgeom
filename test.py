@@ -264,7 +264,7 @@ class TestCompoundAreaCamera(TestCompoundCamera):
         xyz_old = np.rollaxis(np.array(xyz_old), 0, 5) # send 0 --> end
         xyz_old = np.squeeze(xyz_old)
     
-        geom = camera.CompoundCamera.from_psana_file('ref_files/rayonix.data')
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/rayonix.data')
         xyz_new = np.squeeze(geom.xyz)
     
         assert xyz_new.shape == xyz_old.shape, 'shape mismatch %s / %s' % (xyz_new.shape, xyz_old.shape)
@@ -278,6 +278,16 @@ class TestCompoundAreaCamera(TestCompoundCamera):
     
         assert err < 10.0, 'error greater than 10 um avg per px (%f)' % err
         assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px'
+        
+        
+    def test_rayonix_crystfel(self):
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/rayonix.data')
+        geom.to_crystfel_file('ref_files/tmp_rayonix.geom')
+        
+        # compare to reference?
+        
+        geom2 = camera.CompoundAreaCamera.from_crystfel_file('ref_files/tmp_rayonix.geom')
+        np.testing.assert_array_almost_equal(geom.xyz, geom2.xyz)
         
     
     def test_pnccd_vs_geometry_access(self):
@@ -296,7 +306,7 @@ class TestCompoundAreaCamera(TestCompoundCamera):
         xyz_old = np.rollaxis(np.array(xyz_old), 0, 6) # send 0 --> end
         xyz_old = np.squeeze(xyz_old)
 
-        geom = camera.CompoundCamera.from_psana_file('ref_files/pnccd.data')
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/pnccd.data')
         xyz_new = np.squeeze(geom.xyz)
 
         assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
