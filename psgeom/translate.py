@@ -717,7 +717,6 @@ def write_generic_crystfel(detector, filename):
         for grid_index in range(bg.num_grids):
             
             p, s, f, sp = bg.get_grid(grid_index)
-            
             panel_name = "p%d" % (grid_index)
             
             # write the basis vectors           
