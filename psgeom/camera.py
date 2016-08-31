@@ -402,7 +402,7 @@ class CompoundAreaCamera(CompoundCamera):
         filname : str
             The name of file to write. Will end in '.geom'
         """
-        translate.write_crystfel(self, filename, intensity_file_type='cheetah')
+        translate.write_generic_crystfel(self, filename)
         return
         
         
@@ -605,7 +605,7 @@ class Cspad(CompoundAreaCamera):
         filname : str
             The name of file to write. Will end in '.geom'
         """
-        translate.write_crystfel(self, filename, intensity_file_type='cheetah')
+        translate.write_cspad_crystfel(self, filename, intensity_file_type='cheetah')
         return
         
         
