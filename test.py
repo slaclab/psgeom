@@ -287,7 +287,9 @@ class TestCompoundAreaCamera(TestCompoundCamera):
         # compare to reference?
         
         geom2 = camera.CompoundAreaCamera.from_crystfel_file('ref_files/tmp_rayonix.geom')
-        np.testing.assert_array_almost_equal(geom.xyz, geom2.xyz)
+        np.testing.assert_allclose(geom.xyz, geom2.xyz, atol=0.001)
+        
+        os.remove('ref_files/tmp_rayonix.geom')
         
     
     def test_pnccd_vs_geometry_access(self):

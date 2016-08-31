@@ -369,9 +369,11 @@ class CompoundAreaCamera(CompoundCamera):
             # to compute the rotation, find the 
             us = s / pixel_shape[0] # unit vector
             uf = f / pixel_shape[1] # unit vector
-            n  = np.cross(uf, us)   # tested for orthog. in next fxn
+            n  = np.cross(us, uf)   # tested for orthog. in next fxn
         
-            ra = moveable._angles_from_rotated_frame(uf, us, n)
+            # remember: in the matrix convention (Mikhail uses), +x is slow
+            # and +y is fast
+            ra = moveable._angles_from_rotated_frame(us, uf, n)
 
             # translation is just p
             tr = p
