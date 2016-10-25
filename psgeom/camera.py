@@ -29,6 +29,7 @@ Author: TJ Lane <tjlane@slac.stanford.edu>
 June 11, 2015
 """
 
+import re
 import warnings
 import numpy as np
 
@@ -39,38 +40,7 @@ from psgeom import basisgrid
 
 _STRICT = False # global used for some testing purposes, ignore this
 
-
-def load_cspad(filename):
-    """
-    Load a saved camera from disk, attempting to interpert the format from
-    the file extension.
-
-    Parameters
-    ----------
-    filename : str
-        A path to the camera file on disk.
-
-    Returns
-    -------
-    camera : camera.CompoundCamera
-        The loaded camera object.
-    """
-
-    if filename.endswith('.data'):
-        camera = Cspad.from_psana_file(filename)
-    elif filename.endswith('.txt'):
-        camera = Cspad.from_text_file(filename)
-    elif filename.endswith('.geom'):
-        camera = Cspad.from_crystfel_file(filename)
-    elif filename.endswith('.h5'):
-        camera = Cspad.from_cheetah_file(filename)
-    else:
-        ext = filename.split('.')[-1]
-        raise IOError('Could not understand extension: %s' % ext)
-
-    return camera
-
-        
+     
 class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
     """
     The compound camera class contains its own local rotation and translation
@@ -664,3 +634,61 @@ class Cspad(CompoundAreaCamera):
         """
         return translate.load_cheetah(cls, filename)
         
+
+
+def load(filename, base=CompoundAreaCamera, infer_base=True):
+    """
+    Load a saved area camera from disk, attempting to interpert the 
+    format from the file extension.
+
+    Parameters
+    ----------
+    filename : str
+        A path to the camera file on disk.
+
+    base : camera.CompoundCamera
+        The *class* (NOT instance!) that will be used to form
+        the camera object. Must inheret camera.CompoundCamera.
+
+    infer_base : bool
+        If True, attempts to infer the base class (see `base`) 
+        from the file header (#).
+
+    Returns
+    -------
+    camera : camera.CompoundCamera
+        The loaded camera object.
+    """
+
+    if infer_base:
+        with open(filename, 'r') as f:
+            text = f.read()
+
+            # check for cspad
+            to_find = re.compile("CSPAD|Cspad|CsPad|cspad")
+            match_obj = to_find.search(text)
+            if match_obj is not None:
+                print('Found `%s` in file, '
+                      'interpreting geometry as CSPAD' % match_obj.group())
+                base = Cspad
+    
+
+    if not issubclass(base, CompoundCamera):
+        raise TypeError('`base` of type %s is not an instance of CompoundCamera'
+                        '' % type(base))
+
+
+    if filename.endswith('.data'):
+        camera = base.from_psana_file(filename)
+    elif filename.endswith('.txt'):
+        camera = base.from_text_file(filename)
+    elif filename.endswith('.geom'):
+        camera = base.from_crystfel_file(filename)
+    elif filename.endswith('.h5'):
+        camera = base.from_cheetah_file(filename)
+    else:
+        ext = filename.split('.')[-1]
+        raise IOError('Could not understand extension: %s' % ext)
+
+
+    return camera
