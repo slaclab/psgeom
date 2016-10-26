@@ -222,6 +222,9 @@ def write_psana(detector, filename, dist, title='geometry'):
     ----------
     filename : str
         The path of the file on disk.
+
+    dist : float
+        Detector distance (sample to detector) in metres.
         
     References
     ----------
@@ -287,7 +290,7 @@ def write_psana(detector, filename, dist, title='geometry'):
         
                 assert len(child_data) == 13
             
-                if 'QUAD:V1' in node.type_name: child_data[6] = dist
+                if 'QUAD:V1' in node.type_name: child_data[6] = dist * 1e6
 
                 line = fmt_line % tuple(child_data)
                 
