@@ -214,7 +214,7 @@ def _mikhail_ordering(list_of_lines):
     
     
     
-def write_psana(detector, filename, title='geometry'):
+def write_psana(detector, filename, dist, title='geometry'):
     """
     Write a geometry in psana format.
 
@@ -287,6 +287,8 @@ def write_psana(detector, filename, title='geometry'):
         
                 assert len(child_data) == 13
             
+                if 'QUAD:V1' in node.type_name: child_data[6] = dist
+
                 line = fmt_line % tuple(child_data)
                 
                 #f.write(line)
@@ -765,7 +767,7 @@ def write_generic_crystfel(detector, filename):
     return    
 
 
-def write_cspad_crystfel(detector, filename, intensity_file_type='cheetah',
+def write_cspad_crystfel(detector, filename, coffset, intensity_file_type='cheetah',
                          pixel_size=109.92):
     """
     Write a CSPAD geometry to disk in CrystFEL format. Note that some fields
@@ -782,7 +784,10 @@ def write_cspad_crystfel(detector, filename, intensity_file_type='cheetah',
         
     filname : str
         The name of file to write. Should end in '.geom'
-        
+    
+    coffset : float
+        Home to sample distance in metres
+    
     Optional Parameters
     -------------------
     intensity_file_type : str, {'cheetah'}
@@ -861,8 +866,8 @@ def write_cspad_crystfel(detector, filename, intensity_file_type='cheetah',
             print >> of, "%s = %f" % (tagcx, cx)
             print >> of, "%s = %f" % (tagcy, cy)
             
-            # the z-axis is in *** meters *** (so, um --> m)
-            print >> of, "%s = %f" % (tagcz, float(p[2]) / 1e6 )
+            # the z-axis is in *** meters ***
+            print >> of, "%s = %f" % (tagcz, coffset )
             
             # this tells CrystFEL to use this panel
             print >> of, "%s/no_index = 0" % panel_name
