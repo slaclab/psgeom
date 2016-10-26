@@ -681,7 +681,7 @@ def load_crystfel(obj, filename, verbose=True):
     return geom_instance
     
 
-def write_generic_crystfel(detector, filename):
+def write_generic_crystfel(detector, filename, coffset):
     """
     Parameters
     ----------
@@ -756,8 +756,8 @@ def write_generic_crystfel(detector, filename):
             print >> of, "%s = %f" % (tagcx, cx)
             print >> of, "%s = %f" % (tagcy, cy)
             
-            # the z-axis is in *** meters *** (so, um --> m)
-            print >> of, "%s = %f" % (tagcz, float(p[2]) / 1e6 )
+            # the z-axis is in *** meters ***
+            print >> of, "%s = %f" % (tagcz, coffset )
             
             # this tells CrystFEL to use this panel
             print >> of, "%s/no_index = 0" % panel_name
