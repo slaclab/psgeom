@@ -214,7 +214,7 @@ def _mikhail_ordering(list_of_lines):
     
     
     
-def write_psana(detector, filename, dist=0.0, title='geometry'):
+def write_psana(detector, filename, dist=1.0, title='geometry'):
     """
     Write a geometry in psana format.
 
@@ -268,7 +268,7 @@ def write_psana(detector, filename, dist=0.0, title='geometry'):
     fmt_line = '%12s   %d     %12s    %d' + ' %12.6f'*9 + '\n'
 
     # write a line for the root node
-    root_data = ['IP', 0, detector.type_name, detector.id] + [0.0]*9
+    root_data = ['IP', 0, detector.type_name, detector.id] + [0.0]*2 + [dist*1e6] + [0.0]*6
     root_line = fmt_line % tuple(root_data)
     
     #f.write(root_line)
@@ -290,7 +290,8 @@ def write_psana(detector, filename, dist=0.0, title='geometry'):
         
                 assert len(child_data) == 13
             
-                if 'QUAD:V1' in node.type_name: child_data[6] = dist * 1e6
+                # Set all chile z position to 0
+                child_data[6] = 0
 
                 line = fmt_line % tuple(child_data)
                 

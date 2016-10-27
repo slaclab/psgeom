@@ -199,7 +199,7 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         return np.array([ c.xyz for c in self._children ])
 
 
-    def to_psana_file(self, filename, dist=0.0, title='geometry'):
+    def to_psana_file(self, filename, dist=1.0, title='geometry'):
         """
         Write a geometry in psana format.
 
