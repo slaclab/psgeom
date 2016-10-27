@@ -475,6 +475,8 @@ class TestTranslate(object):
         self.cspad.to_crystfel_file('ref_files/tmp_crystfel.geom')
         cd2 = camera.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
         
+        print self.cspad.xyz[...,2], cd2.xyz[...,:2]
+        
         # be sure error is less than 1 micron in x/y, 0.2 mm in z
         assert np.max(np.abs( np.squeeze(self.cspad.xyz[...,:2]) - np.squeeze(cd2.xyz[...,:2]) )) < 1.0
         assert np.max(np.abs( np.squeeze(self.cspad.xyz) - np.squeeze(cd2.xyz) )) < 200.0
@@ -510,6 +512,29 @@ class TestTranslate(object):
                                    rtol=1e-3)
                                            
         os.remove('ref_files/tmp_crystfel.geom')
+        
+        
+    def test_crystfel_distance_offset(self):
+        
+        # Set distance to default 1 meter
+        cspad = camera.Cspad.from_crystfel_file("ref_files/refgeom_crystfel.geom")
+        cspad.to_psana_file('ref_files/temp.data') 
+        os.remove('ref_files/temp.data')
+
+        # Set distance to 0.75 meters
+        cspad = camera.Cspad.from_crystfel_file("ref_files/refgeom_crystfel.geom")
+        cspad.to_psana_file('ref_files/temp.data', dist=0.75)
+        os.remove('ref_files/temp.data')
+
+        # Set coffset to default 0.0
+        geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        geom.to_crystfel_file('ref_files/temp.geom') 
+        os.remove('ref_files/temp.geom')
+
+        # Set coffset to 0.585 meters
+        geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        geom.to_crystfel_file('ref_files/temp.geom',coffset=0.585) 
+        os.remove('ref_files/temp.geom')
         
     
     def test_2x2_cheetah_roundtrip(self):
