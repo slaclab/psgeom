@@ -1003,9 +1003,10 @@ p0/max_ss = {max_ss}
 
 cspad_header = """
 ; --- VALUES YOU MAY WANT TO FILL IN MANUALLY ---
-; we cannot guarentee these values are what you desire
+; we cannot guarantee these values are what you desire
 ; however they are filled in with some decent defaults
-; for the large CSPAD detector
+; for the large CSPAD detector. Note that coffset is
+; set to zero by default.
 
 clen =  /LCLS/detector_1/EncoderValue
 photon_energy = /LCLS/photon_energy_eV
