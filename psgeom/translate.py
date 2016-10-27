@@ -790,7 +790,7 @@ def write_cspad_crystfel(detector, filename, intensity_file_type='cheetah',
         CrystFEL how intensity data map onto the detector
 
     pixel_size : float
-        Pixel size in metres
+        Pixel size in microns
 
     maskfile : str
         Hdf5 filename of a mask used to indexing and integration by CrystFEL.
