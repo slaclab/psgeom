@@ -788,6 +788,12 @@ def write_cspad_crystfel(detector, filename, intensity_file_type='cheetah',
     intensity_file_type : str, {'cheetah'}
         The kind of file this geometry file will be used with. Necessary to tell
         CrystFEL how intensity data map onto the detector
+
+    pixel_size : float, {109.92}
+        Pixel size in metres
+
+    maskfile : str
+        Hdf5 filename of a mask used to indexing and integration by CrystFEL.
     """
     
     bg = detector.to_basisgrid()

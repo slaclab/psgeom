@@ -576,6 +576,11 @@ class Cspad(CompoundAreaCamera):
         ----------
         filname : str
             The name of file to write. Will end in '.geom'
+
+        Optional Parameters
+        -------------------
+        maskfile : str
+            Hdf5 filename of a mask used to indexing and integration by CrystFEL.
         """
         translate.write_cspad_crystfel(self, filename, intensity_file_type='cheetah', **kwargs)
         return
