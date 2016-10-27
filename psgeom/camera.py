@@ -199,7 +199,7 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         return np.array([ c.xyz for c in self._children ])
 
 
-    def to_psana_file(self, filename, dist, title='geometry'):
+    def to_psana_file(self, filename, dist=0.0, title='geometry'):
         """
         Write a geometry in psana format.
 
@@ -207,10 +207,14 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         ----------
         filename : str
             The path of the file on disk.
-            
-        References
-        ----------
-        ..[1] https://confluence.slac.stanford.edu/display/PSDM/Detector+Geometry
+        
+        dist : float
+            Detector distance in metres.
+
+        Optional Parameters
+        -------------------
+        title : str
+            Title of the geometry saved inside the file
         """
         translate.write_psana(self, filename, dist, title)
         return
@@ -563,7 +567,7 @@ class Cspad(CompoundAreaCamera):
         return bg
     
         
-    def to_crystfel_file(self, filename, coffset):
+    def to_crystfel_file(self, filename, coffset=0.0):
         """
         Write a geometry to disk in CrystFEL format. Note that some fields
         will be written but left blank -- these are fields you probably should
@@ -576,6 +580,9 @@ class Cspad(CompoundAreaCamera):
         ----------
         filname : str
             The name of file to write. Will end in '.geom'
+
+        coffset: float
+            Detector home position to sample distance in metres
         """
         translate.write_cspad_crystfel(self, filename, coffset, intensity_file_type='cheetah')
         return

@@ -214,7 +214,7 @@ def _mikhail_ordering(list_of_lines):
     
     
     
-def write_psana(detector, filename, dist, title='geometry'):
+def write_psana(detector, filename, dist=0.0, title='geometry'):
     """
     Write a geometry in psana format.
 
@@ -693,6 +693,9 @@ def write_generic_crystfel(detector, filename, coffset):
         
     filname : str
         The name of file to write. Should end in '.geom'
+
+    coffset: float
+        Detector home position to sample distance in metres
     """
     
     bg = detector.to_basisgrid()
@@ -788,8 +791,8 @@ def write_cspad_crystfel(detector, filename, coffset, intensity_file_type='cheet
     filname : str
         The name of file to write. Should end in '.geom'
     
-    coffset : float
-        Home to sample distance in metres
+    coffset: float
+        Detector home position to sample distance in metres
     
     Optional Parameters
     -------------------
