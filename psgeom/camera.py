@@ -566,8 +566,8 @@ class Cspad(CompoundAreaCamera):
         
         return bg
     
-        
-    def to_crystfel_file(self, filename, coffset=0.0):
+
+    def to_crystfel_file(self, filename, coffset=0.0, **kwargs):
         """
         Write a geometry to disk in CrystFEL format. Note that some fields
         will be written but left blank -- these are fields you probably should
@@ -583,8 +583,14 @@ class Cspad(CompoundAreaCamera):
 
         coffset: float
             Detector home position to sample distance in metres
+
+        Optional Parameters
+        -------------------
+        maskfile : str
+            Hdf5 filename of a mask used to indexing and integration by CrystFEL.
         """
-        translate.write_cspad_crystfel(self, filename, coffset, intensity_file_type='cheetah')
+        translate.write_cspad_crystfel(self, filename, coffset, intensity_file_type='cheetah', **kwargs)
+
         return
         
         
