@@ -563,7 +563,7 @@ class Cspad(CompoundAreaCamera):
         return bg
     
         
-    def to_crystfel_file(self, filename):
+    def to_crystfel_file(self, filename, **kwargs):
         """
         Write a geometry to disk in CrystFEL format. Note that some fields
         will be written but left blank -- these are fields you probably should
@@ -576,8 +576,13 @@ class Cspad(CompoundAreaCamera):
         ----------
         filname : str
             The name of file to write. Will end in '.geom'
+
+        Optional Parameters
+        -------------------
+        maskfile : str
+            Hdf5 filename of a mask used to indexing and integration by CrystFEL.
         """
-        translate.write_cspad_crystfel(self, filename, intensity_file_type='cheetah')
+        translate.write_cspad_crystfel(self, filename, intensity_file_type='cheetah', **kwargs)
         return
         
         
