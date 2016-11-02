@@ -84,12 +84,12 @@ class MoveableObject:
     
     
     def rotate(self, alpha, beta, gamma):
-        self.rotation_angles += np.array([alpha, beta, gamma])
+        self._rotation_angles += np.array([alpha, beta, gamma])
         return
         
         
     def translate(self, translation):
-        self.translation += translation
+        self._translation += translation
         return
     
         
