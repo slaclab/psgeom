@@ -199,7 +199,7 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         return np.array([ c.xyz for c in self._children ])
 
 
-    def to_psana_file(self, filename, dist=1.0, title='geometry'):
+    def to_psana_file(self, filename, title='geometry'):
         """
         Write a geometry in psana format.
 
@@ -207,16 +207,13 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         ----------
         filename : str
             The path of the file on disk.
-        
-        dist : float
-            Detector distance in metres.
 
         Optional Parameters
         -------------------
         title : str
             Title of the geometry saved inside the file
         """
-        translate.write_psana(self, filename, dist, title)
+        translate.write_psana(self, filename, title)
         return
         
         
@@ -364,12 +361,14 @@ class CompoundAreaCamera(CompoundCamera):
         return cd
     
     
-    def to_crystfel_file(self, filename):
+    def to_crystfel_file(self, filename, coffset=None):
         """
         Write a geometry to disk in CrystFEL format. Note that some fields
         will be written but left blank -- these are fields you probably should
         fill in before performing any computations in CrystFEL, but are 
         information that we have no handle on (e.g. detector gain).
+        When coffset is not given, coffset is set to detector distance and
+        and clen is set to zero.
 
         Thanks to Rick Kirian & Tom White for assistance with this function.
 
@@ -377,8 +376,11 @@ class CompoundAreaCamera(CompoundCamera):
         ----------
         filname : str
             The name of file to write. Will end in '.geom'
+
+        coffset: float
+            Detector home position to sample distance in metres
         """
-        translate.write_generic_crystfel(self, filename)
+        translate.write_generic_crystfel(self, filename, coffset=coffset)
         return
         
         
@@ -567,12 +569,14 @@ class Cspad(CompoundAreaCamera):
         return bg
     
 
-    def to_crystfel_file(self, filename, coffset=0.0, **kwargs):
+    def to_crystfel_file(self, filename, coffset=None, **kwargs):
         """
         Write a geometry to disk in CrystFEL format. Note that some fields
         will be written but left blank -- these are fields you probably should
         fill in before performing any computations in CrystFEL, but are 
         information that we have no handle on (e.g. detector gain).
+        When coffset is not given, coffset is set to detector distance and
+        and clen is set to zero.
 
         Thanks to Rick Kirian & Tom White for assistance with this function.
 
