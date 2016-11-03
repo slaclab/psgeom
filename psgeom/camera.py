@@ -380,7 +380,7 @@ class CompoundAreaCamera(CompoundCamera):
         coffset: float
             Detector home position to sample distance in metres
         """
-        translate.write_generic_crystfel(self, filename, coffset)
+        translate.write_generic_crystfel(self, filename, coffset=coffset)
         return
         
         
