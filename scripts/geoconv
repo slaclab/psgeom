@@ -23,10 +23,12 @@ parser.add_argument('outfile',
                     help='Output geometry file path (format specified by -f/--format.)')
 parser.add_argument('-f', '--format', choices=['psana', 'crystfel', 'cheetah'],
                     help='Output file format, one of: "psana", "crystfel", "cheetah"')
+parser.add_argument('-c' '--cspad', action='store_true',
+                    help='Toggle this to force loading as a CSPAD')
 args = parser.parse_args()
 
 
-geom = camera.load_cspad(args.infile)
+geom = camera.load(args.infile)
 
 if args.format == 'psana':
     geom.to_psana_file(args.outfile)

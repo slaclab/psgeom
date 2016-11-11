@@ -29,6 +29,7 @@ Author: TJ Lane <tjlane@slac.stanford.edu>
 June 11, 2015
 """
 
+import re
 import warnings
 import numpy as np
 
@@ -39,38 +40,7 @@ from psgeom import basisgrid
 
 _STRICT = False # global used for some testing purposes, ignore this
 
-
-def load_cspad(filename):
-    """
-    Load a saved camera from disk, attempting to interpert the format from
-    the file extension.
-
-    Parameters
-    ----------
-    filename : str
-        A path to the camera file on disk.
-
-    Returns
-    -------
-    camera : camera.CompoundCamera
-        The loaded camera object.
-    """
-
-    if filename.endswith('.data'):
-        camera = Cspad.from_psana_file(filename)
-    elif filename.endswith('.txt'):
-        camera = Cspad.from_text_file(filename)
-    elif filename.endswith('.geom'):
-        camera = Cspad.from_crystfel_file(filename)
-    elif filename.endswith('.h5'):
-        camera = Cspad.from_cheetah_file(filename)
-    else:
-        ext = filename.split('.')[-1]
-        raise IOError('Could not understand extension: %s' % ext)
-
-    return camera
-
-        
+     
 class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
     """
     The compound camera class contains its own local rotation and translation
@@ -237,10 +207,11 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         ----------
         filename : str
             The path of the file on disk.
-            
-        References
-        ----------
-        ..[1] https://confluence.slac.stanford.edu/display/PSDM/Detector+Geometry
+
+        Optional Parameters
+        -------------------
+        title : str
+            Title of the geometry saved inside the file
         """
         translate.write_psana(self, filename, title)
         return
@@ -271,6 +242,10 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
             
     
 class CompoundAreaCamera(CompoundCamera):
+    """
+    A specific kind of CompoundCamera, one with sensor elements that are
+    planar rectangles. Most detectors should be CompoundAreaCameras.
+    """
     
     def to_text_file(self, filename):
         """
@@ -365,9 +340,11 @@ class CompoundAreaCamera(CompoundCamera):
             # to compute the rotation, find the 
             us = s / pixel_shape[0] # unit vector
             uf = f / pixel_shape[1] # unit vector
-            n  = np.cross(uf, us)   # tested for orthog. in next fxn
+            n  = np.cross(us, uf)   # tested for orthog. in next fxn
         
-            ra = moveable._angles_from_rotated_frame(uf, us, n)
+            # remember: in the matrix convention (Mikhail uses), +x is slow
+            # and +y is fast
+            ra = moveable._angles_from_rotated_frame(us, uf, n)
 
             # translation is just p
             tr = p
@@ -383,6 +360,47 @@ class CompoundAreaCamera(CompoundCamera):
     
         return cd
     
+    
+    def to_crystfel_file(self, filename, coffset=None):
+        """
+        Write a geometry to disk in CrystFEL format. Note that some fields
+        will be written but left blank -- these are fields you probably should
+        fill in before performing any computations in CrystFEL, but are 
+        information that we have no handle on (e.g. detector gain).
+        When coffset is not given, coffset is set to detector distance and
+        and clen is set to zero.
+
+        Thanks to Rick Kirian & Tom White for assistance with this function.
+
+        Parameters
+        ----------
+        filname : str
+            The name of file to write. Will end in '.geom'
+
+        coffset: float
+            Detector home position to sample distance in metres
+        """
+        translate.write_generic_crystfel(self, filename, coffset=coffset)
+        return
+        
+        
+    @classmethod
+    def from_crystfel_file(cls, filename):
+        """
+        Load a geometry in crystfel format.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+
+        Returns
+        -------
+        cspad : Cspad
+            The Cspad instance
+        """
+        return translate.load_crystfel(cls, filename)
+        
 
 # ---- specific detector implementations ---------------------------------------
 
@@ -550,13 +568,15 @@ class Cspad(CompoundAreaCamera):
         
         return bg
     
-        
-    def to_crystfel_file(self, filename):
+
+    def to_crystfel_file(self, filename, coffset=None, **kwargs):
         """
         Write a geometry to disk in CrystFEL format. Note that some fields
         will be written but left blank -- these are fields you probably should
         fill in before performing any computations in CrystFEL, but are 
         information that we have no handle on (e.g. detector gain).
+        When coffset is not given, coffset is set to detector distance and
+        and clen is set to zero.
 
         Thanks to Rick Kirian & Tom White for assistance with this function.
 
@@ -564,8 +584,17 @@ class Cspad(CompoundAreaCamera):
         ----------
         filname : str
             The name of file to write. Will end in '.geom'
+
+        coffset: float
+            Detector home position to sample distance in metres
+
+        Optional Parameters
+        -------------------
+        maskfile : str
+            Hdf5 filename of a mask used to indexing and integration by CrystFEL.
         """
-        translate.write_crystfel(self, filename, intensity_file_type='cheetah')
+        translate.write_cspad_crystfel(self, filename, coffset, intensity_file_type='cheetah', **kwargs)
+
         return
         
         
@@ -622,3 +651,61 @@ class Cspad(CompoundAreaCamera):
         """
         return translate.load_cheetah(cls, filename)
         
+
+
+def load(filename, base=CompoundAreaCamera, infer_base=True):
+    """
+    Load a saved area camera from disk, attempting to interpert the 
+    format from the file extension.
+
+    Parameters
+    ----------
+    filename : str
+        A path to the camera file on disk.
+
+    base : camera.CompoundCamera
+        The *class* (NOT instance!) that will be used to form
+        the camera object. Must inheret camera.CompoundCamera.
+
+    infer_base : bool
+        If True, attempts to infer the base class (see `base`) 
+        from the file header (#).
+
+    Returns
+    -------
+    camera : camera.CompoundCamera
+        The loaded camera object.
+    """
+
+    if infer_base:
+        with open(filename, 'r') as f:
+            text = f.read()
+
+            # check for cspad
+            to_find = re.compile("CSPAD|Cspad|CsPad|cspad")
+            match_obj = to_find.search(text)
+            if match_obj is not None:
+                print('Found `%s` in file, '
+                      'interpreting geometry as CSPAD' % match_obj.group())
+                base = Cspad
+    
+
+    if not issubclass(base, CompoundCamera):
+        raise TypeError('`base` of type %s is not an instance of CompoundCamera'
+                        '' % type(base))
+
+
+    if filename.endswith('.data'):
+        camera = base.from_psana_file(filename)
+    elif filename.endswith('.txt'):
+        camera = base.from_text_file(filename)
+    elif filename.endswith('.geom'):
+        camera = base.from_crystfel_file(filename)
+    elif filename.endswith('.h5'):
+        camera = base.from_cheetah_file(filename)
+    else:
+        ext = filename.split('.')[-1]
+        raise IOError('Could not understand extension: %s' % ext)
+
+
+    return camera
