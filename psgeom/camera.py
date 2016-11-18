@@ -351,7 +351,7 @@ class CompoundAreaCamera(CompoundCamera):
         
             pas = element_type(shape, 
                                pixel_shape, 
-                               type_name='grid_element_%dx%d' % shape, 
+                               type_name='MTRX:%d:%d:89:89' % shape, 
                                id_num=g, 
                                parent=cd,
                                rotation_angles=ra, 
