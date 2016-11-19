@@ -684,7 +684,7 @@ def load_crystfel(obj, filename, verbose=True):
     return geom_instance
     
 
-def write_generic_crystfel(detector, filename, coffset=None):
+def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
     """
     Parameters
     ----------
@@ -715,6 +715,16 @@ def write_generic_crystfel(detector, filename, coffset=None):
     
         print >> of, generic_header
         
+        if 'maskfile' in kwargs: 
+            print >> of, 'mask_file = ' + str(kwargs['maskfile'])
+            print >> of, 'mask = /entry_1/data_1/mask'
+            print >> of, 'mask_good = 0x0000'
+            print >> of, 'mask_bad = 0xffff'
+        else:
+            print >> of, '; mask = /entry_1/data_1/mask'
+            print >> of, '; mask_good = 0x0000'
+            print >> of, '; mask_bad = 0xffff'
+
         # if the detector is monolithic, we can make a few assumptions that
         # may help out a new user
         if bg.num_grids == 1:
@@ -1006,15 +1016,27 @@ generic_header = """
 ; we cannot guarentee these values are what you desire
 ; however they are filled in with some decent defaults
 
+clen =  /LCLS/detector_1/EncoderValue
+photon_energy = /LCLS/photon_energy_eV
+adu_per_eV = 0.1
+
+data = /entry_1/data_1/data
+
+dim0 = %
+dim1 = ss
+dim2 = fs
+"""
+
+generic_header_noClen = """
+; --- VALUES YOU MAY WANT TO FILL IN MANUALLY ---
+; we cannot guarentee these values are what you desire
+; however they are filled in with some decent defaults
+
 ; clen =  /LCLS/detector_1/EncoderValue
-; photon_energy = /LCLS/photon_energy_eV
-; adu_per_eV = 0.00338
+photon_energy = /LCLS/photon_energy_eV
+adu_per_eV = 0.1
 
-; data = /entry_1/data_1/data
-
-; mask = /entry_1/data_1/mask
-; mask_good = 0x0000
-; mask_bad = 0xffff
+data = /entry_1/data_1/data
 
 dim0 = %
 dim1 = ss

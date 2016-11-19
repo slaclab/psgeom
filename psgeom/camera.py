@@ -305,7 +305,7 @@ class CompoundAreaCamera(CompoundCamera):
     
 
     @classmethod
-    def from_basisgrid(cls, bg, element_type=sensors.PixelArraySensor):
+    def from_basisgrid(cls, bg, element_type=sensors.Mtrx):
         """
         Convert a BasisGrid object to a CompoundCamera.
     
@@ -351,7 +351,6 @@ class CompoundAreaCamera(CompoundCamera):
         
             pas = element_type(shape, 
                                pixel_shape, 
-                               type_name='grid_element_%dx%d' % shape, 
                                id_num=g, 
                                parent=cd,
                                rotation_angles=ra, 
