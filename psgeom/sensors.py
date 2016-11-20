@@ -145,8 +145,7 @@ class PixelArraySensor(SensorElement):
         z = np.zeros([self.shape[0], self.shape[1], 1])
         xyz = np.concatenate([xy, z], axis=-1)
         
-        return xyz
-    
+        return xyz   
         
     @property
     def psf(self):
@@ -264,14 +263,16 @@ class Cspad2x1(PixelArraySensor):
         return xyz
         
 
-class RayonixMtrx(PixelArraySensor):
+class Mtrx(PixelArraySensor):
     """
     A specific PixelArraySensor representing a Rayonix sensor element.
     """
     
-    def __init__(self, **kwargs):
+    def __init__(self, shape=None, pixel_shape=None, type_name=None, id_num=0, parent=None,
+                 rotation_angles=np.array([0.0, 0.0, 0.0]), 
+                 translation=np.array([0.0, 0.0, 0.0])):
         """
-        Create a RayonixMtrx.
+        Create a Mtrx.
         
         Parameters
         ----------
@@ -299,17 +300,34 @@ class RayonixMtrx(PixelArraySensor):
             
         Returns
         -------
-        self : RayonixMtrx
+        self : Mtrx
             The sensor element.
         """
                  
-        shape = (1920, 1920)
-        pixel_shape = np.array([89.00, 89.00]) # micron
-                 
-        super(RayonixMtrx, self).__init__(shape, pixel_shape, **kwargs)
+        #shape = (1920, 1920) # This should be configurable, we know pixel size to be 44.5um.
+        #pixel_shape = np.array([89.00, 89.00]) # micron
+        if shape is None or pixel_shape is None:
+            if 'MTRX' in type_name:
+                s0,s1,ps0,ps1 = type_name.split(':')[1:]
+                shape = (int(s0), int(s1))
+                pixel_shape = (float(ps0), float(ps1))
+                print "###: ", shape, pixel_shape
+            else:
+                raise ValueError('Cannot construct MTRX without either explicit'
+                                 ' shape/pixel_shape or MTRX:a:b:x:y type_name')
+        #elif:
+        #    raise ValueError('Need either shape/pixel_shape or MTRX:a:b:x:y type_name')
+
+        super(Mtrx, self).__init__(shape, pixel_shape, type_name='None', id_num=id_num, parent=parent,
+                 rotation_angles=rotation_angles, 
+                 translation=translation)
                                        
         return
-        
+    
+    @property
+    def type_name(self):
+        return 'MTRX:%d:%d:%d:%d' %(self.shape[0], self.shape[1], 
+                                    self._pixel_shape[0], self._pixel_shape[1])
         
 class PnccdQuad(PixelArraySensor):
     """
@@ -363,7 +381,7 @@ class PnccdQuad(PixelArraySensor):
 
 type_map = {'SENS2X1:V1' :           Cspad2x1,
             'SENS2X1'    :           Cspad2x1,
-            'MTRX:1920:1920:89:89' : RayonixMtrx,
+            'MTRX:1920:1920:89:89' : Mtrx,
             'PNCCD:V1' :             PnccdQuad}
 
 
