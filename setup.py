@@ -12,7 +12,7 @@ except ImportError:
 
 
 setup(name='psgeom',
-      version='0.0.1',
+      version='0.1',
       author="TJ Lane",
       author_email="tjlane@slac.stanford.edu",
       description='scattering experiment geometry',

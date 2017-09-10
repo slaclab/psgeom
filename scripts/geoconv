@@ -15,6 +15,7 @@ Currently supported formats (filename extensions in parenthesis):
 -- psana     (.data)
 -- cheetah   (.h5)
 -- crystfel  (.geom)
+-- hdf5      (.h5)
 ''', formatter_class=argparse.RawTextHelpFormatter)
 
 parser.add_argument('infile',
@@ -41,6 +42,8 @@ elif args.format == 'cheetah':
     geom.to_cheetah_file(args.outfile)
 elif args.format == 'crystfel':
     geom.to_crystfel_file(args.outfile)
+elif args.format == 'hdf5':
+    geom.to_hdf5(args.outfile)
 else:
     raise IOError('File format "%s" not supported' % args.format)
 

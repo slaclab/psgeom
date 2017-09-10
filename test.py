@@ -247,6 +247,21 @@ class TestCompoundAreaCamera(TestCompoundCamera):
     def setup(self):
         self.geom = camera.CompoundAreaCamera.from_psana_file('ref_files/refgeom_psana.data')
         self.klass = camera.CompoundAreaCamera
+
+
+    def test_hdf5_file(self):
+        self.geom.to_hdf5('ref_files/tmp_hdf.h5')
+
+        f = h5py.File('ref_files/tmp_hdf.h5', 'r')
+        xyz2 = np.array(f['/xyz'])
+        f.close()
+        np.testing.assert_allclose(self.geom.xyz, xyz2)
+
+        #self.cspad.to_hdf5('ref_files/tmp_hdf.h5')
+        #cd2 = camera.CompoundCamera.from_hdf5('ref_files/tmp_hdf.h5')
+        #np.testing.assert_allclose(self.cd.xyz, cd2.xyz)
+        os.remove('ref_files/tmp_hdf.h5')
+
         
     def test_rayonix_vs_geometry_access(self):
     
@@ -373,6 +388,20 @@ class TestCspad(TestCompoundCamera):
                                    atol=PIXEL_TOLERANCE_um)
         
 
+    def test_hdf5_file(self):
+        self.geom.to_hdf5('ref_files/tmp_hdf.h5')
+
+        f = h5py.File('ref_files/tmp_hdf.h5', 'r')
+        xyz2 = np.array(f['/xyz'])
+        f.close()
+
+		# we re-shape the xyz to match the way psana
+		# presents CSPAD data
+        assert xyz2.shape == (32, 185, 388, 3)
+        np.testing.assert_allclose(self.geom.xyz[0,0,0], xyz2[0])
+
+        os.remove('ref_files/tmp_hdf.h5')
+
 
 # ---- translate.py ------------------------------------------------------------
     
@@ -402,7 +431,7 @@ class TestTranslate(object):
         
         os.remove('ref_files/cd_psf.txt')
         os.remove('ref_files/cspad_psf.txt')
-    
+
         
     def test_cheetah_roundtrip(self):
         

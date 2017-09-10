@@ -30,6 +30,7 @@ June 11, 2015
 """
 
 import re
+import h5py
 import warnings
 import numpy as np
 
@@ -275,6 +276,27 @@ class CompoundAreaCamera(CompoundCamera):
         root : detector.CompoundCamera
             The CompoundCamera instance
         """
+        raise NotImplementedError()
+
+
+    def to_hdf5(self, filename):
+        """
+        Save a geometry's xyz coordinates (self.xyz) in an HDF file.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+        """
+
+        f = h5py.File(filename, 'w')
+        f['xyz'] = self.xyz
+        f.close()
+
+        return
+
+
+    def from_hdf5(self, filename):
         raise NotImplementedError()
     
 
@@ -566,6 +588,23 @@ class Cspad(CompoundAreaCamera):
             bg.add_grid(p + f * 197, s, f, (185, 194))
         
         return bg
+
+
+    def to_hdf5(self, filename):
+        """
+        Save a geometry's xyz coordinates (self.xyz) in an HDF file.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+        """
+
+        f = h5py.File(filename, 'w')
+        f['xyz'] = np.vstack(np.squeeze(self.xyz))
+        f.close()
+
+        return
     
 
     def to_crystfel_file(self, filename, coffset=None, **kwargs):
@@ -626,8 +665,8 @@ class Cspad(CompoundAreaCamera):
         ----------
         geometry : cspad.CSPad
             The detector geometry to write to disk
-    	filename : string
-    		The file name for the output pixel map
+        filename : string
+            The file name for the output pixel map
         """
         translate.write_cheetah(self, filename)
         return
