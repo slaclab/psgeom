@@ -22,7 +22,7 @@ parser.add_argument('infile',
                     help='Input geometry file path (format inferred from extension).')
 parser.add_argument('outfile',
                     help='Output geometry file path (format specified by -f/--format.)')
-parser.add_argument('-f', '--format', choices=['psana', 'crystfel', 'cheetah'],
+parser.add_argument('-f', '--format', choices=['psana', 'crystfel', 'cheetah', 'hdf5'],
                     help='Output file format, one of: "psana", "crystfel", "cheetah"')
 parser.add_argument('-c', '--cspad', action='store_true',
                     help='Toggle this to force loading as a CSPAD')
