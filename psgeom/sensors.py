@@ -268,7 +268,7 @@ class Mtrx(PixelArraySensor):
     A specific PixelArraySensor representing a Rayonix sensor element.
     """
     
-    def __init__(self, shape=None, pixel_shape=None, type_name=None, id_num=0, parent=None,
+    def __init__(self, shape, pixel_shape, id_num=0, parent=None,
                  rotation_angles=np.array([0.0, 0.0, 0.0]), 
                  translation=np.array([0.0, 0.0, 0.0])):
         """
@@ -315,10 +315,16 @@ class Mtrx(PixelArraySensor):
             else:
                 raise ValueError('Cannot construct MTRX without either explicit'
                                  ' shape/pixel_shape or MTRX:a:b:x:y type_name')
-        #elif:
-        #    raise ValueError('Need either shape/pixel_shape or MTRX:a:b:x:y type_name')
 
-        super(Mtrx, self).__init__(shape, pixel_shape, type_name='None', id_num=id_num, parent=parent,
+        # TJL 4/9/18
+        # I am not sure why these lines are necessary
+        # but they seem to be to get these attributes set
+        # I would have expected the super init method below to take care of it...
+        self.shape = shape
+        self._pixel_shape = pixel_shape
+
+        super(Mtrx, self).__init__(shape, pixel_shape, type_name='shouldbeoverwritten', 
+                 id_num=id_num, parent=parent,
                  rotation_angles=rotation_angles, 
                  translation=translation)
                                        
