@@ -38,6 +38,7 @@ from psgeom import moveable
 from psgeom import sensors
 from psgeom import translate
 from psgeom import basisgrid
+from psgeom import metrology
 
 _STRICT = False # global used for some testing purposes, ignore this
 
@@ -688,7 +689,49 @@ class Cspad(CompoundAreaCamera):
             The Cspad instance
         """
         return translate.load_cheetah(cls, filename)
-        
+
+
+    @classmethod
+    def from_metrology_file(cls, filename):
+        """
+        Load a geometry in metrology format.
+
+        Note that the LCLS detector group often provides
+        MS Excel files, but that this function expects a
+        flat text, space delimited file of the form:
+
+			# quad 0
+			1 x1 y1 z1
+			2 x2 y2 z2
+			3 ...
+			
+			# quad 1
+			1 x1 y1 z1
+			2 x2 y2 z2
+			3 ...
+
+		Lines preceeded by a '#' will be ignored.
+
+		It is recommened you simply generate this file by
+		hand from whatever metrology information is provided,
+		as historically there has not been a standard format
+		as of the time of writing this (Sept 2018).
+
+		Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+
+        Returns
+        -------
+        cspad : Cspad
+            The Cspad instance
+
+        """
+        bg = metrology.load_to_basisgrid(filename)
+        print bg
+        return cls.from_basisgrid(bg)
+
 
 
 def load(filename, base=CompoundAreaCamera, infer_base=True):
