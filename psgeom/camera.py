@@ -418,8 +418,8 @@ class CompoundAreaCamera(CompoundCamera):
 
         Returns
         -------
-        cspad : Cspad
-            The Cspad instance
+        camera : CompoundCamera
+            The instance
         """
         return translate.load_crystfel(cls, filename)
         
@@ -432,6 +432,50 @@ class Cspad(CompoundAreaCamera):
     rather unfortunate, but necessitated by assumptions made by other software
     we want to interact with.
     """
+
+
+    def sketch(self, mpl_axes=None, quad_colors = ['k', 'g', 'purple', 'b']):
+        """
+        Draw a rough sketch of the layout of the CSPAD
+        """
+
+        pixel_positions = self.xyz
+        
+        if not mpl_axes:
+            from matplotlib import pyplot as plt
+            import matplotlib.patches as plt_patches
+            plt.figure()
+            ax = plt.subplot(111)
+        else:
+            ax = mpl_axes
+
+        for i in range(4):
+            for j in range(pixel_positions.shape[2]): # should be range(8), legacy
+                x = pixel_positions[0,i,j,:,:,0]
+                y = pixel_positions[0,i,j,:,:,1]
+                corners = np.zeros((5,2))
+
+                corners[0,:] = np.array([ x[0,0],   y[0,0] ])     # bottom left
+                corners[1,:] = np.array([ x[0,-1],  y[0,-1] ])    # bottom right
+                corners[3,:] = np.array([ x[-1,0],  y[-1,0] ])    # top left
+                corners[2,:] = np.array([ x[-1,-1], y[-1,-1] ])   # top right
+                corners[4,:] = np.array([ x[0,0],   y[0,0] ])     # make rectangle
+
+                ax.plot(corners[:,0], corners[:,1], lw=2, color=quad_colors[i])
+                ax.scatter(x[0,0], y[0,0])
+                
+        beam_center = plt_patches.Circle((0, 0), 2, fill=True, lw=1, color='orange')
+        ax.add_patch(beam_center)
+                
+        # mirror x axis for CXI convention
+        if not ax.xaxis_inverted():
+            ax.invert_xaxis()
+
+        if mpl_axes:
+            return ax
+        else:
+            plt.show()
+            return
             
     
     @classmethod
@@ -700,24 +744,24 @@ class Cspad(CompoundAreaCamera):
         MS Excel files, but that this function expects a
         flat text, space delimited file of the form:
 
-			# quad 0
-			1 x1 y1 z1
-			2 x2 y2 z2
-			3 ...
-			
-			# quad 1
-			1 x1 y1 z1
-			2 x2 y2 z2
-			3 ...
+            # quad 0
+            1 x1 y1 z1
+            2 x2 y2 z2
+            3 ...
+            
+            # quad 1
+            1 x1 y1 z1
+            2 x2 y2 z2
+            3 ...
 
-		Lines preceeded by a '#' will be ignored.
+        Lines preceeded by a '#' will be ignored.
 
-		It is recommened you simply generate this file by
-		hand from whatever metrology information is provided,
-		as historically there has not been a standard format
-		as of the time of writing this (Sept 2018).
+        It is recommened you simply generate this file by
+        hand from whatever metrology information is provided,
+        as historically there has not been a standard format
+        as of the time of writing this (Sept 2018).
 
-		Parameters
+        Parameters
         ----------
         filename : str
             The path of the file on disk.
