@@ -9,7 +9,12 @@ from psgeom import moveable
 from psgeom import sensors
 from psgeom import translate
 from psgeom import camera
+from psgeom import basisgrid
+from psgeom import fitting
 from psgeom.translate import _cheetah_to_twobyones
+
+import warnings
+#camera._STRICT = True
 
 PIXEL_TOLERANCE_um = 10.0
 
@@ -144,10 +149,10 @@ class TestPixelArraySensor(object):
     
     def test_untransformed_xyz(self):
         uxyz = self.PAS.untransformed_xyz
-        assert uxyz.shape[:-1] == self.shape
-        # remember, slow is y convention...
-        assert np.max(uxyz[...,0]) == (self.shape[1]-1) * self.pixel_shape[1]
-        assert np.max(uxyz[...,1]) == (self.shape[0]-1) * self.pixel_shape[0]
+        assert uxyz.shape[:-1] == self.shape, '%s %s' % (uxyz.shape, self.shape)
+        # remember, slow is x convention... (changed 8-28-16 by TJL)
+        assert np.max(uxyz[...,0]) == (self.shape[0]-1) * self.pixel_shape[0]
+        assert np.max(uxyz[...,1]) == (self.shape[1]-1) * self.pixel_shape[1]
         
     
     def test_xyz(self):
@@ -164,6 +169,22 @@ class TestPixelArraySensor(object):
         xyz_ans = np.dot(uxyzd, np.dot(T, R).T)
         np.testing.assert_array_almost_equal(self.PAS.xyz, xyz_ans[...,:3])
     
+
+class TestSens2x1(TestPixelArraySensor):
+    
+    def test_2x1_central_gap(self):
+        
+        # regression test for the size of the big pixels
+        
+        s = sensors.Cspad2x1()
+        
+        small1 = s.xyz[0,193,0] - s.xyz[0,192,0]
+        big    = s.xyz[0,194,0] - s.xyz[0,193,0]
+        small2 = s.xyz[0,195,0] - s.xyz[0,194,0]
+        
+        np.testing.assert_array_almost_equal(small1, 109.92) # px size
+        np.testing.assert_array_almost_equal(small2, 109.92)
+        np.testing.assert_array_almost_equal(big,    439.68) # gap size        
 
 
 # ---- camera.py -------------------------------------------------------------
@@ -189,7 +210,7 @@ class TestCompoundCamera(object):
         # ---- get the geometry Mikhail-style
         try:
             from PSCalib.GeometryAccess import GeometryAccess
-            ga = GeometryAccess('refgeom_psana.data')
+            ga = GeometryAccess('ref_files/refgeom_psana.data')
             xyz_old = ga.get_pixel_coords()
                 
         except:
@@ -219,24 +240,168 @@ class TestCompoundCamera(object):
     def test_leaves(self):
         assert len(self.geom.leaves) == 32, 'got: %d' % len(self.geom.leaves)
         
-    
-    
-class TestCspad(object):
+        
+        
+class TestCompoundAreaCamera(TestCompoundCamera):
     
     def setup(self):
-        self.cspad = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        self.geom = camera.CompoundAreaCamera.from_psana_file('ref_files/refgeom_psana.data')
+        self.klass = camera.CompoundAreaCamera
+
+
+    def test_hdf5_file(self):
+        self.geom.to_hdf5('ref_files/tmp_hdf.h5')
+
+        f = h5py.File('ref_files/tmp_hdf.h5', 'r')
+        xyz2 = np.array(f['/xyz'])
+        f.close()
+        np.testing.assert_allclose(self.geom.xyz, xyz2)
+
+        #self.cspad.to_hdf5('ref_files/tmp_hdf.h5')
+        #cd2 = camera.CompoundCamera.from_hdf5('ref_files/tmp_hdf.h5')
+        #np.testing.assert_allclose(self.cd.xyz, cd2.xyz)
+        os.remove('ref_files/tmp_hdf.h5')
+
         
+    def test_rayonix_vs_geometry_access(self):
+    
+        # ---- get the geometry Mikhail-style
+        try:
+            from PSCalib.GeometryAccess import GeometryAccess
+            ga = GeometryAccess('ref_files/rayonix.data')
+            xyz_old = ga.get_pixel_coords()
+                
+        except:
+            # if that don't work, load a pre-saved answer
+            print 'could not use GeometryAccess, loading saved xyz'
+            xyz_old = np.load('ref_files/rayonix_saved.npy')
+        
+        xyz_old = np.rollaxis(np.array(xyz_old), 0, 5) # send 0 --> end
+        xyz_old = np.squeeze(xyz_old)
+    
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/rayonix.data')
+        xyz_new = np.squeeze(geom.xyz)
+    
+        assert xyz_new.shape == xyz_old.shape, 'shape mismatch %s / %s' % (xyz_new.shape, xyz_old.shape)
+    
+        err = np.sum( np.abs(xyz_new - xyz_old) ) / float(np.product(xyz_new.shape))
+        print 'Mean Absolute Error: %f um / px' % err
+        num_more_than_1px_err = np.sum( np.abs(xyz_new - xyz_old) > 89.0 )
+    
+        print 'new', xyz_new
+        print 'old', xyz_old
+    
+        assert err < 10.0, 'error greater than 10 um avg per px (%f)' % err
+        assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px'
+        
+        
+    def test_rayonix_crystfel(self):
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/rayonix.data')
+        geom.to_crystfel_file('ref_files/tmp_rayonix.geom')
+        
+        # compare to reference created by make_pixelmap
+        f = h5py.File('ref_files/rayonix.h5')
+        x = np.array(f['/x']) * 1e6
+        y = np.array(f['/y']) * 1e6
+        #z = np.array(f['/z']) # z currently is not populated by make_pixelmap
+        f.close()
+        
+        # NOTE: x is flipped in the crystFEL/cheetah convention
+        # as there, z points towards the source of x-rays (not along travel)
+        np.testing.assert_allclose( np.squeeze(geom.xyz[...,0]), -x, atol=10 )
+        np.testing.assert_allclose( np.squeeze(geom.xyz[...,1]),  y, atol=10 )
+        
+        geom2 = camera.CompoundAreaCamera.from_crystfel_file('ref_files/tmp_rayonix.geom')
+        np.testing.assert_allclose(geom.xyz, geom2.xyz, atol=0.001)
+        
+        os.remove('ref_files/tmp_rayonix.geom')
+        
+    
+    def test_pnccd_vs_geometry_access(self):
+
+        # ---- get the geometry Mikhail-style
+        try:
+            from PSCalib.GeometryAccess import GeometryAccess
+            ga = GeometryAccess('ref_files/pnccd.data')
+            xyz_old = ga.get_pixel_coords()
+
+        except:
+            # if that don't work, load a pre-saved answer
+            print 'could not use GeometryAccess, loading saved xyz'
+            xyz_old = np.load('ref_files/pnccd_saved.npy')
+
+        xyz_old = np.rollaxis(np.array(xyz_old), 0, 6) # send 0 --> end
+        xyz_old = np.squeeze(xyz_old)
+
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/pnccd.data')
+        xyz_new = np.squeeze(geom.xyz)
+
+        assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
+
+        err = np.sum( np.abs(xyz_new - xyz_old) ) / float(np.product(xyz_new.shape))
+        print 'Mean Absolute Error: %f um / px' % err
+        num_more_than_1px_err = np.sum( np.abs(xyz_new - xyz_old) > 75.0 )
+
+        assert err < 10.0, 'error greater than 10um avg per px (%f)' % err
+        assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px'
+        
+    
+    
+class TestCspad(TestCompoundCamera):
+    
+    def setup(self):
+        self.geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        self.klass = camera.Cspad
+    
+        
+    def test_to_basis_grid(self):
+
+        bg = self.geom.to_basisgrid()
+        xyz = np.squeeze(self.geom.xyz)
+
+        for i in range(4):
+            for j in range(8):
+
+                bg_xyz_ij_1 = bg.grid_as_explicit(i*16 + j*2)
+                bg_xyz_ij_2 = bg.grid_as_explicit(i*16 + j*2 + 1)
+                
+                cd_xyz_ij = xyz[i,j,:,:,:]
+                
+                np.testing.assert_allclose(bg_xyz_ij_1, cd_xyz_ij[:,:194,:], 
+                                           atol=PIXEL_TOLERANCE_um)
+                np.testing.assert_allclose(bg_xyz_ij_2, cd_xyz_ij[:,194:,:], 
+                                           atol=PIXEL_TOLERANCE_um)
+                                           
+    
     def test_basisgrid_roundtrip(self):
-        bg = self.cspad.to_basisgrid()
-        cspad2 = camera.Cspad.from_basisgrid(bg)
+
+        bg = self.geom.to_basisgrid()
+        new = self.klass.from_basisgrid(bg)
+
+        ref_xyz = np.squeeze(self.geom.xyz)
+        new_xyz = new.xyz.reshape(ref_xyz.shape)
+
+        assert self.geom.num_pixels == new.num_pixels
         
-        assert self.cspad.num_pixels == cspad2.num_pixels
-        np.testing.assert_allclose( np.squeeze(self.cspad.xyz), 
-                                    np.squeeze(cspad2.xyz),
-                                    atol=PIXEL_TOLERANCE_um )
-                                    
-    
-    
+        np.testing.assert_allclose(ref_xyz, 
+                                   new_xyz,
+                                   atol=PIXEL_TOLERANCE_um)
+        
+
+    def test_hdf5_file(self):
+        self.geom.to_hdf5('ref_files/tmp_hdf.h5')
+
+        f = h5py.File('ref_files/tmp_hdf.h5', 'r')
+        xyz2 = np.array(f['/xyz'])
+        f.close()
+
+		# we re-shape the xyz to match the way psana
+		# presents CSPAD data
+        assert xyz2.shape == (32, 185, 388, 3)
+        np.testing.assert_allclose(self.geom.xyz[0,0,0], xyz2[0])
+
+        os.remove('ref_files/tmp_hdf.h5')
+
 
 # ---- translate.py ------------------------------------------------------------
     
@@ -248,62 +413,7 @@ class TestTranslate(object):
     def setup(self):
         self.cd = camera.CompoundCamera.from_psana_file('ref_files/refgeom_psana.data')
         self.cspad = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
-        
-        
-    def test_asic_basis_grid(self):
-        # this is the method to_basisgrid implemented by the class Cspad
-        asic_bg = self.cspad.to_basisgrid()
-        
-        xyz = asic_bg.to_explicit().reshape(4,16,185,194,3)
-        print xyz.shape
-        
-        # VISUALLY CONFIRMED AS VERY CLOSE -- TJL June 17 2015
-        # still need real test
-        
-        # import matplotlib.pyplot as plt
-        # from psgeom import draw
-        # 
-        # fig = plt.figure()
-        # ax = plt.subplot(111)
-        # draw.sketch_2x1s(xyz[:,::2,:,:], ax)
-        # draw.sketch_2x1s(xyz[:,1::2,:,:], ax)
-        # plt.show()
-        
-        
-    def test_to_basis_grid(self):
-        
-        bg = self.cd.to_basisgrid()
-        assert bg.num_grids == len(self.cd.leaves)
-        
-        xyz = np.squeeze(self.cd.xyz)
-        
-        for i in range(4):
-            for j in range(8):
                 
-                # only test first ASIC to avoid middle-row complications
-                bg_xyz_ij = bg.grid_as_explicit(i*8 + j)[:,:193,:]
-                cd_xyz_ij = xyz[i,j,:,:193,:]
-                print i, j, np.sum( np.abs(bg_xyz_ij - cd_xyz_ij))
-                np.testing.assert_allclose(bg_xyz_ij, cd_xyz_ij, 
-                                           atol=PIXEL_TOLERANCE_um)
-    
-        
-        
-    def from_basis_grid(self):
-        
-        bg = self.cd.to_basisgrid()
-        new = camera.CompoundCamera.from_basisgrid(bg)
-        
-        cd_xyz  = self.cd.xyz
-        new_xyz = new.xyz
-                
-        for i in range(4):
-            for j in range(8):
-                np.testing.assert_allclose(cd_xyz[0,i,j,:,:193], 
-                                           new_xyz[i*8 + j,:,:193],
-                                           rtol=1e-6, atol=PIXEL_TOLERANCE_um)
-        
-        
         
     def test_psf_text(self):
         
@@ -314,14 +424,14 @@ class TestTranslate(object):
         
         # todo : load & ensure consistent
         cd2 = camera.CompoundCamera.from_text_file('ref_files/cd_psf.txt')
-        cspad2 = camera.CompoundCamera.from_text_file('ref_files/cd_psf.txt')
+        cspad2 = camera.CompoundCamera.from_text_file('ref_files/cspad_psf.txt')
         
         np.testing.assert_allclose(self.cd.xyz, cd2.xyz)
         np.testing.assert_allclose(self.cspad.xyz, cspad2.xyz)
         
         os.remove('ref_files/cd_psf.txt')
         os.remove('ref_files/cspad_psf.txt')
-    
+
         
     def test_cheetah_roundtrip(self):
         
@@ -362,7 +472,7 @@ class TestTranslate(object):
         # cheetah does not deal correctly with the large center pixels, so
         # we test around that
         assert np.max( np.abs(tst_xyz - ref_xyz) ) < 500.0
-        np.testing.assert_allclose(tst_xyz[:,:,:193,:], ref_xyz[:,:,:193,:],
+        np.testing.assert_allclose(tst_xyz[:,:,:,:], ref_xyz[:,:,:,:],
                                    atol=PIXEL_TOLERANCE_um,
                                    err_msg='panels off in general')
         
@@ -389,21 +499,41 @@ class TestTranslate(object):
         
     def test_crystfel_roundtrip(self):
         
+        # first test with no weird z stuff
+        
         self.cspad.to_crystfel_file('ref_files/tmp_crystfel.geom')
-        
-        # Note by TJL, 7/8/15
-        # there is a round-trip error of less than 1 micron per pixel
-        # I believe this is due to the fact that CrystFEL assumes sensors
-        # are orthogonal to the beam (no z-info), but that remains to be
-        # verified
-        
         cd2 = camera.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
         
+        print self.cspad.xyz[...,2], cd2.xyz[...,:2]
         
         # be sure error is less than 1 micron in x/y, 0.2 mm in z
         assert np.max(np.abs( np.squeeze(self.cspad.xyz[...,:2]) - np.squeeze(cd2.xyz[...,:2]) )) < 1.0
         assert np.max(np.abs( np.squeeze(self.cspad.xyz) - np.squeeze(cd2.xyz) )) < 200.0
         
+        
+        # CrystFEL's geometry assumes all panels are orthogonal to the beam. To
+        # do a fair comparison, therefore, we set all the z-rotations to zero
+        # note: we remove rotations around the x- & y-axes to get rid of z
+        
+        for c in self.cspad.children:
+            c._rotation_angles[1:] = 0.0
+            for q in c.children:
+                q._rotation_angles[1:] = 0.0
+                for t in q.children:
+                    t._rotation_angles[1:] = 0.0
+        self.cspad._rotation_angles[1:] = 0.0
+        
+        for l in self.cspad.leaves:
+            assert [v[2] == 0.0 for v in l.psf[1:]]
+        
+        
+        self.cspad.to_crystfel_file('ref_files/tmp_crystfel.geom')
+        cd2 = camera.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
+        
+        assert np.max(np.abs( np.squeeze(self.cspad.xyz) - np.squeeze(cd2.xyz) )) < 1.0
+        
+        
+        # finally just check all pixels are straight up reasonable
         np.testing.assert_allclose(np.squeeze(self.cd.xyz),
                                    np.squeeze(cd2.xyz),
                                    err_msg='round trip fail',
@@ -411,6 +541,26 @@ class TestTranslate(object):
                                    rtol=1e-3)
                                            
         os.remove('ref_files/tmp_crystfel.geom')
+        
+        
+    def test_crystfel_coffset(self):
+        
+        geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        geom.to_crystfel_file('ref_files/temp.geom', coffset=2.0)
+
+        geom2 = camera.Cspad.from_crystfel_file('ref_files/temp.geom')
+
+        assert np.all(np.abs(geom2.xyz[...,2] - 2e6) < 0.01)
+        np.testing.assert_allclose(np.squeeze(geom.xyz[...,:2]),
+                                   np.squeeze(geom2.xyz[...,:2]),
+                                   err_msg='round trip fail',
+                                   atol=PIXEL_TOLERANCE_um,
+                                   rtol=1e-3)
+
+
+
+        os.remove('ref_files/temp.geom')
+
         
     
     def test_2x2_cheetah_roundtrip(self):
@@ -446,11 +596,65 @@ class TestTranslate(object):
         crystfel = camera.Cspad.from_crystfel_file('ref_files/cspad-2x2-approx1.geom')
         cheetah  = camera.Cspad.from_cheetah_file('ref_files/cspad-2x2-approx1.h5')
         
-        np.testing.assert_allclose(np.squeeze(crystfel.xyz),
-                                   np.squeeze(cheetah.xyz),
+        # compare only x/y, not z
+        np.testing.assert_allclose(np.squeeze(crystfel.xyz)[...,:2],
+                                   np.squeeze(cheetah.xyz)[...,:2],
                                    atol=100.0)
-        
+
+
+class TestFitting(object):
+    def test_basis_grid_interpolator(self):
+        new_z = 0.75
+
+        # load 3x geometires
+        filenames = ['origin.geom', 'coffset05.geom', 'coffset10.geom']
+        cameras = [camera.Cspad.from_crystfel_file('ref_files/distance_series/' + f) for f in filenames]
+        motor_z = np.array([0.0, 0.5, 1.0])
+
+        bgi = fitting.BasisGridInterpolator([g.to_basisgrid() for g in cameras], motor_z)
+        prediction = bgi.predict( np.array([new_z]) )
+
+        #print 'm:x (p/s/f)', bgi._coefficient_matrix[0,0::3]
+        #print 'm:y (p/s/f)', bgi._coefficient_matrix[0,1::3]
+        #print 'm:z (p/s/f)', bgi._coefficient_matrix[0,2::3]
+
+        #print 'b:x (p/s/f)', bgi._coefficient_matrix[1,0::3]
+        #print 'b:y (p/s/f)', bgi._coefficient_matrix[1,1::3]
+        #print 'b:z (p/s/f)', bgi._coefficient_matrix[1,2::3]
+
+        # the predicted bg should be the same as any other in x/y
+        bg0 = cameras[0].to_basisgrid()
+        xy_diff = np.sum(np.abs( prediction.xyz[...,:2] - bg0.xyz[...,:2] ))
+        assert xy_diff < 1.0
+
+        # and have a specific z-value
+        #print prediction.xyz[...,2]
+        bg2 = cameras[2].to_basisgrid()
+        z_diff = (bg2.xyz[...,2] - bg0.xyz[...,2])
+        z_expt = z_diff * 0.75 + bg0.xyz[...,2]
+        #print z_expt
+        z_diff = np.sum(np.abs(z_expt - prediction.xyz[...,2]))
+        assert z_diff < 1.0
+
+        return
+
     
+def test_bg_as_array():
+    # prob not necessary
+    geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+    bg = geom.to_basisgrid()
+    assert bg.as_array().shape == (64, 11)
+
+def test_bg_from_array():
+    geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+    bg = geom.to_basisgrid()
+    bg2 = basisgrid.BasisGrid.from_array( bg.as_array() )
+    assert np.all( bg.to_explicit() == bg2.to_explicit() )
+
+
+    
+
+
     
 if __name__ == '__main__':
     #test_create_cspad()

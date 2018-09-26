@@ -1,0 +1,52 @@
+#!/usr/bin/env python
+
+"""
+Convert between two different geometry types
+"""
+
+from psgeom import camera
+import argparse
+
+parser = argparse.ArgumentParser(description=
+'''
+Convert geometry files between two different formats.
+
+Currently supported formats (filename extensions in parenthesis):
+-- psana     (.data)
+-- cheetah   (.h5)
+-- crystfel  (.geom)
+-- hdf5      (.h5)
+''', formatter_class=argparse.RawTextHelpFormatter)
+
+parser.add_argument('infile',
+                    help='Input geometry file path (format inferred from extension).')
+parser.add_argument('outfile',
+                    help='Output geometry file path (format specified by -f/--format.)')
+parser.add_argument('-f', '--format', choices=['psana', 'crystfel', 'cheetah', 'hdf5'],
+                    help='Output file format, one of: "psana", "crystfel", "cheetah", "hdf5"')
+parser.add_argument('-c', '--cspad', action='store_true',
+                    help='Toggle this to force loading as a CSPAD')
+args = parser.parse_args()
+
+
+if args.cspad:
+    print 'CSPAD requested, attempting to load geometry as CSPAD'
+    geom = camera.load(args.infile, base=camera.Cspad)
+else:
+    geom = camera.load(args.infile)
+
+
+if args.format == 'psana':
+    geom.to_psana_file(args.outfile)
+elif args.format == 'cheetah':
+    geom.to_cheetah_file(args.outfile)
+elif args.format == 'crystfel':
+    geom.to_crystfel_file(args.outfile)
+elif args.format == 'hdf5':
+    geom.to_hdf5(args.outfile)
+else:
+    raise IOError('File format "%s" not supported' % args.format)
+
+print 'Wrote: %s in %s format' % (args.outfile, args.format)
+
+

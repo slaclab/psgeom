@@ -29,6 +29,8 @@ Author: TJ Lane <tjlane@slac.stanford.edu>
 June 11, 2015
 """
 
+import re
+import h5py
 import warnings
 import numpy as np
 
@@ -37,7 +39,9 @@ from psgeom import sensors
 from psgeom import translate
 from psgeom import basisgrid
 
-        
+_STRICT = False # global used for some testing purposes, ignore this
+
+     
 class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
     """
     The compound camera class contains its own local rotation and translation
@@ -196,89 +200,6 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         return np.array([ c.xyz for c in self._children ])
 
 
-    # begin interfaces -----
-    
-    def to_basisgrid(self):
-        """
-        Convert this object to a BasisGrid object, which represents the camera
-        geometry as a set of vectors specifying the slow-scan and fast-scan
-        edges of a set of panels
-        
-        Returns
-        -------
-        bg : basisgrid.BasisGrid
-            The basisgrid object.
-        """
-        
-        bg = basisgrid.BasisGrid()
-        
-        for sensor in self.leaves:
-            if not isinstance(sensor, sensors.PixelArraySensor):
-                raise TypeError('basisgrid representation is only compatible '
-                                'with detectors that are entirely comprised of '
-                                'PixelArrayElements')
-                               
-            p, s, f = sensor.psf 
-            bg.add_grid(p, s, f, sensor.shape)
-        
-        return bg
-        
-    
-    @classmethod
-    def from_basisgrid(cls, bg, element_type=sensors.PixelArraySensor):
-        """
-        Convert a BasisGrid object to a CompoundCamera.
-        
-        Parameters
-        ----------
-        bg : basisgrid.BasisGrid
-            The basisgrid object to convert.
-            
-        element_type : sensors.PixelArraySensor
-            The SensorElement type to populate the camera with.
-            
-        Returns
-        -------
-        cd : CompoundCamera
-            The compound camera instance.
-        """
-        
-        if not isinstance(bg, basisgrid.BasisGrid):
-            raise TypeError('`bg` argument must be instance of BasisGrid,'
-                            ' got: %s' % type(bg))
-        
-        cd = cls(type_name='root_frame', id_num=0, parent=None)
-        
-        
-        for g in range(bg.num_grids):
-            
-            p, s, f, shape = bg.get_grid(g)
-            
-            pixel_shape = (np.linalg.norm(s),
-                           np.linalg.norm(f))
-            
-            # to compute the rotation, find the 
-            us = s / pixel_shape[0] # unit vector
-            uf = f / pixel_shape[1] # unit vector
-            n  = np.cross(uf, us)   # tested for orthog. in next fxn
-            
-            ra = moveable._angles_from_rotated_frame(uf, us, n)
-
-            # translation is just p
-            tr = p
-            
-            pas = element_type(shape, 
-                               pixel_shape, 
-                               type_name='grid_element_%dx%d' % shape, 
-                               id_num=g, 
-                               parent=cd,
-                               rotation_angles=ra, 
-                               translation=tr)
-
-        
-        return cd
-    
-    
     def to_psana_file(self, filename, title='geometry'):
         """
         Write a geometry in psana format.
@@ -287,10 +208,11 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         ----------
         filename : str
             The path of the file on disk.
-            
-        References
-        ----------
-        ..[1] https://confluence.slac.stanford.edu/display/PSDM/Detector+Geometry
+
+        Optional Parameters
+        -------------------
+        title : str
+            Title of the geometry saved inside the file
         """
         translate.write_psana(self, filename, title)
         return
@@ -318,7 +240,13 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         ret = translate.load_psana(cls, filename)
         ret._sort_tree()
         return ret
-        
+            
+    
+class CompoundAreaCamera(CompoundCamera):
+    """
+    A specific kind of CompoundCamera, one with sensor elements that are
+    planar rectangles. Most detectors should be CompoundAreaCameras.
+    """
     
     def to_text_file(self, filename):
         """
@@ -350,11 +278,154 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         """
         raise NotImplementedError()
 
+
+    def to_hdf5(self, filename):
+        """
+        Save a geometry's xyz coordinates (self.xyz) in an HDF file.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+        """
+
+        f = h5py.File(filename, 'w')
+        f['xyz'] = self.xyz
+        f.close()
+
+        return
+
+
+    def from_hdf5(self, filename):
+        raise NotImplementedError()
     
+
+    def to_basisgrid(self):
+        """
+        Convert this object to a BasisGrid object, which represents the camera
+        geometry as a set of vectors specifying the slow-scan and fast-scan
+        edges of a set of panels
+    
+        Returns
+        -------
+        bg : basisgrid.BasisGrid
+            The basisgrid object.
+        """
+    
+        bg = basisgrid.BasisGrid()
+    
+        for sensor in self.leaves:
+            if not isinstance(sensor, sensors.PixelArraySensor):
+                raise TypeError('basisgrid representation is only compatible '
+                                'with detectors that are entirely comprised of '
+                                'PixelArrayElements')
+                           
+            p, s, f = sensor.psf 
+            bg.add_grid(p, s, f, sensor.shape)
+    
+        return bg
+    
+
+    @classmethod
+    def from_basisgrid(cls, bg, element_type=sensors.Mtrx):
+        """
+        Convert a BasisGrid object to a CompoundCamera.
+    
+        Parameters
+        ----------
+        bg : basisgrid.BasisGrid
+            The basisgrid object to convert.
+        
+        element_type : sensors.PixelArraySensor
+            The SensorElement type to populate the camera with.
+        
+        Returns
+        -------
+        cd : CompoundCamera
+            The compound camera instance.
+        """
+    
+        if not isinstance(bg, basisgrid.BasisGrid):
+            raise TypeError('`bg` argument must be instance of BasisGrid,'
+                            ' got: %s' % type(bg))
+    
+        cd = cls(type_name='root_frame', id_num=0, parent=None)
+    
+    
+        for g in range(bg.num_grids):
+        
+            p, s, f, shape = bg.get_grid(g)
+        
+            pixel_shape = (np.linalg.norm(s),
+                           np.linalg.norm(f))
+        
+            # to compute the rotation, find the 
+            us = s / pixel_shape[0] # unit vector
+            uf = f / pixel_shape[1] # unit vector
+            n  = np.cross(us, uf)   # tested for orthog. in next fxn
+        
+            # remember: in the matrix convention (Mikhail uses), +x is slow
+            # and +y is fast
+            ra = moveable._angles_from_rotated_frame(us, uf, n)
+
+            # translation is just p
+            tr = p
+        
+            pas = element_type(shape, 
+                               pixel_shape, 
+                               id_num=g, 
+                               parent=cd,
+                               rotation_angles=ra, 
+                               translation=tr)
+
+    
+        return cd
+    
+    
+    def to_crystfel_file(self, filename, coffset=None):
+        """
+        Write a geometry to disk in CrystFEL format. Note that some fields
+        will be written but left blank -- these are fields you probably should
+        fill in before performing any computations in CrystFEL, but are 
+        information that we have no handle on (e.g. detector gain).
+        When coffset is not given, coffset is set to detector distance and
+        and clen is set to zero.
+
+        Thanks to Rick Kirian & Tom White for assistance with this function.
+
+        Parameters
+        ----------
+        filname : str
+            The name of file to write. Will end in '.geom'
+
+        coffset: float
+            Detector home position to sample distance in metres
+        """
+        translate.write_generic_crystfel(self, filename, coffset=coffset)
+        return
+        
+        
+    @classmethod
+    def from_crystfel_file(cls, filename):
+        """
+        Load a geometry in crystfel format.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+
+        Returns
+        -------
+        cspad : Cspad
+            The Cspad instance
+        """
+        return translate.load_crystfel(cls, filename)
+        
 
 # ---- specific detector implementations ---------------------------------------
 
-class Cspad(CompoundCamera):
+class Cspad(CompoundAreaCamera):
     """
     This is for a 'full' size CSPAD. The need for a specific CSPAD object is
     rather unfortunate, but necessitated by assumptions made by other software
@@ -452,6 +523,37 @@ class Cspad(CompoundCamera):
                                    parent=quad,
                                    rotation_angles=ra, 
                                    translation=tr)
+                        
+                                   
+            # if we skipped a grid (ASIC), we'll check to make sure that
+            # the p-vector from that grid points to the correct pixel on
+            # our newly oriented 2x1 -- allow 10 um error in x/y, 200 um in z
+            
+            if stride == 2:
+                
+                p_skipped, _, _, _ = bg.get_grid(g + 1)
+                
+                # be more lenient in z, since some programs are not general
+                # enough to handle it
+                
+                if (np.linalg.norm(p_skipped[:2] - pas.xyz[0,194,:2]) > 10.0) or \
+                   (np.abs(p_skipped[2] - pas.xyz[0,194,2]) > 200.0):
+                    
+                    print 'quad %d / 2x1 %d' % (quad_index, asic_id % 8)
+                    print 'grid p-vector:   ', p_skipped
+                    print 'pixel (0, 194):  ', pas.xyz[0,194,:]
+                    print ''
+                    
+                    warnings.warn('The two ASICs making up the %d-th 2x1 on '
+                                  'the %d-th quad (grids %d, %d) do not conform'
+                                  ' to the geometric requirements of a 2x1 '
+                                  'unit. Check your geometry! Do not ignore this'
+                                  ' warning unless you were expecting it!!'
+                                  '' % (asic_id % 8, quad_index, g, g+1))
+                                  
+                    if _STRICT:
+                        raise RuntimeError('_STRICT set, no warnings allowed')
+                               
                                
         return cspad
     
@@ -481,17 +583,38 @@ class Cspad(CompoundCamera):
             bg.add_grid(p, s, f, (185, 194))
             
             # then translate along the fast-scan dimension and add the second
-            bg.add_grid(p + f * 194, s, f, (185, 194))
+            # DONT FORGET THE BIG PIXELS!!! (+3 pixels for gap)
+            
+            bg.add_grid(p + f * 197, s, f, (185, 194))
         
         return bg
+
+
+    def to_hdf5(self, filename):
+        """
+        Save a geometry's xyz coordinates (self.xyz) in an HDF file.
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+        """
+
+        f = h5py.File(filename, 'w')
+        f['xyz'] = np.vstack(np.squeeze(self.xyz))
+        f.close()
+
+        return
     
-        
-    def to_crystfel_file(self, filename):
+
+    def to_crystfel_file(self, filename, coffset=None, **kwargs):
         """
         Write a geometry to disk in CrystFEL format. Note that some fields
         will be written but left blank -- these are fields you probably should
         fill in before performing any computations in CrystFEL, but are 
         information that we have no handle on (e.g. detector gain).
+        When coffset is not given, coffset is set to detector distance and
+        and clen is set to zero.
 
         Thanks to Rick Kirian & Tom White for assistance with this function.
 
@@ -499,8 +622,17 @@ class Cspad(CompoundCamera):
         ----------
         filname : str
             The name of file to write. Will end in '.geom'
+
+        coffset: float
+            Detector home position to sample distance in metres
+
+        Optional Parameters
+        -------------------
+        maskfile : str
+            Hdf5 filename of a mask used to indexing and integration by CrystFEL.
         """
-        translate.write_crystfel(self, filename, intensity_file_type='cheetah')
+        translate.write_cspad_crystfel(self, filename, coffset, intensity_file_type='cheetah', **kwargs)
+
         return
         
         
@@ -533,8 +665,8 @@ class Cspad(CompoundCamera):
         ----------
         geometry : cspad.CSPad
             The detector geometry to write to disk
-    	filename : string
-    		The file name for the output pixel map
+        filename : string
+            The file name for the output pixel map
         """
         translate.write_cheetah(self, filename)
         return
@@ -557,3 +689,61 @@ class Cspad(CompoundCamera):
         """
         return translate.load_cheetah(cls, filename)
         
+
+
+def load(filename, base=CompoundAreaCamera, infer_base=True):
+    """
+    Load a saved area camera from disk, attempting to interpert the 
+    format from the file extension.
+
+    Parameters
+    ----------
+    filename : str
+        A path to the camera file on disk.
+
+    base : camera.CompoundCamera
+        The *class* (NOT instance!) that will be used to form
+        the camera object. Must inheret camera.CompoundCamera.
+
+    infer_base : bool
+        If True, attempts to infer the base class (see `base`) 
+        from the file header (#).
+
+    Returns
+    -------
+    camera : camera.CompoundCamera
+        The loaded camera object.
+    """
+
+    if infer_base:
+        with open(filename, 'r') as f:
+            text = f.read()
+
+            # check for cspad
+            to_find = re.compile("CSPAD|Cspad|CsPad|cspad")
+            match_obj = to_find.search(text)
+            if match_obj is not None:
+                print('Found `%s` in file, '
+                      'interpreting geometry as CSPAD' % match_obj.group())
+                base = Cspad
+    
+
+    if not issubclass(base, CompoundCamera):
+        raise TypeError('`base` of type %s is not an instance of CompoundCamera'
+                        '' % type(base))
+
+
+    if filename.endswith('.data'):
+        camera = base.from_psana_file(filename)
+    elif filename.endswith('.txt'):
+        camera = base.from_text_file(filename)
+    elif filename.endswith('.geom'):
+        camera = base.from_crystfel_file(filename)
+    elif filename.endswith('.h5'):
+        camera = base.from_cheetah_file(filename)
+    else:
+        ext = filename.split('.')[-1]
+        raise IOError('Could not understand extension: %s' % ext)
+
+
+    return camera

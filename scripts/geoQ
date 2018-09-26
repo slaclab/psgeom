@@ -1,0 +1,71 @@
+#!/usr/bin/env python
+
+"""
+Convert between two different geometry types
+"""
+
+from psgeom import camera
+import argparse
+
+import h5py
+import numpy as np
+
+
+
+
+
+parser = argparse.ArgumentParser(description=
+'''
+Convert and HDF5 geometry from real to reciprocal space (Q)
+''', formatter_class=argparse.RawTextHelpFormatter)
+
+parser.add_argument('infile',
+                    help='Input geometry file path (ends in .h5).')
+parser.add_argument('-e', '--energy', type=float, required=True,
+                    help='The beam energy to use, in eV')
+parser.add_argument('-z', '--zoffset', type=float, default=0.0,
+                    help='Shift the detector by this many mm \
+                          along the beam before converting')
+args = parser.parse_args()
+
+if not args.infile.endswith('.h5'):
+    raise IOError('Input must be a .h5 HDF5 geometry file')
+
+
+
+f = h5py.File(args.infile, 'r')
+try:
+    xyz = np.array(f['/xyz'])
+except:
+    raise IOError('%s does not appear to be a correctly '
+                  'formated geometry file' % args.infile)
+f.close()
+outfile = args.infile[:-3] + '_Q.h5'
+
+
+# ---- here is the math ----
+beam_vector = np.array([0.0, 0.0, 1.0]) # assumed
+
+h = 4.135677516e-15   # Planks constant | eV s
+c = 299792458         # speed of light  | m / s
+wavelength = h * c * 10.**10. / args.energy # m --> A
+wavenumber = 2.0 * np.pi / wavelength       # inv A
+
+norm = np.sqrt( np.sum( np.square(xyz), axis=-1 ) )
+S = xyz / norm[...,None] # unit vector
+
+q_xyz = wavenumber * (S - beam_vector)
+
+
+f = h5py.File(outfile, 'w')
+f['/q_xyz'] = q_xyz
+f.close()
+
+print '-'*50
+print '%s --> %s' % (args.infile, outfile)
+print 'z-shift:     ', args.zoffset
+print 'energy (eV): ', args.energy
+print 'q max (A^-1):', np.max(q_xyz)
+print '> results: q (2-pi convention) in inverse Angstrom'
+print '-'*50
+

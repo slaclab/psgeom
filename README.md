@@ -6,7 +6,7 @@ Python code for detector geometries, supporting translation between different pr
 * CrystFEL
 * cheetah
 
-An interfact to cctbx.xfel is planned.
+An interface to cctbx.xfel is planned.
 
 Developers Note:
 
