@@ -16,7 +16,7 @@ class BasisGrid(object):
     a single rectangular pixel grid lives in. They may also be called the y and
     x dimensions without any loss of generality.
 
-    The convention here -- and in all of ODIN -- is one of Row-Major ordering,
+    The convention here -- and in most apps -- is one of Row-Major ordering,
     which is consistent with C/python. This means that y is the slow dim, x is
     the fast dim, and when ordering these two they will appear as (slow, fast).
 

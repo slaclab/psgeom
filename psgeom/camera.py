@@ -33,13 +33,27 @@ import re
 import h5py
 import warnings
 import numpy as np
+import scipy.ndimage.interpolation as interp
 
 from psgeom import moveable
 from psgeom import sensors
 from psgeom import translate
 from psgeom import basisgrid
+from psgeom import metrology
 
 _STRICT = False # global used for some testing purposes, ignore this
+
+
+def arctan3(y, x):
+    """
+    Compute the inverse tangent. Like arctan2, but returns a value in [0,2pi].
+    """
+    theta = np.arctan2(y,x)
+    if type(theta) == np.ndarray:
+        theta[theta < 0.0] += 2 * np.pi
+    else:
+        if theta < 0.0: theta += 2 * np.pi
+    return theta
 
      
 class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
@@ -417,8 +431,8 @@ class CompoundAreaCamera(CompoundCamera):
 
         Returns
         -------
-        cspad : Cspad
-            The Cspad instance
+        camera : CompoundCamera
+            The instance
         """
         return translate.load_crystfel(cls, filename)
         
@@ -431,7 +445,188 @@ class Cspad(CompoundAreaCamera):
     rather unfortunate, but necessitated by assumptions made by other software
     we want to interact with.
     """
-            
+
+
+    def assemble_image(self, raw_image):
+        """
+        Visualize CSPAD data, assembled using the geometry.
+
+        The final image generated is a 2D approximation to the
+        image as seen looking DOWNSTREAM (from the source).
+
+        Parameters
+        ----------
+        raw_image : np.ndarray
+            A shape (32,185,388) array that contains the image
+            to be visualized.
+        """
+        
+        # set up the raw image and the assembled template
+        if not raw_image.shape == (32,185,388):
+            raise ValueError('`raw_image` must have shape (32,185,388), got '
+                             '%s' % str(raw_image.shape))
+        
+        # for some reason, bool types don't work. Make them ints
+        if raw_image.dtype == np.bool:
+            raw_image = raw_image.astype(np.int32)
+        
+        bounds = 2000 # JAS: total image range is 2000, ensures beam center is at (1000,1000)
+        assembled_image = np.zeros((bounds, bounds), dtype=raw_image.dtype)
+    
+        bg = self.to_basisgrid()
+
+        # iterate over quads
+        pixel_size = 109.920
+        for quad_index in range(4):
+            for two_by_one in range(8):
+
+                asic_idx = quad_index * 16 + two_by_one * 2 # add one for 2nd asic
+                
+                # assemble the 2x1 -- insert a 3 px gap
+                gap = np.zeros( (185,3), dtype=raw_image.dtype )
+                two_by_one_img = np.hstack( (raw_image[quad_index*8+two_by_one,:,:194], gap, 
+                                             raw_image[quad_index*8+two_by_one,:,194:]) )
+                
+                # flip x data to conform w/CXI convention
+                #two_by_one_img = two_by_one_img[::-1,:]
+                
+                # note that which dim is x changes w/two_by_one and quad_index
+                # here the rotation is off between dtc/cspad by 180 in some quads
+                # JAS: updated rotation to asic_rot - 180 instead of -asic_rot 
+                #      to get proper rotation of asics in assembled image
+                p, s, f, shape = bg.get_grid(asic_idx)
+                theta = arctan3(f[1], f[0]) * (360. / (np.pi * 2.0))
+
+                two_by_one_img = interp.rotate(two_by_one_img,
+                                               theta - 180,
+                                               output=two_by_one_img.dtype,
+                                               reshape=True)
+                
+                # find the center of the 2x1 in space
+                corners0 = bg.get_grid_corners(asic_idx)
+                corners1 = bg.get_grid_corners(asic_idx + 1)
+                
+                # un-swap x-axis and re-swap below -- necessary b/c now we
+                # have data in two_by_one_img that needs swap
+                corners0[:,0] = -corners0[:,0]
+                corners1[:,0] = -corners1[:,0]
+                
+                center = ( np.concatenate([corners0[:,0], corners1[:,0]]).mean(),
+                           np.concatenate([corners0[:,1], corners1[:,1]]).mean() )
+
+                # find the bottom left corner (note x is cols, so swap inds)
+                c = (center[0] / pixel_size - two_by_one_img.shape[1] / 2.,
+                     center[1] / pixel_size - two_by_one_img.shape[0] / 2.,)
+                
+                # the assembled image center will be at 1000, 1000 by convention
+                cs = int(round(c[0])) + 1000
+                rs = int(round(c[1])) + 1000
+
+                if (rs < 0) or (rs+two_by_one_img.shape[0] > bounds):
+                    raise ValueError('rs: out of bounds in rows. CSPAD geometry '
+                                     'extends beyond 2000 x 2000 grid it is '
+                                     'assembled on. It is likely that your CSPAD '
+                                     'geometry is wacky in some respect -- use '
+                                     '`sketch` method to check.')
+                if (cs < 0) or (cs+two_by_one_img.shape[1] > bounds):
+                    raise ValueError('cs: out of bounds in cols. CSPAD geometry '
+                                     'extends beyond 2000 x 2000 grid it is '
+                                     'assembled on. It is likely that your CSPAD '
+                                     'geometry is wacky in some respect -- use '
+                                     '`sketch` method to check.')
+                
+                assembled_image[rs:rs+two_by_one_img.shape[0],
+                                cs:cs+two_by_one_img.shape[1]] += two_by_one_img
+        
+        # swap x-axis to conform to CXI convention
+        #assembled_image = assembled_image[:,::-1]
+        
+        return assembled_image
+
+
+    def sketch(self, mpl_axes=None, quad_colors = ['k', 'g', 'purple', 'b']):
+        """
+        Draw a rough sketch of the layout of the CSPAD
+        """
+
+        pixel_positions = self.xyz
+        
+        if not mpl_axes:
+            from matplotlib import pyplot as plt
+            import matplotlib.patches as plt_patches
+            plt.figure()
+            ax = plt.subplot(111)
+        else:
+            ax = mpl_axes
+
+        for i in range(4):
+            for j in range(pixel_positions.shape[2]): # should be range(8), legacy
+                x = pixel_positions[0,i,j,:,:,0]
+                y = pixel_positions[0,i,j,:,:,1]
+                corners = np.zeros((5,2))
+
+                corners[0,:] = np.array([ x[0,0],   y[0,0] ])     # bottom left
+                corners[1,:] = np.array([ x[0,-1],  y[0,-1] ])    # bottom right
+                corners[3,:] = np.array([ x[-1,0],  y[-1,0] ])    # top left
+                corners[2,:] = np.array([ x[-1,-1], y[-1,-1] ])   # top right
+                corners[4,:] = np.array([ x[0,0],   y[0,0] ])     # make rectangle
+
+                ax.plot(corners[:,0], corners[:,1], lw=2, color=quad_colors[i])
+                ax.scatter(x[0,0], y[0,0])
+                
+        beam_center = plt_patches.Circle((0, 0), 2, fill=True, lw=1, color='orange')
+        ax.add_patch(beam_center)
+                
+        # mirror x axis for CXI convention
+        if not ax.xaxis_inverted():
+            ax.invert_xaxis()
+
+        if mpl_axes:
+            return ax
+        else:
+            plt.show()
+            return
+
+
+    def imshow_cspad(self, image, vmin=0, vmax=None, mpl_axes=None):
+        """
+        Show an assembled image (e.g. from CSPad(raw_image) ) as it would be seen
+        when viewed from upstream at CXI. CXI convention is that the plus-x direction
+        is towards the hutch door, plus-y is upwards, and plus-z is the direction
+        of the beam.
+        
+        Parameters
+        ----------
+        image : np.ndarray
+            A two-dimensional assembled image
+        
+        Returns
+        -------
+        im : axes.imshow
+            The imshow instance.
+        """
+
+        if image.shape == (32, 185, 388):
+            img = self.assemble_image(image)
+        else:
+            img = image
+
+        # to be consistent with CXI convention, we want +x going left, and +y up
+        if not mpl_axes:
+            from matplotlib import pyplot as plt
+            plt.figure()
+            ax = plt.subplot(111)
+        else:
+            ax = mpl_axes
+
+        im = ax.imshow( img, origin='lower', vmin=vmin, vmax=vmax,
+                        interpolation='nearest' )
+
+        if not ax.xaxis_inverted():
+            ax.invert_xaxis()
+
+        return im
+
     
     @classmethod
     def from_basisgrid(cls, bg):
@@ -688,7 +883,48 @@ class Cspad(CompoundAreaCamera):
             The Cspad instance
         """
         return translate.load_cheetah(cls, filename)
-        
+
+
+    @classmethod
+    def from_metrology_file(cls, filename):
+        """
+        Load a geometry in metrology format.
+
+        Note that the LCLS detector group often provides
+        MS Excel files, but that this function expects a
+        flat text, space delimited file of the form:
+
+            # quad 0
+            1 x1 y1 z1
+            2 x2 y2 z2
+            3 ...
+            
+            # quad 1
+            1 x1 y1 z1
+            2 x2 y2 z2
+            3 ...
+
+        Lines preceeded by a '#' will be ignored.
+
+        It is recommened you simply generate this file by
+        hand from whatever metrology information is provided,
+        as historically there has not been a standard format
+        as of the time of writing this (Sept 2018).
+
+        Parameters
+        ----------
+        filename : str
+            The path of the file on disk.
+
+        Returns
+        -------
+        cspad : Cspad
+            The Cspad instance
+
+        """
+        bg = metrology.load_to_basisgrid(filename)
+        return cls.from_basisgrid(bg)
+
 
 
 def load(filename, base=CompoundAreaCamera, infer_base=True):
