@@ -11,9 +11,6 @@ import h5py
 import numpy as np
 
 
-
-
-
 parser = argparse.ArgumentParser(description=
 '''
 Convert and HDF5 geometry from real to reciprocal space (Q)
@@ -42,6 +39,10 @@ except:
 f.close()
 outfile = args.infile[:-3] + '_Q.h5'
 
+
+# add the z-offset
+zo = float(args.zoffset)
+xyz[...,2] += zo
 
 # ---- here is the math ----
 beam_vector = np.array([0.0, 0.0, 1.0]) # assumed
