@@ -47,6 +47,16 @@ class SensorElement(moveable.MoveableObject):
     @property
     def id_num(self):
         return self._id
+
+
+    @classmethod
+    def from_type(cls, type_name,
+                  id_num=None,
+                  parent=None,
+                  rotation_angles=None,
+                  translation=None):
+        raise NotImplementedError('from_type method not implemented')
+        return        
         
     
 # ---- specific sensor implementations  ----------------------------------------
@@ -223,8 +233,22 @@ class Cspad2x1(PixelArraySensor):
         super(Cspad2x1, self).__init__(shape, pixel_shape, **kwargs)
                                        
         return
-        
-        
+
+
+    @classmethod
+    def from_type(cls, type_name,
+                  id_num=0, parent=None,
+                  rotation_angles=np.array([0.0, 0.0, 0.0]),
+                  translation=np.array([0.0, 0.0, 0.0])):
+        """
+        Factory function for automatically identifying
+        the sensor based on the `type_name` alone.            
+        """
+        return cls(type_name=type_name, id_num=id_num, parent=parent,
+                   rotation_angles=rotation_angles,
+                   translation=translation)
+    
+    
     @property
     def untransformed_xyz(self):
         """
@@ -304,17 +328,8 @@ class Mtrx(PixelArraySensor):
             The sensor element.
         """
                  
-        #shape = (1920, 1920) # This should be configurable, we know pixel size to be 44.5um.
-        #pixel_shape = np.array([89.00, 89.00]) # micron
         if shape is None or pixel_shape is None:
-            if 'MTRX' in type_name:
-                s0,s1,ps0,ps1 = type_name.split(':')[1:]
-                shape = (int(s0), int(s1))
-                pixel_shape = (float(ps0), float(ps1))
-                print "###: ", shape, pixel_shape
-            else:
-                raise ValueError('Cannot construct MTRX without either explicit'
-                                 ' shape/pixel_shape or MTRX:a:b:x:y type_name')
+            raise RuntimeError()
 
         # TJL 4/9/18
         # I am not sure why these lines are necessary
@@ -323,17 +338,45 @@ class Mtrx(PixelArraySensor):
         self.shape = shape
         self._pixel_shape = pixel_shape
 
-        super(Mtrx, self).__init__(shape, pixel_shape, type_name='shouldbeoverwritten', 
+        super(Mtrx, self).__init__(shape, pixel_shape, 
+                 type_name='shouldbeoverwritten', 
                  id_num=id_num, parent=parent,
                  rotation_angles=rotation_angles, 
                  translation=translation)
                                        
         return
-    
+
+
+    @classmethod
+    def from_type(cls, type_name,
+                  id_num=0, parent=None,
+                  rotation_angles=np.array([0.0, 0.0, 0.0]),
+                  translation=np.array([0.0, 0.0, 0.0])):
+        """
+        Factory function for automatically identifying
+        the sensor based on the `type_name` alone.            
+        """
+
+        if 'MTRX' not in type_name:
+            raise ValueError('`type_name` (%s) does not contain "MTRX"'
+                             'cannot generate Mtrx object from type_name'
+                             ' alone')
+
+        s0, s1, ps0, ps1 = type_name.split(':')[1:]
+        shape = (int(s0), int(s1))
+        pixel_shape = (float(ps0), float(ps1))
+        #print "###: ", shape, pixel_shape
+
+        return cls(shape, pixel_shape,
+                   id_num=id_num, parent=parent,
+                   rotation_angles=rotation_angles,
+                   translation=translation)
+
     @property
     def type_name(self):
         return 'MTRX:%d:%d:%d:%d' %(self.shape[0], self.shape[1], 
                                     self._pixel_shape[0], self._pixel_shape[1])
+
         
 class PnccdQuad(PixelArraySensor):
     """
@@ -380,6 +423,21 @@ class PnccdQuad(PixelArraySensor):
         super(PnccdQuad, self).__init__(shape, pixel_shape, **kwargs)
                                        
         return
+
+
+    @classmethod
+    def from_type(cls, type_name,
+                  id_num=0, parent=None,
+                  rotation_angles=np.array([0.0, 0.0, 0.0]),
+                  translation=np.array([0.0, 0.0, 0.0])):
+        """
+        Factory function for automatically identifying
+        the sensor based on the `type_name` alone.            
+        """
+        return cls(type_name=type_name, id_num=id_num, parent=parent,
+                   rotation_angles=rotation_angles,
+                   translation=translation)
+
                 
 # ------------------------------------------------------------------------------
 # define a "type map" that maps a list of known object identifier strings to

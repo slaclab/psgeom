@@ -155,11 +155,11 @@ def load_psana(obj, filename):
             # this next line could be problematic if we don't restrict
             # the __init__ method of SensorElements.....
         
-            curr = typ(type_name=id_info[cni][2],
-                       id_num=id_info[cni][3],
-                       parent=parent,
-                       rotation_angles=rotations[cni], 
-                       translation=translations[cni])
+            curr = typ.from_type(type_name=id_info[cni][2],
+                                 id_num=id_info[cni][3],
+                                 parent=parent,
+                                 rotation_angles=rotations[cni], 
+                                 translation=translations[cni])
         
         # > else, is a CompoundCamera
         else:
