@@ -1,16 +1,25 @@
 # psgeom
 
-Python code for detector geometries, supporting translation between different programs, easy manipulation of the geometry, and access to the real-space coordinates of pixels. Currently we support interfaces to:
+Support for x-ray scattering experiment geometries:
+* load/save multiple geometry formats
+* translate/rotate parts of a detector in a hierarchical way
+* easily compute reciprocal, polar space coordinates
+
+User-friendliness is emphasized. The software aims to be general
+but not sacrifice simplicity.
+
+Chances are that if you need to compute stuff relating to scattering
+geometry for a particular experiment, psgeom has what you need, and
+it will be easy to use.
+
+Currently, interfaces exist to geometry formats from:
 
 * psana
 * CrystFEL
 * cheetah
-
-An interface to cctbx.xfel is planned.
-
-Developers Note:
-
-This code is hot off the press. That said, things seem to be working as of 7/10/15. Fire away! Check out the test.py file if you want to see how the implementation is verified.
+* DIALS
+* LCLS detector group metrologies
+* a simple flat text / HDF5 pixel map
 
 TJ Lane <tjlane@slac.stanford.edu>
 
@@ -36,7 +45,7 @@ cspad.to_cheetah_file('my_new_cheetah_geom.h5')
 
 -------
 
-*** Documentation ***
+*** Quick Links ***
 
 Information about the psana geometry:
 https://confluence.slac.stanford.edu/display/PSDM/Detector+Geometry
@@ -46,15 +55,5 @@ https://confluence.slac.stanford.edu/display/PSDM/Geometry+History
 
 CrystFEL Geometry:
 http://www.desy.de/~twhite/crystfel/manual-crystfel_geometry.html
-
---------
-
-Functionality left to add:
-* documentation, some is there, but more is good.
-* smart ways to visualize the geometry and intensities
-* additional sensor elements
-* If requested, legacy interface to mimic PSCalib
-* think: dynamically expose leaf properties to parents
-* think: should mask be included
 
 
