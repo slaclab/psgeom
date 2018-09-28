@@ -602,6 +602,14 @@ class TestTranslate(object):
                                    atol=100.0)
 
 
+    def test_dials_load(self):
+        # TODO make this a real test
+        obj = camera.CompoundAreaCamera()
+        x = translate.load_dials(obj, 'ref_files/refgeom_dials.json')
+        assert x.xyz.shape == (8, 512, 1024, 3)
+        assert x.num_children == 8
+
+
 
 # --- metrology.py ------------------------------------------------------------
 

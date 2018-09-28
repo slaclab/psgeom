@@ -30,6 +30,12 @@ format:      HDF5
 units:       intrinsic -- that is, any unit is allowed so long as it is
              self-consistent (all units the same)
 
+
+-- DIALS
+extension:   .json
+format       JSON
+units:       intrinsic
+
 """
 
 
@@ -40,6 +46,7 @@ import datetime
 import h5py
 import math
 import warnings
+import json
 
 import numpy as np
 
@@ -922,7 +929,59 @@ def write_cspad_crystfel(detector, filename, coffset=None, intensity_file_type='
     
     return    
 
+# ---- DIALS -------------------------------------------------------------------
+
+def load_dials(obj, filename):
+    """
+    Load a geometry in DIALS format.
     
+    Parameters
+    ----------
+    obj : camera.CompoundAreaCamera
+        An instance of CompoundAreaCamera or a subclass of it
+
+    filename : str
+        The path of the file on disk.
+        
+    Returns
+    -------
+    obj : variable
+        A populated instance of the camera object
+    """
+
+    with open(filename, 'r') as f:
+        jo = json.load(f)
+
+
+    d = jo["detector"]
+    if len(d) != 1:
+        raise NotImplementedError('multiple detectors in json')
+    else:
+        panels = jo["detector"][0]["panels"]
+
+
+    # the base level of the hierarchy has an offset in space
+    base = jo["detector"][0]["hierarchy"]
+    p0 = np.array(base["origin"])
+
+
+    # iterate over the panels and add them one by one
+    bg = basisgrid.BasisGrid()
+    for i,panel in enumerate(panels):
+
+        px_size = np.array(panel["pixel_size"])
+
+        f = np.array(panel["fast_axis"]) * px_size[1] # CONFIRM
+        s = np.array(panel["slow_axis"]) * px_size[0] # CONFIRM
+        p = np.array(panel["origin"]) + p0
+        shp = np.array(panel["image_size"])
+
+        bg.add_grid(p, s, f, shp)
+
+    geom_instance = obj.from_basisgrid(bg)
+
+    return geom_instance
+
     
 # ---- generic text ------------------------------------------------------------
     
