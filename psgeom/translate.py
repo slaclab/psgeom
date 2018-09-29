@@ -22,6 +22,7 @@ extension:   .geom
 format:      flat text
 units:       all CrystFEL units are pixel units, 
              except the sample-to-detector offset
+references:  http://www.desy.de/~twhite/crystfel/manual-crystfel_geometry.html
 
 
 -- Thor
@@ -35,7 +36,9 @@ units:       intrinsic -- that is, any unit is allowed so long as it is
 extension:   .json
 format       JSON
 units:       intrinsic
-
+references:  http://journals.iucr.org/j/issues/2014/04/00/jo5001/index.html
+             http://journals.iucr.org/d/issues/2016/04/00/gm5043/index.html#BB30
+             http://journals.iucr.org/d/issues/2018/09/00/lp5037/index.html
 """
 
 
@@ -931,7 +934,8 @@ def write_cspad_crystfel(detector, filename, coffset=None, intensity_file_type='
 
 # ---- DIALS -------------------------------------------------------------------
 
-def load_dials(obj, filename):
+
+def load_dials(obj, filename, scale_factor=1000.0):
     """
     Load a geometry in DIALS format.
     
@@ -942,6 +946,9 @@ def load_dials(obj, filename):
 
     filename : str
         The path of the file on disk.
+
+    scale_factor : float
+        A factor to scale the units by (to e.g. meet a new convention for units)
         
     Returns
     -------
@@ -952,32 +959,80 @@ def load_dials(obj, filename):
     with open(filename, 'r') as f:
         jo = json.load(f)
 
-
     d = jo["detector"]
     if len(d) != 1:
         raise NotImplementedError('multiple detectors in json')
     else:
-        panels = jo["detector"][0]["panels"]
+        base = jo["detector"][0]
 
+    to_visit = []
+    bg_tmp = {}
 
-    # the base level of the hierarchy has an offset in space
-    base = jo["detector"][0]["hierarchy"]
-    p0 = np.array(base["origin"])
+    def get_F(node):
+   
+        # see Acta Cryst. D (2018). D74, 877–894 eqs (1) & (2)
 
+        dx = np.array(node["fast_axis"]) # x = fast
+        dy = np.array(node["slow_axis"]) # y = slow
+        dn = np.cross(dx, dy)            # dn = dx x dy
+        d0 = np.array(node["origin"])    
+        F  = np.array([dx, dy, dn, d0]).T
+        F  = np.vstack([F, np.array([0, 0, 0, 1])])
 
-    # iterate over the panels and add them one by one
+        return F
+
+    def dfs(current_node, cF):
+
+        # the geometry file is separated into two parts, first a
+        # 'hierarchy' that specifies the translations/rotations
+        # and points to a 'panel' index
+        #
+        # the second part is the 'panels', which are the leaves
+        # of the hierarchy, but are located in a different part
+        # of the JSON file -- these have one final trans/rot to
+        # apply
+
+        if "children" in current_node.keys():
+            for i in range(len(current_node["children"])):
+                new_node = (current_node["children"][i],
+                            np.dot(cF, get_F(current_node)) )
+                to_visit.append( new_node )
+
+        if "panel" in current_node.keys():
+            panel_index = current_node["panel"]
+            panel = base["panels"][panel_index]
+            print "adding panel:", panel_index
+
+            px_size = np.array(panel["pixel_size"])
+            shp = np.array(panel["image_size"])
+
+            pF = get_F(panel)
+            final_F = np.dot(cF, pF)
+
+            # extract the final (transformed) panel vectors
+            p = final_F[:3,3] * scale_factor
+            s = final_F[:3,1] * px_size[1] * scale_factor
+            f = final_F[:3,0] * px_size[0] * scale_factor
+
+            #bg.add_grid(p, s, f, shp)
+            bg_tmp[panel_index] = (p, s, f, shp)
+
+        if len(to_visit) > 0:
+            dfs(*to_visit.pop())
+
+        return
+
+    dfs(base["hierarchy"], get_F(base["hierarchy"]))
+
+    # this code checks to make sure we got all the panels
+    # and that they get added in order
     bg = basisgrid.BasisGrid()
-    for i,panel in enumerate(panels):
-
-        px_size = np.array(panel["pixel_size"])
-
-        f = np.array(panel["fast_axis"]) * px_size[1] # CONFIRM
-        s = np.array(panel["slow_axis"]) * px_size[0] # CONFIRM
-        p = np.array(panel["origin"]) + p0
-        shp = np.array(panel["image_size"])
-
-        bg.add_grid(p, s, f, shp)
-
+    for k in range(max(bg_tmp.keys())+1):
+        if k in bg_tmp.keys():
+            print k
+            bg.add_grid(*bg_tmp[k])
+        else:
+            print 'WARNING: panel %d seems to be missing' % k
     geom_instance = obj.from_basisgrid(bg)
 
     return geom_instance

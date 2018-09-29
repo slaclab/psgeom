@@ -549,7 +549,8 @@ class Cspad(CompoundAreaCamera):
         Draw a rough sketch of the layout of the CSPAD
         """
 
-        pixel_positions = self.xyz
+        pixel_positions = np.squeeze(self.xyz)
+        print pixel_positions.shape
         
         if not mpl_axes:
             from matplotlib import pyplot as plt
@@ -560,9 +561,9 @@ class Cspad(CompoundAreaCamera):
             ax = mpl_axes
 
         for i in range(4):
-            for j in range(pixel_positions.shape[2]): # should be range(8), legacy
-                x = pixel_positions[0,i,j,:,:,0]
-                y = pixel_positions[0,i,j,:,:,1]
+            for j in range(8):
+                x = pixel_positions[i,j,:,:,0]
+                y = pixel_positions[i,j,:,:,1]
                 corners = np.zeros((5,2))
 
                 corners[0,:] = np.array([ x[0,0],   y[0,0] ])     # bottom left
