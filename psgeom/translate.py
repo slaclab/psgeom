@@ -970,7 +970,7 @@ def load_dials(obj, filename, scale_factor=1000.0):
 
     def get_F(node):
    
-        # see Acta Cryst. D (2018). D74, 877–894 eqs (1) & (2)
+        # see Acta Cryst. D (2018). D74, 877-894 eqs (1) & (2)
 
         dx = np.array(node["fast_axis"]) # x = fast
         dy = np.array(node["slow_axis"]) # y = slow
@@ -1001,7 +1001,7 @@ def load_dials(obj, filename, scale_factor=1000.0):
         if "panel" in current_node.keys():
             panel_index = current_node["panel"]
             panel = base["panels"][panel_index]
-            print "adding panel:", panel_index
+            #print "adding panel:", panel_index
 
             px_size = np.array(panel["pixel_size"])
             shp = np.array(panel["image_size"])
@@ -1029,7 +1029,6 @@ def load_dials(obj, filename, scale_factor=1000.0):
     bg = basisgrid.BasisGrid()
     for k in range(max(bg_tmp.keys())+1):
         if k in bg_tmp.keys():
-            print k
             bg.add_grid(*bg_tmp[k])
         else:
             print 'WARNING: panel %d seems to be missing' % k
