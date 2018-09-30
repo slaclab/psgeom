@@ -1,0 +1,50 @@
+#!/usr/bin/env python
+
+"""
+Convert between different gain types
+"""
+
+import numpy as np
+from psgeom import gain
+import argparse
+
+parser = argparse.ArgumentParser(description=
+'''
+Convert a CSPAD gain file, can support:
+-- numpy-saved psana array (shape 32,185,388) (.npy)
+-- cheetah format (.h5)
+-- DAQ format (.txt)
+''', formatter_class=argparse.RawTextHelpFormatter)
+
+parser.add_argument('infile',
+                    help='Input geometry file path (format inferred from extension).')
+parser.add_argument('outfile',
+                    help='Output geometry file path (format specified by -f/--format.)')
+parser.add_argument('-f', '--format', choices=['psana', 'cheetah', 'daq'],
+                    help='Output file format, one of: "psana", "cheetah", "daq"')
+args = parser.parse_args()
+
+
+extension = args.infile.split('.')[-1]
+
+if extension == 'npy':
+    gainmap = np.load(args.infile)
+elif extension == 'h5':
+    gainmap = gain.load_cheetah(args.infile)
+elif extension == 'txt':
+    gainmap = gain.load_daq(args.infile)
+else:
+    raise IOError('Could not infer input format from extension: .%s' % extension)
+
+if args.format == 'psana':
+    np.save(args.outfile, gainmap)
+elif args.format == 'cheetah':
+    gain.write_cheetah(args.outfile, gainmap)
+elif args.format == 'daq':
+    gain.write_daq(args.outfile, gainmap)
+else:
+    raise IOError('File format "%s" not supported' % args.format)
+
+print 'Wrote: %s in %s format' % (args.outfile, args.format)
+
+
