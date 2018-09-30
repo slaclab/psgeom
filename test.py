@@ -11,6 +11,7 @@ from psgeom import translate
 from psgeom import camera
 from psgeom import basisgrid
 from psgeom import fitting
+from psgeom import reciprocal
 from psgeom.translate import _cheetah_to_twobyones
 
 import warnings
@@ -633,145 +634,144 @@ def test_load_metrology():
 
 
 # --- reciprocal.py -----------------------------------------------------------
-#
-# class TestPhotonEnergy(object):
-#
-#     def test_unit_convs(self):
-#         b = reciprocal.PhotonEnergy(energy=1000.0) # 1 keV
-#         assert_allclose(b.wavelength, 12.398, rtol=1e-3)
-#         assert_allclose(b.frequency, 2.4190e17, rtol=1e-3)
-#         assert_allclose(b.wavenumber, (2.0 * np.pi)/12.398, rtol=1e-3)
-#
-#
-# class TestDetector(object):
-#
-#     def setup(self):
-#         self.spacing   = 0.05
-#         self.lim       = 10.0
-#         self.energy    = reciprocal.PhotonEnergy(wavenumber=0.7293)
-#         self.n_photons = 100.0
-#         self.l         = 50.0
-#         self.d = xray.Detector.generic(spacing = self.spacing,
-#                                        lim = self.lim,
-#                                        energy = self.energy,
-#                                        photons_scattered_per_shot = self.n_photons,
-#                                        l = self.l)
-#
-#     def test_implicit_to_explicit(self):
-#         xyz_imp = self.d.real
-#         self.d.implicit_to_explicit()
-#         assert_array_almost_equal(xyz_imp, self.d.real)
-#
-#     def test_evaluate_qmag(self):
-#         # doubles as a test for _evaluate_theta
-#         x = np.zeros((5, 3))
-#         x[:,0] = np.random.randn(5)
-#         x[:,2] = self.l
-#
-#         S = x.copy()
-#         S = S / np.sqrt( np.sum( np.power(S, 2), axis=1 ) )[:,None]
-#         S -= self.d.beam_vector
-#
-#         b = xray.Beam(1, energy=self.energy)
-#         qref = b.k * np.sqrt( np.sum( np.power(S, 2), axis=1 ) )
-#
-#         qmag = self.d.evaluate_qmag(x)
-#         assert_allclose(qref, qmag)
-#
-#     def test_recpolar_n_reciprocal(self):
-#         q1 = np.sqrt( np.sum( np.power(self.d.reciprocal,2), axis=1) )
-#         q2 = self.d.recpolar[:,0]
-#         assert_array_almost_equal(q1, q2)
-#
-#     def test_polar_space(self):
-#
-#         # this is the "generic" detector in real space
-#         x = np.arange(-self.lim, self.lim+self.spacing, self.spacing)
-#         xx, yy = np.meshgrid(x, x)
-#
-#         # one slice along the horizontal direction in real space
-#         r     = self.d.polar[:,0]
-#         theta = self.d.polar[:,1]
-#         phi   = self.d.polar[:,2]
-#
-#         x = r * np.sin(theta) * np.cos(phi)
-#         y = r * np.sin(theta) * np.sin(phi)
-#         z = r * np.cos(theta)
-#
-#         assert_array_almost_equal(yy.flatten(), x)
-#         assert_array_almost_equal(xx.flatten(), y)
-#
-#     def test_reciprocal_space(self):
-#         qx = self.d.reciprocal[:,0]
-#         qy = self.d.reciprocal[:,1]
-#
-#         Shat    = self.d._unit_vector(self.d.real)
-#         Sx_unit = Shat[:,0]
-#         Sy_unit = Shat[:,1]
-#
-#         assert_array_almost_equal(qx/self.d.k, Sx_unit)
-#         assert_array_almost_equal(qy/self.d.k, Sy_unit)
-#
-#     def test_recpolar_space(self):
-#
-#         # build a reference conversion, using a different geometrical calc
-#         ref1 = np.zeros(self.d.xyz.shape)
-#         hd = np.sqrt( np.power(self.d.xyz[:,0], 2) + np.power(self.d.xyz[:,1], 2) )
-#
-#         # |q| = k*sqrt{ 2 - 2 cos(theta) }
-#         ref1[:,0] = self.d.k * np.sqrt( 2.0 - 2.0 * np.cos(self.d.polar[:,1]) )
-#
-#         # q_theta = theta / 2 (one-theta convention)
-#         ref1[:,1] = self.d.polar[:,1] / 2.0 # not working atm
-#
-#         # q_phi is the same as polar
-#         ref1[:,2] = self.d.polar[:,2].copy()
-#
-#         assert_array_almost_equal(ref1[:,0], self.d.recpolar[:,0], err_msg='|q|')
-#         assert_array_almost_equal(ref1[:,1], self.d.recpolar[:,1], err_msg='theta')
-#         assert_array_almost_equal(ref1[:,2], self.d.recpolar[:,2], err_msg='phi')
-#
-#     def test_compute_intersect(self):
-#
-#         # build a simple grid and turn it into a detector
-#         bg = xray.BasisGrid()
-#         p = np.array([0.0, 0.0, 1.0])
-#         s = np.array([1.0, 0.0, 0.0])
-#         f = np.array([0.0, 1.0, 0.0])
-#         shape = (10, 10)
-#         bg.add_grid(p, s, f, shape)
-#         d = xray.Detector(bg, 2.0*np.pi/1.4)
-#
-#         # compute a set of q-vectors corresponding to a slightly offset grid
-#         xyz_grid = bg.to_explicit()
-#         xyz_off = xyz_grid.copy()
-#         xyz_off[:,0] += 0.5
-#         xyz_off[:,1] += 0.5
-#         q_vectors = d._real_to_reciprocal(xyz_off)
-#
-#         # b/c s/f vectors are unit vectors, where they intersect s/f is simply
-#         # their coordinates. The last row and column will miss, however
-#         intersect_ref = np.logical_and( (xyz_off[:,0] <= 9.0),
-#                                         (xyz_off[:,1] <= 9.0) )
-#
-#         pix_ref = xyz_off[intersect_ref,:2]
-#
-#         # compute the intersection from code
-#         pix, intersect = d._compute_intersections(q_vectors, 0) # 0 --> grid_index
-#         print pix, intersect
-#
-#         assert_array_almost_equal(intersect_ref, intersect)
-#         assert_array_almost_equal(pix_ref, pix)
-#
-#     def test_serialization(self):
-#         s = self.d._to_serial()
-#         d2 = xray.Detector._from_serial(s)
-#         assert_array_almost_equal(d2.xyz, self.d.xyz)
-#
-#     def test_q_max(self):
-#         ref_q_max = np.max(self.d.recpolar[:,0])
-#         assert_almost_equal(self.d.q_max, ref_q_max, decimal=2)
-#
+
+class TestPhotonEnergy(object):
+
+    def test_unit_convs(self):
+        b = reciprocal.PhotonEnergy(energy=1000.0) # 1 keV
+        np.testing.assert_allclose(b.wavelength, 12.398, rtol=1e-3)
+        np.testing.assert_allclose(b.frequency, 2.4190e17, rtol=1e-3)
+        np.testing.assert_allclose(b.wavenumber, (2.0 * np.pi)/12.398, rtol=1e-3)
+
+
+class TestGeometry(object):
+
+    def setup(self):
+        self.spacing   = 0.05
+        self.lim       = 10.0
+        self.energy    = reciprocal.PhotonEnergy(wavenumber=0.7293)
+        self.l         = 50.0
+        self.d = reciprocal.Geometry.generic(spacing = self.spacing,
+                                             lim = self.lim,
+                                             eV = self.energy,
+                                             l = self.l)
+
+    def test_implicit_to_explicit(self):
+        xyz_imp = self.d.real
+        self.d.implicit_to_explicit()
+        np.testing.assert_array_almost_equal(xyz_imp, self.d.real)
+
+    def test_evaluate_qmag(self):
+        # doubles as a test for _evaluate_theta
+        x = np.zeros((5, 3))
+        x[:,0] = np.random.randn(5)
+        x[:,2] = self.l
+
+        S = x.copy()
+        S = S / np.sqrt( np.sum( np.power(S, 2), axis=1 ) )[:,None]
+        S -= self.d.beam_vector
+
+        b = reciprocal.PhotonEnergy(wavenumber=0.7293)
+        qref = b.k * np.sqrt( np.sum( np.power(S, 2), axis=1 ) )
+
+        qmag = self.d.evaluate_qmag(x)
+        np.testing.assert_allclose(qref, qmag)
+
+    def test_recpolar_n_reciprocal(self):
+        q1 = np.sqrt( np.sum( np.power(self.d.reciprocal,2), axis=1) )
+        q2 = self.d.recpolar[:,0]
+        np.testing.assert_array_almost_equal(q1, q2)
+
+    def test_polar_space(self):
+
+        # this is the "generic" geometry in real space
+        x = np.arange(-self.lim, self.lim+self.spacing, self.spacing)
+        xx, yy = np.meshgrid(x, x)
+
+        # one slice along the horizontal direction in real space
+        r     = self.d.polar[:,0]
+        theta = self.d.polar[:,1]
+        phi   = self.d.polar[:,2]
+
+        x = r * np.sin(theta) * np.cos(phi)
+        y = r * np.sin(theta) * np.sin(phi)
+        z = r * np.cos(theta)
+
+        np.testing.assert_array_almost_equal(yy.flatten(), x)
+        np.testing.assert_array_almost_equal(xx.flatten(), y)
+
+    def test_reciprocal_space(self):
+        qx = self.d.reciprocal[:,0]
+        qy = self.d.reciprocal[:,1]
+
+        Shat    = self.d._unit_vector(self.d.real)
+        Sx_unit = Shat[:,0]
+        Sy_unit = Shat[:,1]
+
+        np.testing.assert_array_almost_equal(qx/self.d.k, Sx_unit)
+        np.testing.assert_array_almost_equal(qy/self.d.k, Sy_unit)
+
+    def test_recpolar_space(self):
+
+        # build a reference conversion, using a different geometrical calc
+        ref1 = np.zeros(self.d.xyz.shape)
+        hd = np.sqrt( np.power(self.d.xyz[:,0], 2) + np.power(self.d.xyz[:,1], 2) )
+
+        # |q| = k*sqrt{ 2 - 2 cos(theta) }
+        ref1[:,0] = self.d.k * np.sqrt( 2.0 - 2.0 * np.cos(self.d.polar[:,1]) )
+
+        # q_theta = theta / 2 (one-theta convention)
+        ref1[:,1] = self.d.polar[:,1] / 2.0 # not working atm
+
+        # q_phi is the same as polar
+        ref1[:,2] = self.d.polar[:,2].copy()
+
+        np.testing.assert_array_almost_equal(ref1[:,0], self.d.recpolar[:,0], err_msg='|q|')
+        np.testing.assert_array_almost_equal(ref1[:,1], self.d.recpolar[:,1], err_msg='theta')
+        np.testing.assert_array_almost_equal(ref1[:,2], self.d.recpolar[:,2], err_msg='phi')
+
+    def test_compute_intersect(self):
+
+        # build a simple grid and turn it into a geometry
+        bg = basisgrid.BasisGrid()
+        p = np.array([0.0, 0.0, 1.0])
+        s = np.array([1.0, 0.0, 0.0])
+        f = np.array([0.0, 1.0, 0.0])
+        shape = (10, 10)
+        bg.add_grid(p, s, f, shape)
+        d = reciprocal.Geometry(bg, 2.0*np.pi/1.4)
+
+        # compute a set of q-vectors corresponding to a slightly offset grid
+        xyz_grid = bg.to_explicit()
+        xyz_off = xyz_grid.copy()
+        xyz_off[:,0] += 0.5
+        xyz_off[:,1] += 0.5
+        q_vectors = d._real_to_reciprocal(xyz_off)
+
+        # b/c s/f vectors are unit vectors, where they intersect s/f is simply
+        # their coordinates. The last row and column will miss, however
+        intersect_ref = np.logical_and( (xyz_off[:,0] <= 9.0),
+                                        (xyz_off[:,1] <= 9.0) )
+
+        pix_ref = xyz_off[intersect_ref,:2]
+
+        # compute the intersection from code
+        pix, intersect = d.compute_intersections(q_vectors, 0) # 0 --> grid_index
+        print pix, intersect
+
+        np.testing.assert_array_almost_equal(intersect_ref, intersect)
+        np.testing.assert_array_almost_equal(pix_ref, pix)
+
+    def test_serialization(self):
+        raise unittest.SkipTest
+        s = self.d._to_serial()
+        d2 = reciprocal.Geometry._from_serial(s)
+        np.testing.assert_array_almost_equal(d2.xyz, self.d.xyz)
+
+    def test_q_max(self):
+        ref_q_max = np.max(self.d.recpolar[:,0])
+        np.testing.assert_almost_equal(self.d.q_max, ref_q_max, decimal=2)
+
 # -----------------------------------------------------------------------------
 
 class TestFitting(object):
