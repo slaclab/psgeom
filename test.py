@@ -763,7 +763,6 @@ class TestGeometry(object):
         np.testing.assert_array_almost_equal(pix_ref, pix)
 
     def test_serialization(self):
-        raise unittest.SkipTest
         s = self.d._to_serial()
         d2 = reciprocal.Geometry._from_serial(s)
         np.testing.assert_array_almost_equal(d2.xyz, self.d.xyz)
