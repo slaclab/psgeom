@@ -1,0 +1,93 @@
+#!/usr/bin/env python
+
+"""
+Convert between two different geometry types
+"""
+
+from psgeom import camera
+import argparse
+
+import h5py
+import numpy as np
+
+HIGH_GAIN = 7.2 # hard wired for CSPAD
+
+parser = argparse.ArgumentParser(description=
+'''
+Make a simple gain map based on a radial cutoff, in:
+-- real space units (whatever the geometry is in, usually um)
+-- reciprocal space (inv angstrom)
+-- resolution (angstrom)
+''', formatter_class=argparse.RawTextHelpFormatter)
+
+parser.add_argument('geometry',
+                    help='Input geometry file path.')
+parser.add_argument('cutoff', type=float,
+                    help='The radius cutoff to switch between high/low gain')
+parser.add_argument('cutoff_type', choices=['pixel', 'inv-angstrom', 'angstrom'],
+                    help='What units the cutoff is in')
+parser.add_argument('-e', '--energy', type=float, required=False,
+                    help='The beam energy to use, in eV')
+parser.add_argument('-z', '--zoffset', type=float, default=0.0,
+                    help='Shift the detector by this many mm \
+                          along the beam before converting')
+parser.add_argument('-c', '--cspad', action='store_true',
+                    help='Toggle this to force loading as a CSPAD')
+args = parser.parse_args()
+
+
+print('WARNING: this script is in beta!')
+print('         please report any found issues to:')
+print('         TJ Lane <tjlane@slac.stanford.edu>')
+
+
+if args.cspad:
+    print 'CSPAD requested, attempting to load geometry as CSPAD'
+    geom = camera.load(args.infile, base=camera.Cspad)
+else:
+    geom = camera.load(args.infile)
+xyz = geom.xyz
+
+# add the z-offset
+zo = float(args.zoffset)
+xyz[...,2] += zo
+
+
+# ---- here is the math for reciprocal space ----
+# TODO use the reciprocal.py code
+
+beam_vector = np.array([0.0, 0.0, 1.0]) # assumed
+
+h = 4.135677516e-15   # Planks constant | eV s
+c = 299792458         # speed of light  | m / s
+wavelength = h * c * 10.**10. / args.energy # m --> A
+wavenumber = 2.0 * np.pi / wavelength       # inv A
+
+norm = np.sqrt( np.sum( np.square(xyz), axis=-1 ) )
+S = xyz / norm[...,None] # unit vector
+
+q_xyz = wavenumber * (S - beam_vector)
+
+# -----------------------------------------------
+
+r  = np.sqrt(np.sum(np.square(xyz),   axis=-1))
+qr = np.sqrt(np.sum(np.square(q_xyz), axis=-1))
+
+# -----------------------------------------------
+
+gainmap = np.ones((32, 185, 388))
+if args.cutoff_type == 'pixel':
+    gainmap[r < args.cutoff] = HIGH_GAIN
+
+elif args.cutoff_type == 'inv-angstrom':
+    gainmap[qr < args.cutoff] = HIGH_GAIN
+    
+elif args.cutoff_type == 'angstrom':
+    c = 2.0 * np.pi / args.cutoff
+    gainmap[qr < c] = HIGH_GAIN
+    
+# -----------------------------------------------
+    
+# TODO allow different save formats
+np.save('gainmap.npy', gainmap)
+
