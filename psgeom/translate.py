@@ -71,6 +71,15 @@ def _natural_sort(l):
     return sorted(l, key = alphanum_key)
 
 
+def _twobyones_to_asics():
+    raise NotImplementedError()
+    return
+
+def _asics_to_twobyones():
+    raise NotImplementedError()
+    return
+
+
 # ---- psana -------------------------------------------------------------------
 
 def load_psana(obj, filename):

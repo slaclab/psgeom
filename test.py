@@ -12,7 +12,7 @@ from psgeom import camera
 from psgeom import basisgrid
 from psgeom import fitting
 from psgeom import reciprocal
-from psgeom.translate import _cheetah_to_twobyones
+from psgeom import gain
 
 import warnings
 #camera._STRICT = True
@@ -453,9 +453,9 @@ class TestTranslate(object):
         
         f = h5py.File('ref_files/refgeom_cheetah.h5', 'r')
         
-        x = -1.0 * _cheetah_to_twobyones( np.array(f['x']) * 1000000.0 )
-        y = _cheetah_to_twobyones( np.array(f['y']) * 1000000.0 )
-        z = _cheetah_to_twobyones( np.array(f['z']) )
+        x = -1.0 * translate._cheetah_to_twobyones( np.array(f['x']) * 1000000.0 )
+        y = translate._cheetah_to_twobyones( np.array(f['y']) * 1000000.0 )
+        z = translate._cheetah_to_twobyones( np.array(f['z']) )
         
         f.close()
         
@@ -770,6 +770,44 @@ class TestGeometry(object):
     def test_q_max(self):
         ref_q_max = np.max(self.d.recpolar[:,0])
         np.testing.assert_almost_equal(self.d.q_max, ref_q_max, decimal=2)
+
+# --- gain.py -----------------------------------------------------------------
+
+class TestGain:
+    
+    def test_cheetah_roundtrip(self):
+        
+        r = np.random.randint(2, size=(32,185,388))
+        gain.write_cheetah('ref_files/tmpgain.h5', r)
+        r2 = gain.load_cheetah('ref_files/tmpgain.h5')
+        
+        e = np.sum(np.abs( r - r2 ))
+        assert e == 0, e
+        os.remove('ref_files/tmpgain.h5')
+        
+        return
+        
+    def test_DAQ_roundtrip(self):
+
+        # DAQ map should be comprised of 1's and 7.2's
+        r = np.random.randint(2, size=(32,185,388)) * 6.2 + 1
+        gain.write_daq('ref_files/tmpgain.txt', r)
+        r2 = gain.load_daq('ref_files/tmpgain.txt')
+        
+        e = np.sum(np.abs( r - r2 ))
+        np.testing.assert_allclose(r, r2)
+        os.remove('ref_files/tmpgain.txt')
+
+        return
+    
+    def test_translate_consistency(self):
+        
+        cht = gain.load_cheetah('ref_files/200px-gainmap.h5')
+        daq = gain.load_daq('ref_files/200px-gainmap.txt', gain_ratio=7.2)
+        
+        assert np.sum(np.abs(cht - daq)) == 0.0
+        
+        return
 
 # -----------------------------------------------------------------------------
 
