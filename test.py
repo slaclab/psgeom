@@ -316,6 +316,12 @@ class TestCompoundAreaCamera(TestCompoundCamera):
         np.testing.assert_allclose(geom.xyz, geom2.xyz, atol=0.001)
         
         os.remove('ref_files/tmp_rayonix.geom')
+
+
+    def test_rayonix_big(self):
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/big_rayonix.data')
+        geom.to_crystfel_file('ref_files/tmp_rayonix.geom')
+        os.remove('ref_files/tmp_rayonix.geom')
         
     
     def test_pnccd_vs_geometry_access(self):

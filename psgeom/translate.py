@@ -82,6 +82,28 @@ def _asics_to_twobyones():
 
 # ---- psana -------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
+# define a "type map" that maps a list of known object identifier strings to
+# the corresponding types
+
+def map_type(element_string):
+
+    if element_string in ['SENS2X1:V1', 'SENS2X1']:
+        element_type = sensors.Cspad2x1
+        element_name = 'SENS2X1'
+    elif element_string.startswith('PNCCD'): # known: "PNCCD:V1"
+        element_type = sensors.PnccdQuad
+        element_name = 'PNCCD'
+    elif element_string.startswith('MTRX'):
+        element_type = sensors.Mtrx
+        element_name = element_string
+    else:
+        raise TypeError('Cannot understand sensor type: %s' % element_string)
+
+    return element_type, element_name
+
+
+
 def load_psana(obj, filename):
     """
     Load a geometry in psana format.
@@ -142,8 +164,8 @@ def load_psana(obj, filename):
                       '%d roots found.' % len(possible_root_rows))
     else:
         root_index = possible_root_rows[0]
-        if id_info[root_index][0] != 'IP':
-            warnings.warn('Root object is not labeled "IP".')
+        #if id_info[root_index][0] != 'IP':
+        #    warnings.warn('Root object is not labeled "IP".')
     
 
     # ---- traverse tree, adding children / depth frist
@@ -162,19 +184,21 @@ def load_psana(obj, filename):
 
         # > if no children, is a SensorElement
         if len(child_indices) == 0:
-        
+
+            # following commented lines deprecated 
             # loop up what type of sensor element we have
-            try:
-                typ = sensors.type_map[id_info[cni][2]]
-            except KeyError:
-                raise KeyError('Sensor type: %s not understood.' % id_info[i][2])
-            
+            #try:
+            #    typ = sensors.type_map[id_info[cni][2]]
+            #except KeyError:
+            #    raise KeyError('Sensor type: %s not understood.' % id_info[i][2])
+
+            typ, name = map_type(id_info[cni][2])
             
             # TJL note to self:
             # this next line could be problematic if we don't restrict
             # the __init__ method of SensorElements.....
         
-            curr = typ.from_type(type_name=id_info[cni][2],
+            curr = typ.from_type(type_name=name,
                                  id_num=id_info[cni][3],
                                  parent=parent,
                                  rotation_angles=rotations[cni], 
@@ -762,11 +786,9 @@ def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
             s_sqt = math.sqrt(s[0]**2 + s[1]**2)
             
             if np.abs(f_sqt - s_sqt) > (1e-4 * max(s_sqt, f_sqt)):
-                raise IOError('Panel %d has rectangular pixels, which cannot be'
-                              ' represented in the CrystFEL geometry format. A '
-                              'custom solution for your detector is unfortunately '
-                              'necessary. Please send your complaints to Tom '
-                              'White :).' % grid_index)
+                raise IOError('Panel %d has non-square pixels, which cannot be'
+                              ' represented in the CrystFEL geometry format just yet.'
+                              '' % grid_index)
             else:
                 pixel_size = f_sqt
              

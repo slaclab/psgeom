@@ -439,17 +439,5 @@ class PnccdQuad(PixelArraySensor):
                    translation=translation)
 
                 
-# ------------------------------------------------------------------------------
-# define a "type map" that maps a list of known object identifier strings to
-# the corresponding types
-
-type_map = {'SENS2X1:V1' :           Cspad2x1,
-            'SENS2X1'    :           Cspad2x1,
-            'MTRX:1920:1920:89:89' : Mtrx,
-            'PNCCD:V1' :             PnccdQuad}
-
-
-
-
 
 
