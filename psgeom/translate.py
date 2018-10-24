@@ -1045,6 +1045,12 @@ def load_dials(obj, filename, scale_factor=1000.0):
             s = final_F[:3,1] * px_size[1] * scale_factor
             f = final_F[:3,0] * px_size[0] * scale_factor
 
+            # DIAS convention is +z points from IP to source
+            # this is the x-flipped version of our convention
+            p[0] *= -1
+            s[0] *= -1
+            f[0] *= -1
+
             #bg.add_grid(p, s, f, shp)
             bg_tmp[panel_index] = (p, s, f, shp)
 
