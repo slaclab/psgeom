@@ -336,8 +336,6 @@ def write_psana(detector, filename, title='geometry'):
                 child_data[6] = 0
 
                 line = fmt_line % tuple(child_data)
-                
-                #f.write(line)
                 lines.append(line)
         
                 write_children(child)
@@ -347,7 +345,6 @@ def write_psana(detector, filename, title='geometry'):
     # temporary -- for compatability with legacy code -- todo
     # flip the ordering of the lines so that the sensor elements come first,
     # as a lot of existing code requires this ordering
-    #print lines, '\n\n'
     for l in _mikhail_ordering(lines):
         f.write(l)
 
@@ -784,13 +781,18 @@ def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
             # write the basis vectors           
             f_sqt = math.sqrt(f[0]**2 + f[1]**2)
             s_sqt = math.sqrt(s[0]**2 + s[1]**2)
-            
-            if np.abs(f_sqt - s_sqt) > (1e-4 * max(s_sqt, f_sqt)):
-                raise IOError('Panel %d has non-square pixels, which cannot be'
-                              ' represented in the CrystFEL geometry format just yet.'
-                              '' % grid_index)
-            else:
-                pixel_size = f_sqt
+
+
+            # According to TAW (email 18 OCT 2018) crystFEL's pixels do not necessarily need
+            # to be square... so removing this bit of code
+
+            #if np.abs(f_sqt - s_sqt) > (1e-4 * max(s_sqt, f_sqt)):
+            #    raise IOError('Panel %d has non-square pixels, which cannot be'
+            #                  ' represented in the CrystFEL geometry format just yet.'
+            #                  '' % grid_index)
+            #else:
+
+            pixel_size = f_sqt
              
             print >> of, "%s/fs = %s%fx %s%fy" % ( panel_name,
                                                    get_sign(-f[0]/f_sqt), abs(f[0]/f_sqt), 

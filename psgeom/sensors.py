@@ -375,7 +375,8 @@ class Mtrx(PixelArraySensor):
     @property
     def type_name(self):
         return 'MTRX:%d:%d:%d:%d' %(self.shape[0], self.shape[1], 
-                                    self._pixel_shape[0], self._pixel_shape[1])
+                                    round(self._pixel_shape[0]),
+                                    round(self._pixel_shape[1]))
 
         
 class PnccdQuad(PixelArraySensor):
