@@ -22,7 +22,7 @@ def load_to_basisgrid(metrology_file):
 	bg = basisgrid.BasisGrid()
 
 	for q in range(4):
-		print "\nParsing: quad %d" % q
+		print("\nParsing: quad %d" % q)
 		for two_by_one in range(8):
 			asic_geoms = _twobyone_to_bg(qms[q], q, two_by_one)
 			for asic in range(2):
@@ -120,9 +120,9 @@ def _qc_angle(v, w, two_by_one_index, tol=0.148):
     value = np.degrees( np.arcsin(np.dot(v, w) / ( np.linalg.norm(v) * np.linalg.norm(w) ) ))
     
     if not np.abs(value) <= tol:
-        print "WARNING: Metrology quality control failed for 2x1: %d" % two_by_one_index
-        print '--> s/f vectors are not orthogonal :: enforcing orthogonality!'
-        print "    Angle: %f // tol: %f" % (value, tol)
+        print("WARNING: Metrology quality control failed for 2x1: %d" % two_by_one_index)
+        print('--> s/f vectors are not orthogonal :: enforcing orthogonality!')
+        print("    Angle: %f // tol: %f" % (value, tol))
         passed = False
     else:
         passed = True

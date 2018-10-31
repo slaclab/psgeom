@@ -216,7 +216,7 @@ class TestCompoundCamera(object):
                 
         except:
             # if that don't work, load a pre-saved answer
-            print 'could not use GeometryAccess, loading saved xyz'
+            print('could not use GeometryAccess, loading saved xyz')
             xyz_old = np.load('ref_files/GA_saved_1-end.npy')
         
         # some np-foo to move the 3-d x,y,z axis from first dim to last
@@ -229,7 +229,7 @@ class TestCompoundCamera(object):
         assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
     
         err = np.sum( np.abs(xyz_new - xyz_old) ) / float(np.product(xyz_new.shape))
-        print 'Mean Absolute Error: %f um / px' % err
+        print('Mean Absolute Error: %f um / px' % err)
         num_more_than_1px_err = np.sum( np.abs(xyz_new - xyz_old) > 109.92 )
     
         assert err < 10.0, 'error greater than 10um avg per px (%f)' % err
@@ -274,7 +274,7 @@ class TestCompoundAreaCamera(TestCompoundCamera):
                 
         except:
             # if that don't work, load a pre-saved answer
-            print 'could not use GeometryAccess, loading saved xyz'
+            print('could not use GeometryAccess, loading saved xyz')
             xyz_old = np.load('ref_files/rayonix_saved.npy')
         
         xyz_old = np.rollaxis(np.array(xyz_old), 0, 5) # send 0 --> end
@@ -286,11 +286,11 @@ class TestCompoundAreaCamera(TestCompoundCamera):
         assert xyz_new.shape == xyz_old.shape, 'shape mismatch %s / %s' % (xyz_new.shape, xyz_old.shape)
     
         err = np.sum( np.abs(xyz_new - xyz_old) ) / float(np.product(xyz_new.shape))
-        print 'Mean Absolute Error: %f um / px' % err
+        print('Mean Absolute Error: %f um / px' % err)
         num_more_than_1px_err = np.sum( np.abs(xyz_new - xyz_old) > 89.0 )
     
-        print 'new', xyz_new
-        print 'old', xyz_old
+        print('new', xyz_new)
+        print('old', xyz_old)
     
         assert err < 10.0, 'error greater than 10 um avg per px (%f)' % err
         assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px'
@@ -334,7 +334,7 @@ class TestCompoundAreaCamera(TestCompoundCamera):
 
         except:
             # if that don't work, load a pre-saved answer
-            print 'could not use GeometryAccess, loading saved xyz'
+            print('could not use GeometryAccess, loading saved xyz')
             xyz_old = np.load('ref_files/pnccd_saved.npy')
 
         xyz_old = np.rollaxis(np.array(xyz_old), 0, 6) # send 0 --> end
@@ -346,7 +346,7 @@ class TestCompoundAreaCamera(TestCompoundCamera):
         assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
 
         err = np.sum( np.abs(xyz_new - xyz_old) ) / float(np.product(xyz_new.shape))
-        print 'Mean Absolute Error: %f um / px' % err
+        print('Mean Absolute Error: %f um / px' % err)
         num_more_than_1px_err = np.sum( np.abs(xyz_new - xyz_old) > 75.0 )
 
         assert err < 10.0, 'error greater than 10um avg per px (%f)' % err
@@ -496,7 +496,7 @@ class TestTranslate(object):
         cheetah  = camera.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
         crystfel = camera.Cspad.from_crystfel_file('ref_files/refgeom_crystfel.geom')
         
-        print np.squeeze(cheetah.xyz) - np.squeeze(crystfel.xyz)
+        print(np.squeeze(cheetah.xyz) - np.squeeze(crystfel.xyz))
         
         # cheetah z-values are screwed up, so ignore those
         np.testing.assert_allclose(np.squeeze(cheetah.xyz)[...,:2],
@@ -511,7 +511,7 @@ class TestTranslate(object):
         self.cspad.to_crystfel_file('ref_files/tmp_crystfel.geom')
         cd2 = camera.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
         
-        print self.cspad.xyz[...,2], cd2.xyz[...,:2]
+        print(self.cspad.xyz[...,2], cd2.xyz[...,:2])
         
         # be sure error is less than 1 micron in x/y, 0.2 mm in z
         assert np.max(np.abs( np.squeeze(self.cspad.xyz[...,:2]) - np.squeeze(cd2.xyz[...,:2]) )) < 1.0
@@ -763,7 +763,7 @@ class TestGeometry(object):
 
         # compute the intersection from code
         pix, intersect = d.compute_intersections(q_vectors, 0) # 0 --> grid_index
-        print pix, intersect
+        print(pix, intersect)
 
         np.testing.assert_array_almost_equal(intersect_ref, intersect)
         np.testing.assert_array_almost_equal(pix_ref, pix)

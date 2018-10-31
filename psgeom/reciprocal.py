@@ -1,5 +1,5 @@
 
-import cPickle
+import pickle
 import numpy as np
 
 from psgeom import basisgrid
@@ -501,7 +501,7 @@ class Geometry(object):
 
     def _to_serial(self):
         """ serialize the object to an array """
-        s = np.array( cPickle.dumps(self) )
+        s = np.array( pickle.dumps(self) )
         s.shape=(1,) # a bit nasty...
         return s
 
@@ -511,7 +511,7 @@ class Geometry(object):
         """ recover a Geometry object from a serialized array """
         if serialized.shape == (1,):
             serialized = serialized[0]
-        d = cPickle.loads( str(serialized) )
+        d = pickle.loads( str(serialized) )
         return d
 
 

@@ -144,7 +144,7 @@ class BasisGridInterpolator(object):
         assert X.shape == (ivs[1]+1, 9 * self.grids_per_basis)
         
         if np.sum(np.abs(resid)) > 1e-8:
-            print 'Warning: high fitting residuals'
+            print('Warning: high fitting residuals')
     
         return X
     

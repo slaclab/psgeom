@@ -145,12 +145,12 @@ class CompoundCamera(moveable.MoveableParent, moveable.MoveableObject):
         the heirarchy will not be shown)
         """
 
-        print "--- " + str(self.name)
+        print("--- " + str(self.name))
         
         def draw_child_tree(current, depth):
         
             for c in current.children:
-                print depth * "    " + "|-- " + str(c.name)
+                print(depth * "    " + "|-- " + str(c.name))
                 if hasattr(c, 'children'):
                     draw_child_tree(c, depth + 1)
                     
@@ -550,7 +550,7 @@ class Cspad(CompoundAreaCamera):
         """
 
         pixel_positions = np.squeeze(self.xyz)
-        print pixel_positions.shape
+        print(pixel_positions.shape)
         
         if not mpl_axes:
             from matplotlib import pyplot as plt
@@ -735,10 +735,10 @@ class Cspad(CompoundAreaCamera):
                 if (np.linalg.norm(p_skipped[:2] - pas.xyz[0,194,:2]) > 10.0) or \
                    (np.abs(p_skipped[2] - pas.xyz[0,194,2]) > 200.0):
                     
-                    print 'quad %d / 2x1 %d' % (quad_index, asic_id % 8)
-                    print 'grid p-vector:   ', p_skipped
-                    print 'pixel (0, 194):  ', pas.xyz[0,194,:]
-                    print ''
+                    print('quad %d / 2x1 %d' % (quad_index, asic_id % 8))
+                    print('grid p-vector:   ', p_skipped)
+                    print('pixel (0, 194):  ', pas.xyz[0,194,:])
+                    print('')
                     
                     warnings.warn('The two ASICs making up the %d-th 2x1 on '
                                   'the %d-th quad (grids %d, %d) do not conform'
@@ -960,8 +960,8 @@ def load(filename, base=CompoundAreaCamera, infer_base=True):
             to_find = re.compile("CSPAD|Cspad|CsPad|cspad")
             match_obj = to_find.search(text)
             if match_obj is not None:
-                print('Found `%s` in file, '
-                      'interpreting geometry as CSPAD' % match_obj.group())
+                print(('Found `%s` in file, '
+                      'interpreting geometry as CSPAD' % match_obj.group()))
                 base = Cspad
     
 
