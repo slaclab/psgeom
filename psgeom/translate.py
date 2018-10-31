@@ -130,7 +130,9 @@ def load_psana(obj, filename):
     # ---- load information into 2 tables: id_info (names) & trt (data)
 
     # types/names and id numbers -- unique name is 2 fields
-    id_info = np.genfromtxt(filename, dtype=None, usecols=(0,1,2,3), autostrip=True)
+    id_info = np.genfromtxt(filename, dtype=np.str, 
+                            usecols=(0,1,2,3), autostrip=True)
+    #print(id_info)
 
     # translation & rotation table (trt)
     trt = np.genfromtxt(filename, dtype=np.float64, usecols=list(range(4,13)), autostrip=True)
@@ -199,7 +201,7 @@ def load_psana(obj, filename):
             # the __init__ method of SensorElements.....
         
             curr = typ.from_type(type_name=name,
-                                 id_num=id_info[cni][3],
+                                 id_num=int(id_info[cni][3]),
                                  parent=parent,
                                  rotation_angles=rotations[cni], 
                                  translation=translations[cni])
@@ -207,7 +209,7 @@ def load_psana(obj, filename):
         # > else, is a CompoundCamera
         else:
             curr = obj(type_name=id_info[cni][2],
-                       id_num=id_info[cni][3],
+                       id_num=int(id_info[cni][3]),
                        parent=parent,
                        rotation_angles=rotations[cni], 
                        translation=translations[cni])
@@ -383,12 +385,12 @@ def _cheetah_to_twobyones(cheetah_image):
     
     shape = (185, 388)
     
-    num_quads = cheetah_image.shape[1] / shape[1]
+    num_quads = int(cheetah_image.shape[1] / shape[1])
     if cheetah_image.shape[1] % shape[1] != 0:
         raise IOError('Unexpected geometry array shape: %s. Could not infer '
                       'number of quads.' % str(cheetah_image.shape))
     
-    num_twoXones = cheetah_image.shape[0] / shape[0]
+    num_twoXones = int(cheetah_image.shape[0] / shape[0])
     if cheetah_image.shape[0] % shape[0] != 0:
         raise IOError('Unexpected geometry array shape: %s. Could not infer '
                       'number of two-by-ones.' % str(cheetah_image.shape))
@@ -449,12 +451,12 @@ def load_cheetah(obj, filename, pixel_size=109.92):
     shape = (185, 388) # will always be this for each two-by-one
     
     # find out how many quads/asics we expect based on the size of the maps
-    num_quads = cheetah_shape[1] / shape[1]
+    num_quads = int(cheetah_shape[1] / shape[1])
     if cheetah_shape[1] % shape[1] != 0:
         raise IOError('Unexpected geometry array shape: %s. Could not infer '
                       'number of quads.' % str(cheetah_shape))
     
-    num_twoXones = cheetah_shape[0] / shape[0]
+    num_twoXones = int(cheetah_shape[0] / shape[0])
     if cheetah_shape[0] % shape[0] != 0:
         raise IOError('Unexpected geometry array shape: %s. Could not infer '
                       'number of two-by-ones.' % str(cheetah_shape))
