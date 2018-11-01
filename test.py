@@ -853,7 +853,13 @@ class TestFitting(object):
 
         return
 
-    
+
+class TestScripts(object):
+    def test_all(self):
+        os.system("python ./scripts/geoconv -f crystfel ./ref_files/refgeom_psana.data tmp")
+        os.system("python ./scripts/gainconv -f daq ./ref_files/200px-gainmap.txt tmp")
+        os.remove("tmp")
+
 def test_bg_as_array():
     # prob not necessary
     geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
