@@ -375,7 +375,8 @@ class Mtrx(PixelArraySensor):
     @property
     def type_name(self):
         return 'MTRX:%d:%d:%d:%d' %(self.shape[0], self.shape[1], 
-                                    self._pixel_shape[0], self._pixel_shape[1])
+                                    round(self._pixel_shape[0]),
+                                    round(self._pixel_shape[1]))
 
         
 class PnccdQuad(PixelArraySensor):
@@ -439,17 +440,5 @@ class PnccdQuad(PixelArraySensor):
                    translation=translation)
 
                 
-# ------------------------------------------------------------------------------
-# define a "type map" that maps a list of known object identifier strings to
-# the corresponding types
-
-type_map = {'SENS2X1:V1' :           Cspad2x1,
-            'SENS2X1'    :           Cspad2x1,
-            'MTRX:1920:1920:89:89' : Mtrx,
-            'PNCCD:V1' :             PnccdQuad}
-
-
-
-
 
 

@@ -30,7 +30,7 @@ args = parser.parse_args()
 
 
 if args.cspad:
-    print 'CSPAD requested, attempting to load geometry as CSPAD'
+    print('CSPAD requested, attempting to load geometry as CSPAD')
     geom = camera.load(args.infile, base=camera.Cspad)
 else:
     geom = camera.load(args.infile)
@@ -47,6 +47,6 @@ elif args.format == 'hdf5':
 else:
     raise IOError('File format "%s" not supported' % args.format)
 
-print 'Wrote: %s in %s format' % (args.outfile, args.format)
+print('Wrote: %s in %s format' % (args.outfile, args.format))
 
 

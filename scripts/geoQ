@@ -62,11 +62,11 @@ f = h5py.File(outfile, 'w')
 f['/q_xyz'] = q_xyz
 f.close()
 
-print '-'*50
-print '%s --> %s' % (args.infile, outfile)
-print 'z-shift:     ', args.zoffset
-print 'energy (eV): ', args.energy
-print 'q max (A^-1):', np.max(q_xyz)
-print '> results: q (2-pi convention) in inverse Angstrom'
-print '-'*50
+print('-'*50)
+print('%s --> %s' % (args.infile, outfile))
+print('z-shift:     ', args.zoffset)
+print('energy (eV): ', args.energy)
+print('q max (A^-1):', np.max(q_xyz))
+print('> results: q (2-pi convention) in inverse Angstrom')
+print('-'*50)
 

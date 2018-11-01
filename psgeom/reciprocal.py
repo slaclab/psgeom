@@ -1,5 +1,5 @@
 
-import cPickle
+import pickle
 import numpy as np
 
 from psgeom import basisgrid
@@ -413,7 +413,7 @@ class Geometry(object):
 
         # convert to pixel units by solving for the coefficients of proj
         A = np.array([s,f]).T
-        pix_n, resid, rank, sigma = np.linalg.lstsq( A, (i-p).T )
+        pix_n, resid, rank, sigma = np.linalg.lstsq( A, (i-p).T, rcond=-1 )
 
         if run_checks:
             err = np.sum( np.abs((i-p) - np.transpose( np.dot(A, pix_n) )) )
@@ -501,7 +501,7 @@ class Geometry(object):
 
     def _to_serial(self):
         """ serialize the object to an array """
-        s = np.array( cPickle.dumps(self) )
+        s = np.array( pickle.dumps(self) )
         s.shape=(1,) # a bit nasty...
         return s
 
@@ -511,7 +511,7 @@ class Geometry(object):
         """ recover a Geometry object from a serialized array """
         if serialized.shape == (1,):
             serialized = serialized[0]
-        d = cPickle.loads( str(serialized) )
+        d = pickle.loads(serialized)
         return d
 
 

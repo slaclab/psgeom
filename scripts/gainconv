@@ -45,6 +45,6 @@ elif args.format == 'daq':
 else:
     raise IOError('File format "%s" not supported' % args.format)
 
-print 'Wrote: %s in %s format' % (args.outfile, args.format)
+print('Wrote: %s in %s format' % (args.outfile, args.format))
 
 

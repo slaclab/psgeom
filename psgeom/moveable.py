@@ -5,23 +5,22 @@ move.py
 
 
 import abc
+import six
 import numpy as np
 
 
+@six.add_metaclass(abc.ABCMeta)
 class MoveableParent:
     """
     Just a flag that a specific class can be a parent.
     """
-    __metaclass__ = abc.ABCMeta
     
 
-
+@six.add_metaclass(abc.ABCMeta)
 class MoveableObject:
     """
     An abstract base class for moveable objects.
     """
-    
-    __metaclass__ = abc.ABCMeta
     
     
     @property

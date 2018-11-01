@@ -82,6 +82,28 @@ def _asics_to_twobyones():
 
 # ---- psana -------------------------------------------------------------------
 
+# ------------------------------------------------------------------------------
+# define a "type map" that maps a list of known object identifier strings to
+# the corresponding types
+
+def map_type(element_string):
+
+    if element_string in ['SENS2X1:V1', 'SENS2X1']:
+        element_type = sensors.Cspad2x1
+        element_name = 'SENS2X1'
+    elif element_string.startswith('PNCCD'): # known: "PNCCD:V1"
+        element_type = sensors.PnccdQuad
+        element_name = 'PNCCD'
+    elif element_string.startswith('MTRX'):
+        element_type = sensors.Mtrx
+        element_name = element_string
+    else:
+        raise TypeError('Cannot understand sensor type: %s' % element_string)
+
+    return element_type, element_name
+
+
+
 def load_psana(obj, filename):
     """
     Load a geometry in psana format.
@@ -103,15 +125,17 @@ def load_psana(obj, filename):
     
     _check_obj(obj)
     
-    print 'Loading: %s' % filename
+    print('Loading: %s' % filename)
 
     # ---- load information into 2 tables: id_info (names) & trt (data)
 
     # types/names and id numbers -- unique name is 2 fields
-    id_info = np.genfromtxt(filename, dtype=None, usecols=(0,1,2,3), autostrip=True)
+    id_info = np.genfromtxt(filename, dtype=np.str, 
+                            usecols=(0,1,2,3), autostrip=True)
+    #print(id_info)
 
     # translation & rotation table (trt)
-    trt = np.genfromtxt(filename, dtype=np.float64, usecols=range(4,13), autostrip=True)
+    trt = np.genfromtxt(filename, dtype=np.float64, usecols=list(range(4,13)), autostrip=True)
     assert trt.shape[1] == 9
     translations = trt[:,0:3]
     rotations    = trt[:,3:6] + trt[:,6:9] # just combine rotations & tilts
@@ -122,7 +146,7 @@ def load_psana(obj, filename):
 
 
     # ---- find the root of the tree, not to be guarenteed first line
-    possible_root_rows = range(n_rows) # elimination
+    possible_root_rows = list(range(n_rows)) # elimination
 
     for i in range(n_rows):
         for j in range(n_rows):
@@ -142,8 +166,8 @@ def load_psana(obj, filename):
                       '%d roots found.' % len(possible_root_rows))
     else:
         root_index = possible_root_rows[0]
-        if id_info[root_index][0] != 'IP':
-            warnings.warn('Root object is not labeled "IP".')
+        #if id_info[root_index][0] != 'IP':
+        #    warnings.warn('Root object is not labeled "IP".')
     
 
     # ---- traverse tree, adding children / depth frist
@@ -162,20 +186,22 @@ def load_psana(obj, filename):
 
         # > if no children, is a SensorElement
         if len(child_indices) == 0:
-        
+
+            # following commented lines deprecated 
             # loop up what type of sensor element we have
-            try:
-                typ = sensors.type_map[id_info[cni][2]]
-            except KeyError:
-                raise KeyError('Sensor type: %s not understood.' % id_info[i][2])
-            
+            #try:
+            #    typ = sensors.type_map[id_info[cni][2]]
+            #except KeyError:
+            #    raise KeyError('Sensor type: %s not understood.' % id_info[i][2])
+
+            typ, name = map_type(id_info[cni][2])
             
             # TJL note to self:
             # this next line could be problematic if we don't restrict
             # the __init__ method of SensorElements.....
         
-            curr = typ.from_type(type_name=id_info[cni][2],
-                                 id_num=id_info[cni][3],
+            curr = typ.from_type(type_name=name,
+                                 id_num=int(id_info[cni][3]),
                                  parent=parent,
                                  rotation_angles=rotations[cni], 
                                  translation=translations[cni])
@@ -183,7 +209,7 @@ def load_psana(obj, filename):
         # > else, is a CompoundCamera
         else:
             curr = obj(type_name=id_info[cni][2],
-                       id_num=id_info[cni][3],
+                       id_num=int(id_info[cni][3]),
                        parent=parent,
                        rotation_angles=rotations[cni], 
                        translation=translations[cni])
@@ -312,8 +338,6 @@ def write_psana(detector, filename, title='geometry'):
                 child_data[6] = 0
 
                 line = fmt_line % tuple(child_data)
-                
-                #f.write(line)
                 lines.append(line)
         
                 write_children(child)
@@ -323,7 +347,6 @@ def write_psana(detector, filename, title='geometry'):
     # temporary -- for compatability with legacy code -- todo
     # flip the ordering of the lines so that the sensor elements come first,
     # as a lot of existing code requires this ordering
-    #print lines, '\n\n'
     for l in _mikhail_ordering(lines):
         f.write(l)
 
@@ -362,12 +385,12 @@ def _cheetah_to_twobyones(cheetah_image):
     
     shape = (185, 388)
     
-    num_quads = cheetah_image.shape[1] / shape[1]
+    num_quads = int(cheetah_image.shape[1] / shape[1])
     if cheetah_image.shape[1] % shape[1] != 0:
         raise IOError('Unexpected geometry array shape: %s. Could not infer '
                       'number of quads.' % str(cheetah_image.shape))
     
-    num_twoXones = cheetah_image.shape[0] / shape[0]
+    num_twoXones = int(cheetah_image.shape[0] / shape[0])
     if cheetah_image.shape[0] % shape[0] != 0:
         raise IOError('Unexpected geometry array shape: %s. Could not infer '
                       'number of two-by-ones.' % str(cheetah_image.shape))
@@ -408,7 +431,7 @@ def load_cheetah(obj, filename, pixel_size=109.92):
 
     f = h5py.File(filename, 'r')
 
-    if not f.keys() == ['x', 'y', 'z']:
+    if not list(f.keys()) == ['x', 'y', 'z']:
         raise IOError('File: %s is not a valid pixel map, should contain fields'
                       ' ["x", "y", "z"] exlusively' % filename)
 
@@ -428,12 +451,12 @@ def load_cheetah(obj, filename, pixel_size=109.92):
     shape = (185, 388) # will always be this for each two-by-one
     
     # find out how many quads/asics we expect based on the size of the maps
-    num_quads = cheetah_shape[1] / shape[1]
+    num_quads = int(cheetah_shape[1] / shape[1])
     if cheetah_shape[1] % shape[1] != 0:
         raise IOError('Unexpected geometry array shape: %s. Could not infer '
                       'number of quads.' % str(cheetah_shape))
     
-    num_twoXones = cheetah_shape[0] / shape[0]
+    num_twoXones = int(cheetah_shape[0] / shape[0])
     if cheetah_shape[0] % shape[0] != 0:
         raise IOError('Unexpected geometry array shape: %s. Could not infer '
                       'number of two-by-ones.' % str(cheetah_shape))
@@ -569,7 +592,7 @@ def load_crystfel(obj, filename, verbose=True):
                       ' Got: %s' % filename)
 
     if verbose:
-        print "Converting geometry in: %s ..." % filename
+        print("Converting geometry in: %s ..." % filename)
         
     f = open(filename, 'r')
     geom_txt = f.read()
@@ -582,12 +605,12 @@ def load_crystfel(obj, filename, verbose=True):
     # measure the absolute detector offset
     re_pz_global = re.search('\ncoffset\s+=\s+(\d+.\d+)', geom_txt) 
     if re_pz_global == None:
-        print "WARNING: Could not find `coffset` field, defaulting z-offset to 0.0"
+        print("WARNING: Could not find `coffset` field, defaulting z-offset to 0.0")
         p_z_global = 0.0
     else:
         p_z_global = float(re_pz_global.group(1)) * 1e6 # m --> micron
         if verbose:
-            print 'Found global z-offset (coffset): %f' % p_z_global
+            print('Found global z-offset (coffset): %f' % p_z_global)
 
 
     # figure out the pixel size
@@ -597,7 +620,7 @@ def load_crystfel(obj, filename, verbose=True):
     else:
         pixel_size = 1e6 / float(re_pixel_size.group(1)) # m --> micron
         if verbose:
-            print 'Found pixel size (res) [micron]: %f' % pixel_size
+            print('Found pixel size (res) [micron]: %f' % pixel_size)
     
     
     # find out which panels we have to look for
@@ -611,7 +634,7 @@ def load_crystfel(obj, filename, verbose=True):
     for panel in panels:
 
         if verbose:
-            print "Reading geometry for: %s" % panel
+            print("Reading geometry for: %s" % panel)
 
         try:
             
@@ -623,8 +646,8 @@ def load_crystfel(obj, filename, verbose=True):
                 else:
                     pixel_size = 1e6 / float(re_pixel_size.group(1)) # m -> um
                     if verbose:
-                        print('Found pixel size for panel %s (res) [micron]: '
-                              '%f' % (panel, pixel_size))
+                        print(('Found pixel size for panel %s (res) [micron]: '
+                              '%f' % (panel, pixel_size)))
             
 
             # match f/s vectors
@@ -651,10 +674,10 @@ def load_crystfel(obj, filename, verbose=True):
 
             sf_angle = np.degrees( np.arccos( np.dot(s, f) / np.square(pixel_size) ) )
 
-            print panel, sf_angle
+            print(panel, sf_angle)
             
         except AttributeError as e:
-            print e
+            print(e)
             raise IOError('Geometry file incomplete -- cant parse one or '
                           'more basis vector fields (ss/fs) for panel: %s' % panel)
 
@@ -679,7 +702,7 @@ def load_crystfel(obj, filename, verbose=True):
             re_cz = re.search('%s/coffset\s+=\s+((.)?\d+.\d+)' % panel, geom_txt)
             if re_cz == None:
                 if verbose:
-                    print 'Could not find z data for %s' % panel
+                    print('Could not find z data for %s' % panel)
                 p_z = p_z_global 
             else:
                 # add to the global offset
@@ -688,7 +711,7 @@ def load_crystfel(obj, filename, verbose=True):
             p = np.array([p_x, p_y, p_z])
 
         except AttributeError as e:
-            print e
+            print(e)
             raise IOError('Geometry file incomplete -- cant parse one or '
                           'more corner fields for panel: %s' % panel)
 
@@ -696,7 +719,7 @@ def load_crystfel(obj, filename, verbose=True):
         bg.add_grid(p, s, f, shp)
 
     if verbose:
-        print " ... successfully converted geometry."
+        print(" ... successfully converted geometry.")
     
     geom_instance = obj.from_basisgrid(bg)
     
@@ -729,27 +752,27 @@ def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
 
     with open(filename, 'w') as of:
     
-        print >> of, "; This file contains a geometry generated by psgeom"
-        print >> of, "; https://github.com/slaclab/psgeom"
+        of.write("; This file contains a geometry generated by psgeom")
+        of.write("; https://github.com/slaclab/psgeom")
     
-        print >> of, generic_header
+        of.write(generic_header)
         
         if 'maskfile' in kwargs: 
-            print >> of, 'mask_file = ' + str(kwargs['maskfile'])
-            print >> of, 'mask = /entry_1/data_1/mask'
-            print >> of, 'mask_good = 0x0000'
-            print >> of, 'mask_bad = 0xffff'
+            of.write('mask_file = ' + str(kwargs['maskfile']))
+            of.write('mask = /entry_1/data_1/mask')
+            of.write('mask_good = 0x0000')
+            of.write('mask_bad = 0xffff')
         else:
-            print >> of, '; mask = /entry_1/data_1/mask'
-            print >> of, '; mask_good = 0x0000'
-            print >> of, '; mask_bad = 0xffff'
+            of.write('; mask = /entry_1/data_1/mask')
+            of.write('; mask_good = 0x0000')
+            of.write('; mask_bad = 0xffff')
 
         # if the detector is monolithic, we can make a few assumptions that
         # may help out a new user
         if bg.num_grids == 1:
             p, s, f, sp = bg.get_grid(0)
-            print >> of, monolithic_preamble.format(max_fs=sp[1] - 1, 
-                                                    max_ss=sp[0] - 1)
+            of.write(monolithic_preamble.format(max_fs=sp[1] - 1, 
+                                                    max_ss=sp[0] - 1))
 
     
         for grid_index in range(bg.num_grids):
@@ -760,23 +783,26 @@ def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
             # write the basis vectors           
             f_sqt = math.sqrt(f[0]**2 + f[1]**2)
             s_sqt = math.sqrt(s[0]**2 + s[1]**2)
-            
-            if np.abs(f_sqt - s_sqt) > (1e-4 * max(s_sqt, f_sqt)):
-                raise IOError('Panel %d has rectangular pixels, which cannot be'
-                              ' represented in the CrystFEL geometry format. A '
-                              'custom solution for your detector is unfortunately '
-                              'necessary. Please send your complaints to Tom '
-                              'White :).' % grid_index)
-            else:
-                pixel_size = f_sqt
+
+
+            # According to TAW (email 18 OCT 2018) crystFEL's pixels do not necessarily need
+            # to be square... so removing this bit of code
+
+            #if np.abs(f_sqt - s_sqt) > (1e-4 * max(s_sqt, f_sqt)):
+            #    raise IOError('Panel %d has non-square pixels, which cannot be'
+            #                  ' represented in the CrystFEL geometry format just yet.'
+            #                  '' % grid_index)
+            #else:
+
+            pixel_size = f_sqt
              
-            print >> of, "%s/fs = %s%fx %s%fy" % ( panel_name,
+            of.write("%s/fs = %s%fx %s%fy" % ( panel_name,
                                                    get_sign(-f[0]/f_sqt), abs(f[0]/f_sqt), 
-                                                   get_sign( f[1]/f_sqt), abs(f[1]/f_sqt) )
-            print >> of, "%s/ss = %s%fx %s%fy" % ( panel_name,
+                                                   get_sign( f[1]/f_sqt), abs(f[1]/f_sqt) ))
+            of.write("%s/ss = %s%fx %s%fy" % ( panel_name,
                                                    get_sign(-s[0]/s_sqt), abs(s[0]/s_sqt), 
-                                                   get_sign( s[1]/s_sqt), abs(s[1]/s_sqt) )
-            print >> of, "%s/res = %.3f" % (panel_name, 1e6 / pixel_size) # um --> m
+                                                   get_sign( s[1]/s_sqt), abs(s[1]/s_sqt) ))
+            of.write("%s/res = %.3f" % (panel_name, 1e6 / pixel_size)) # um --> m
             
             # write the corner positions
             tagcx = "%s/corner_x" % panel_name
@@ -789,20 +815,20 @@ def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
             cx = - float(p[0])/pixel_size + 0.5 * (f[0] + s[0])/pixel_size
             cy =   float(p[1])/pixel_size - 0.5 * (f[1] + s[1])/pixel_size
             
-            print >> of, "%s = %f" % (tagcx, cx)
-            print >> of, "%s = %f" % (tagcy, cy)
+            of.write("%s = %f" % (tagcx, cx))
+            of.write("%s = %f" % (tagcy, cy))
 
             # the z-axis is in *** meters ***
             if coffset is None:
                 dist = float(p[2]) / 1e6
             else:
                 dist = coffset
-            print >> of, "%s = %f" % (tagcz, dist )
+            of.write("%s = %f" % (tagcz, dist ))
             
             # this tells CrystFEL to use this panel
-            print >> of, "%s/no_index = 0" % panel_name
+            of.write("%s/no_index = 0" % panel_name)
             
-            print >> of, "" # new line
+            of.write("") # new line
     
     return    
 
@@ -868,25 +894,25 @@ def write_cspad_crystfel(detector, filename, coffset=None, intensity_file_type='
     
     with open(filename, 'w') as of:
     
-        print >> of, "; This file contains a CSPAD geometry generated by psgeom"
-        print >> of, "; https://github.com/slaclab/psgeom"
+        of.write("; This file contains a CSPAD geometry generated by psgeom\n")
+        of.write("; https://github.com/slaclab/psgeom\n")
 
         if coffset is None:
-            print >> of, cspad_header_noClen
+            of.write(cspad_header_noClen + '\n')
         else:
-            print >> of, cspad_header
+            of.write(cspad_header + '\n')
 
         if 'maskfile' in kwargs: 
-            print >> of, 'mask_file = ' + str(kwargs['maskfile'])
-            print >> of, 'mask = /entry_1/data_1/mask'
-            print >> of, 'mask_good = 0x0000'
-            print >> of, 'mask_bad = 0xffff'
+            of.write('mask_file = ' + str(kwargs['maskfile']) + '\n')
+            of.write('mask = /entry_1/data_1/mask\n')
+            of.write('mask_good = 0x0000\n')
+            of.write('mask_bad = 0xffff\n')
         else:
-            print >> of, '; mask = /entry_1/data_1/mask'
-            print >> of, '; mask_good = 0x0000'
-            print >> of, '; mask_bad = 0xffff'
+            of.write('; mask = /entry_1/data_1/mask\n')
+            of.write('; mask_good = 0x0000\n')
+            of.write('; mask_bad = 0xffff\n')
 
-        print >> of, cspad_groups
+        of.write(cspad_groups + '\n')
     
         # iterate over each basis grid object
         # for a full CSPAD, this will be 64 elements
@@ -901,17 +927,17 @@ def write_cspad_crystfel(detector, filename, coffset=None, intensity_file_type='
             panel_name = "q%da%d" % (quad, asic)
             
             # tell crystFEL how read intensity values in a file
-            print >> of, intensity_map[grid_index].strip()
+            of.write(intensity_map[grid_index].strip()  + '\n')
             
             # write the basis vectors           
             sqt = math.sqrt(f[0]**2 + f[1]**2) 
-            print >> of, "%s/fs = %s%fx %s%fy" % ( panel_name,
+            of.write("%s/fs = %s%fx %s%fy\n" % ( panel_name,
                                                    get_sign(-f[0]/sqt), abs(f[0]/sqt), 
-                                                   get_sign( f[1]/sqt), abs(f[1]/sqt) )
+                                                   get_sign( f[1]/sqt), abs(f[1]/sqt) ))
             sqt = math.sqrt(s[0]**2 + s[1]**2)
-            print >> of, "%s/ss = %s%fx %s%fy" % ( panel_name,
+            of.write("%s/ss = %s%fx %s%fy\n" % ( panel_name,
                                                    get_sign(-s[0]/sqt), abs(s[0]/sqt), 
-                                                   get_sign( s[1]/sqt), abs(s[1]/sqt) )
+                                                   get_sign( s[1]/sqt), abs(s[1]/sqt) ))
             
             # write the corner positions
             tagcx = "%s/corner_x" % panel_name
@@ -924,20 +950,20 @@ def write_cspad_crystfel(detector, filename, coffset=None, intensity_file_type='
             cx = - float(p[0])/pixel_size + 0.5 * (f[0] + s[0])/pixel_size
             cy =   float(p[1])/pixel_size - 0.5 * (f[1] + s[1])/pixel_size
             
-            print >> of, "%s = %f" % (tagcx, cx)
-            print >> of, "%s = %f" % (tagcy, cy)
+            of.write("%s = %f\n" % (tagcx, cx))
+            of.write("%s = %f\n" % (tagcy, cy))
             
             # the z-axis is in *** meters ***
             if coffset is None:
                 dist = float(p[2]) / 1e6
             else:
                 dist = coffset
-            print >> of, "%s = %f" % (tagcz, dist )
+            of.write("%s = %f" % (tagcz, dist ))
             
             # this tells CrystFEL to use this panel
-            print >> of, "%s/no_index = 0" % panel_name
+            of.write("%s/no_index = 0\n" % panel_name)
             
-            print >> of, "" # new line
+            of.write("\n") # new line
     
     return    
 
@@ -1001,13 +1027,13 @@ def load_dials(obj, filename, scale_factor=1000.0):
         # of the JSON file -- these have one final trans/rot to
         # apply
 
-        if "children" in current_node.keys():
+        if "children" in list(current_node.keys()):
             for i in range(len(current_node["children"])):
                 new_node = (current_node["children"][i],
                             np.dot(cF, get_F(current_node)) )
                 to_visit.append( new_node )
 
-        if "panel" in current_node.keys():
+        if "panel" in list(current_node.keys()):
             panel_index = current_node["panel"]
             panel = base["panels"][panel_index]
             #print "adding panel:", panel_index
@@ -1023,6 +1049,12 @@ def load_dials(obj, filename, scale_factor=1000.0):
             s = final_F[:3,1] * px_size[1] * scale_factor
             f = final_F[:3,0] * px_size[0] * scale_factor
 
+            # DIAS convention is +z points from IP to source
+            # this is the x-flipped version of our convention
+            p[0] *= -1
+            s[0] *= -1
+            f[0] *= -1
+
             #bg.add_grid(p, s, f, shp)
             bg_tmp[panel_index] = (p, s, f, shp)
 
@@ -1037,10 +1069,10 @@ def load_dials(obj, filename, scale_factor=1000.0):
     # and that they get added in order
     bg = basisgrid.BasisGrid()
     for k in range(max(bg_tmp.keys())+1):
-        if k in bg_tmp.keys():
+        if k in list(bg_tmp.keys()):
             bg.add_grid(*bg_tmp[k])
         else:
-            print 'WARNING: panel %d seems to be missing' % k
+            print('WARNING: panel %d seems to be missing' % k)
     geom_instance = obj.from_basisgrid(bg)
 
     return geom_instance
@@ -1125,7 +1157,7 @@ def write_psf_text(detector, filename):
     f.write(preamble + body)
     f.close()
     
-    print "Wrote CSPAD to text at: %s" % filename
+    print("Wrote CSPAD to text at: %s" % filename)
     
     return
     

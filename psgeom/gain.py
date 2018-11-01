@@ -119,7 +119,7 @@ def write_cheetah(filename, gainmap):
     f = h5py.File(filename, 'w')
     f['/data/data'] = cheetah_image
     f.close()
-    print('Wrote cheetah formatted gainmap: %s' % filename)
+    print(('Wrote cheetah formatted gainmap: %s' % filename))
     
     return
     
@@ -238,7 +238,7 @@ def write_daq(filename, gainmap):
     new[np.logical_not(highgain)] = 1.0
     
     np.savetxt(filename, new)
-    print('Wrote DAQ formatted gainmap: %s' % filename)
+    print(('Wrote DAQ formatted gainmap: %s' % filename))
     
     return
     

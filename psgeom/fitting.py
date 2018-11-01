@@ -140,11 +140,11 @@ class BasisGridInterpolator(object):
         assert A.shape == (ivs[0], ivs[1]+1), 'ivs: %s' % (str(ivs),)
         assert Y.shape == (ivs[0], 9 * self.grids_per_basis)
         
-        X, resid, rank, s = np.linalg.lstsq(A, Y)
+        X, resid, rank, s = np.linalg.lstsq(A, Y, rcond=-1)
         assert X.shape == (ivs[1]+1, 9 * self.grids_per_basis)
         
         if np.sum(np.abs(resid)) > 1e-8:
-            print 'Warning: high fitting residuals'
+            print('Warning: high fitting residuals')
     
         return X
     
