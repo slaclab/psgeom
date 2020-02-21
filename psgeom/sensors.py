@@ -186,6 +186,21 @@ class PixelArraySensor(SensorElement):
         return p, s, f
 
 
+    @classmethod
+    def from_type(cls, type_name,
+                  id_num=0, parent=None,
+                  rotation_angles=np.array([0.0, 0.0, 0.0]),
+                  translation=np.array([0.0, 0.0, 0.0])):
+        """
+        Factory function for automatically identifying
+        the sensor based on the `type_name` alone.            
+        """
+        # see code in translate.py
+        return cls(type_name=type_name, id_num=id_num, parent=parent,
+                   rotation_angles=rotation_angles,
+                   translation=translation)
+
+
 # ---- specific sensor implementations  ------------------------------------------------
 
 class Cspad2x1(PixelArraySensor):
@@ -234,20 +249,6 @@ class Cspad2x1(PixelArraySensor):
                                        
         return
 
-
-    @classmethod
-    def from_type(cls, type_name,
-                  id_num=0, parent=None,
-                  rotation_angles=np.array([0.0, 0.0, 0.0]),
-                  translation=np.array([0.0, 0.0, 0.0])):
-        """
-        Factory function for automatically identifying
-        the sensor based on the `type_name` alone.            
-        """
-        return cls(type_name=type_name, id_num=id_num, parent=parent,
-                   rotation_angles=rotation_angles,
-                   translation=translation)
-    
     
     @property
     def untransformed_xyz(self):
@@ -426,19 +427,96 @@ class PnccdQuad(PixelArraySensor):
         return
 
 
-    @classmethod
-    def from_type(cls, type_name,
-                  id_num=0, parent=None,
-                  rotation_angles=np.array([0.0, 0.0, 0.0]),
-                  translation=np.array([0.0, 0.0, 0.0])):
-        """
-        Factory function for automatically identifying
-        the sensor based on the `type_name` alone.            
-        """
-        return cls(type_name=type_name, id_num=id_num, parent=parent,
-                   rotation_angles=rotation_angles,
-                   translation=translation)
+class JungfrauSegment(PixelArraySensor):
+    """
+    A specific PixelArraySensor representing a 1M JUNGFRAU segment.
+    """
 
-                
+    def __init__(self, **kwargs):
+        """
+        Parameters
+        ----------
+        type_name : str
+            Give this detector a descriptive name. Often there might be
+            two different instances of CompoundDetector with the same name,
+            if they are identical units. E.g., "JUNGFRAU:V1".
+            
+        id_num : int
+            The unit should have an index. This is not only a unique identifier
+            but helps order elements within the camera tree, which can change
+            the way someone wants to map pixel intensities (somewhere else in
+            memory) onto the camera geometry.
+            
+        parent : CompoundDetector
+            The parent frame, specified by an instance of CompoundDetector.
+            
+        rotation_angles : np.ndarray
+            Three Cardan angles specifying the local frame rotation operator.
+            Argument must be a one-D 3-vector.
+            
+        translation : np.ndarray
+            The xyz translation of the local frame. Argument must be a one-D 
+            3-vector.
+            
+        Returns
+        -------
+        self : JungfrauSegment
+            The sensor element.
+        """
 
+        shape = (512, 1024)
+        pixel_shape = np.array([75.0, 75.0]) # microns
+
+        super(JungfrauSegment, self).__init__(shape, pixel_shape, **kwargs)
+
+        return
+
+
+    @property
+    def untransformed_xyz(self):
+        """
+        Return the xyz coordinates of the element in the reference frame, that
+        is before any translation/rotation operations have been applied.
+        """
+
+        # JUNGFRAU 1M SENSOR LOOKS LIKE THIS
+        #
+        # all lines are a 2 pixel gap
+        #
+        #        fast -> (axis 1)
+        #     -------------------------------------------------
+        #  s  |           |           |           |           |
+        #  l  | 256 x 256 | 256 x 256 | 256 x 256 | 256 x 256 |
+        #  o  |           |           |           |           |
+        #  w  -------------------------------------------------
+        #  |  |           |           |           |           |
+        #  0  | 256 x 256 | 256 x 256 | 256 x 256 | 256 x 256 |
+        #     |           |           |           |           |
+        #     -------------------------------------------------
+        
+
+        xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])].T
+        xy[:,:,:] = xy[::-1,:,:]
+        xy[:,:,0] *= self.pixel_shape[0]
+        xy[:,:,1] *= self.pixel_shape[1]
+
+        # add the z dimension (just flat)
+        z = np.zeros([self.shape[0], self.shape[1], 1])
+        xyz = np.concatenate([xy, z], axis=-1)
+
+        # add the two pixel gaps
+        gap_size = 2.0
+
+        xyz[:,256:,0] += gap_size * self.pixel_shape[1]
+        xyz[:,512:,0] += gap_size * self.pixel_shape[1]
+        xyz[:,768:,0] += gap_size * self.pixel_shape[1]
+        xyz[256:,:,1] -= gap_size * self.pixel_shape[0] # minus due to flip convention
+
+        # and, finally, for some reason M measures rotations from the
+        # center of the 2x1 but the corner of the quad. So we center the
+        # sensor elements
+        xyz[:,:,0] -= np.mean(xyz[:,:,0])
+        xyz[:,:,1] -= np.mean(xyz[:,:,1])
+
+        return xyz
 
