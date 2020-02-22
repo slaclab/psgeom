@@ -310,7 +310,7 @@ def write_psana(detector, filename, title='geometry'):
 
     lines = [] # container for data lines
 
-    fmt_line = '%12s   %d     %12s    %d' + ' %12.6f'*9 + '\n'
+    fmt_line = '%12s %4d     %12s %4d' + ' %12.6f'*9 + '\n'
 
     dist = detector.xyz.flatten()[2]
 
@@ -350,7 +350,7 @@ def write_psana(detector, filename, title='geometry'):
     # flip the ordering of the lines so that the sensor elements come first,
     # as a lot of existing code requires this ordering
     for l in _mikhail_ordering(lines):
-        f.write(l + '\n')
+        f.write(l)
 
     f.close()
     
@@ -769,21 +769,8 @@ def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
             of.write('; mask_good = 0x0000\n')
             of.write('; mask_bad = 0xffff\n')
 
-        # if the detector is monolithic, we can make a few assumptions that
-        # may help out a new user
 
-        # -----------------------------------------------------------------
-        # TJL NOTE TO SELF TODO
-        # make this general for any pixel array detector
-
-
-        if bg.num_grids == 1:
-            p, s, f, sp = bg.get_grid(0)
-            of.write(monolithic_preamble.format(max_fs=sp[1] - 1, 
-                                                max_ss=sp[0] - 1))
-
-            of.write('\n')
-        # ------------------------------------------------------------------
+        prev_ss_index = 0 # counter for flat cheetah-style images (see below)
 
         for grid_index in range(bg.num_grids):
             
@@ -793,16 +780,6 @@ def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
             # write the basis vectors           
             f_sqt = math.sqrt(f[0]**2 + f[1]**2)
             s_sqt = math.sqrt(s[0]**2 + s[1]**2)
-
-
-            # According to TAW (email 18 OCT 2018) crystFEL's pixels do not necessarily need
-            # to be square... so removing this bit of code
-
-            #if np.abs(f_sqt - s_sqt) > (1e-4 * max(s_sqt, f_sqt)):
-            #    raise IOError('Panel %d has non-square pixels, which cannot be'
-            #                  ' represented in the CrystFEL geometry format just yet.'
-            #                  '' % grid_index)
-            #else:
 
             pixel_size = f_sqt
              
@@ -833,7 +810,17 @@ def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
                 dist = float(p[2]) / 1e6
             else:
                 dist = coffset
-            of.write("%s = %f\n" % (tagcz, dist ))
+            of.write("%s = %f\n" % (tagcz, dist))
+
+
+            # map the data onto the detector :: the default way to do this for
+            # a (panels, slow, fast) array is to stack along the slow axis
+            #    note  : sp here is just the shape of the basis grid
+            of.write("%s/min_fs = %d\n" % (panel_name, 0))
+            of.write("%s/max_fs = %d\n" % (panel_name,  sp[1] - 1))
+            of.write("%s/min_ss = %d\n" % (panel_name, prev_ss_index))
+            prev_ss_index += sp[0] - 1 # increment by size
+            of.write("%s/max_ss = %d\n" % (panel_name, prev_ss_index))
             
             # this tells CrystFEL to use this panel
             of.write("%s/no_index = 0\n" % panel_name)
@@ -1180,9 +1167,9 @@ generic_header = """
 ; we cannot guarentee these values are what you desire
 ; however they are filled in with some decent defaults
 
-clen =  /LCLS/detector_1/EncoderValue
-photon_energy = /LCLS/photon_energy_eV
-adu_per_eV = 0.1
+; clen =  /LCLS/detector_1/EncoderValue
+; photon_energy = /LCLS/photon_energy_eV
+; adu_per_eV = 0.1
 
 data = /entry_1/data_1/data
 
@@ -1205,15 +1192,6 @@ data = /entry_1/data_1/data
 dim0 = %
 dim1 = ss
 dim2 = fs
-"""
-
-monolithic_preamble  = """\n
-; This section added based on the fact that you have a monolithic detector
-; please double check these values!!
-p0/min_fs = 0
-p0/min_ss = 0
-p0/max_fs = {max_fs}
-p0/max_ss = {max_ss}
 """
 
 

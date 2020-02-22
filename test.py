@@ -209,15 +209,15 @@ class TestCompoundCamera(object):
     def test_xyz_vs_old_implementation(self):
     
         # ---- get the geometry Mikhail-style
-        try:
-            from PSCalib.GeometryAccess import GeometryAccess
-            ga = GeometryAccess('ref_files/refgeom_psana.data')
-            xyz_old = ga.get_pixel_coords()
-                
-        except:
-            # if that don't work, load a pre-saved answer
-            print('could not use GeometryAccess, loading saved xyz')
-            xyz_old = np.load('ref_files/GA_saved_1-end.npy')
+        #try:
+        #    from PSCalib.GeometryAccess import GeometryAccess
+        #    ga = GeometryAccess('ref_files/refgeom_psana.data')
+        #    xyz_old = ga.get_pixel_coords()
+        #except:
+
+        # if that don't work, load a pre-saved answer
+        print('could not use GeometryAccess, loading saved xyz')
+        xyz_old = np.load('ref_files/GA_saved_1-end.npy')
         
         # some np-foo to move the 3-d x,y,z axis from first dim to last
         xyz_old = np.rollaxis(np.array(xyz_old), 0, 7) # send 0 --> 7
@@ -267,16 +267,16 @@ class TestCompoundAreaCamera(TestCompoundCamera):
     def test_rayonix_vs_geometry_access(self):
     
         # ---- get the geometry Mikhail-style
-        try:
-            from PSCalib.GeometryAccess import GeometryAccess
-            ga = GeometryAccess('ref_files/rayonix.data')
-            xyz_old = ga.get_pixel_coords()
-                
-        except:
-            # if that don't work, load a pre-saved answer
-            print('could not use GeometryAccess, loading saved xyz')
-            xyz_old = np.load('ref_files/rayonix_saved.npy')
-        
+        #try:
+        #    from PSCalib.GeometryAccess import GeometryAccess
+        #    ga = GeometryAccess('ref_files/rayonix.data')
+        #    xyz_old = ga.get_pixel_coords()
+        #except:
+
+        # if that don't work, load a pre-saved answer
+        print('could not use GeometryAccess, loading saved xyz')
+        xyz_old = np.load('ref_files/rayonix_saved.npy')
+    
         xyz_old = np.rollaxis(np.array(xyz_old), 0, 5) # send 0 --> end
         xyz_old = np.squeeze(xyz_old)
     
@@ -327,15 +327,15 @@ class TestCompoundAreaCamera(TestCompoundCamera):
     def test_pnccd_vs_geometry_access(self):
 
         # ---- get the geometry Mikhail-style
-        try:
-            from PSCalib.GeometryAccess import GeometryAccess
-            ga = GeometryAccess('ref_files/pnccd.data')
-            xyz_old = ga.get_pixel_coords()
+        #try:
+        #    from PSCalib.GeometryAccess import GeometryAccess
+        #    ga = GeometryAccess('ref_files/pnccd.data')
+        #    xyz_old = ga.get_pixel_coords()
+        #except:
 
-        except:
-            # if that don't work, load a pre-saved answer
-            print('could not use GeometryAccess, loading saved xyz')
-            xyz_old = np.load('ref_files/pnccd_saved.npy')
+        # if that don't work, load a pre-saved answer
+        print('could not use GeometryAccess, loading saved xyz')
+        xyz_old = np.load('ref_files/pnccd_saved.npy')
 
         xyz_old = np.rollaxis(np.array(xyz_old), 0, 6) # send 0 --> end
         xyz_old = np.squeeze(xyz_old)
@@ -351,7 +351,24 @@ class TestCompoundAreaCamera(TestCompoundCamera):
 
         assert err < 10.0, 'error greater than 10um avg per px (%f)' % err
         assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px'
-        
+
+
+    def test_jungfrau_vs_geometry_access(self):
+
+        xyz_old = np.load('ref_files/jungfrau_saved.npy')
+
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/refgeom_jungfrau4m.data')
+        xyz_new = np.squeeze(geom.xyz)
+
+        assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
+        print((xyz_new - xyz_old)[0])
+
+        err = np.sum( np.abs(xyz_new - xyz_old) ) / float(np.product(xyz_new.shape))
+        print('Mean Absolute Error: %f um / px' % err)
+        num_more_than_1px_err = np.sum( np.abs(xyz_new - xyz_old) > 75.0 )
+
+        assert err < 10.0, 'error greater than 10um avg per px (%f)' % err
+        assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px'
     
     
 class TestCspad(TestCompoundCamera):
