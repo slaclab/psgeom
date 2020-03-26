@@ -8,6 +8,13 @@ import numpy as np
 from psgeom import gain
 import argparse
 
+print('WARNING')
+print('-------')
+print('This script is deprecated and will no longer be supported as of')
+print('psgeom v1.0+ given the deprecation of the CSPAD detector. Chances')
+print('are it will still work fine, just utilize caution with the results.')
+print('')
+
 parser = argparse.ArgumentParser(description=
 '''
 Convert a CSPAD gain file, can support:
