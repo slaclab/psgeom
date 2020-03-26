@@ -9,7 +9,8 @@ from psgeom import camera
 from psgeom import translate    
     
 PIXEL_TOLERANCE_um = 10.0
-    
+
+
 class TestTranslate(object):
     """
     Will test read/write from external software packages
