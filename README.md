@@ -1,9 +1,12 @@
 # psgeom
+[![Build Status](https://travis-ci.org/slaclab/psgeom.svg?branch=master)](https://travis-ci.org/slaclab/psgeom)
 
-Support for x-ray scattering experiment geometries:
+psgeom aims to provide an easy to use code base for common geometrical 
+operations during scattering experiments, such as:
 * load/save multiple geometry formats
-* translate/rotate parts of a detector in a hierarchical way
-* easily compute reciprocal, polar space coordinates
+* translate/rotate parts of a detector
+* easily compute reciprocal/polar space coordinates
+* perform angular integration
 
 User-friendliness is emphasized. The software aims to be general
 but not sacrifice simplicity.
@@ -13,7 +16,6 @@ geometry for a particular experiment, psgeom has what you need, and
 it will be easy to use.
 
 Currently, interfaces exist to geometry formats from:
-
 * psana
 * CrystFEL
 * cheetah
@@ -21,7 +23,7 @@ Currently, interfaces exist to geometry formats from:
 * LCLS detector group metrologies
 * a simple flat text / HDF5 pixel map
 
-TJ Lane <tjlane@slac.stanford.edu>
+TJ Lane <thomas.joseph.lane@gmail.com>
 
 ------
 
@@ -37,8 +39,8 @@ Then,
 from psgeom import camera
 
 cspad = camera.Cspad.from_psana_file('1-end.data')
-print cspad.draw_tree()     # see the heirarchy of sensors
-print cspad.xyz             # get the xyz coordinates of all pixels
+print(cspad.draw_tree())     # see the heirarchy of sensors
+print(cspad.xyz)             # get the xyz coordinates of all pixels
 
 cspad.to_cheetah_file('my_new_cheetah_geom.h5')
 ```
