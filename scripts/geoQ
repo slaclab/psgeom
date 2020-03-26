@@ -21,8 +21,10 @@ parser.add_argument('infile',
 parser.add_argument('-e', '--energy', type=float, required=True,
                     help='The beam energy to use, in eV')
 parser.add_argument('-z', '--zoffset', type=float, default=0.0,
-                    help='Shift the detector by this many mm \
-                          along the beam before converting')
+                    help='Shift the detector by this many UNITS \
+                          along the beam before converting, where \
+                          the units are consistent with the geometry \
+                          file in use (consult docs for more)')
 args = parser.parse_args()
 
 if not args.infile.endswith('.h5'):
@@ -66,7 +68,7 @@ print('-'*50)
 print('%s --> %s' % (args.infile, outfile))
 print('z-shift:     ', args.zoffset)
 print('energy (eV): ', args.energy)
-print('q max (A^-1):', np.max(q_xyz))
+print('|q| max (A^-1):', np.max(np.linalg.norm(q_xyz, axis=-1)))
 print('> results: q (2-pi convention) in inverse Angstrom')
 print('-'*50)
 
