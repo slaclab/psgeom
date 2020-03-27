@@ -626,11 +626,13 @@ def load_crystfel(obj, filename, verbose=True):
     
     
     # find out which panels we have to look for
-    # TODO can we make this more general?
-    generic_panels = re.findall('p\d+', geom_txt)
-    cspad_panels = re.findall('q\d+a\d+', geom_txt)
-    panels = _natural_sort(list(set( cspad_panels + generic_panels)))        
+    #   > try to do this in a general way by looking at the unique set of items
+    #   > with a corner field    
+    panels = re.findall('(\S+)/corner', geom_txt)
+    panels = _natural_sort(list(set( panels )))
     
+    if len(panels) == 0:
+        raise IOError('Could not find any panels in file: %s' % filename)
     
     # iterate over each quad / ASIC    
     for panel in panels:
@@ -652,19 +654,49 @@ def load_crystfel(obj, filename, verbose=True):
                               '%f' % (panel, pixel_size)))
             
 
-            # match f/s vectors
-            re_fs = re.search('%s/fs\s+=\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % panel, geom_txt)
-            f_x = - float( re_fs.group(1) )
-            f_y =   float( re_fs.group(3) )
+            # match f/s vectors (TODO probably should make this a fxn)
+            # fs
+            re_fs_x = re.search('%s/fs\s+=.*?((.)?\d+.\d+)x' % panel, geom_txt)
+            re_fs_y = re.search('%s/fs\s+=.*?((.)?\d+.\d+)y' % panel, geom_txt)
+
+            if (re_fs_x is None) and (re_fs_y is None):
+                raise IOError('could not find valid ``%s/fs`` field' % panel)
+
+            if re_fs_x is None:
+                f_x = 0.0
+            else:
+                f_x = - float( re_fs_x.group(1) )
+                
+            if re_fs_y is None:
+                f_y = 0.0
+            else:
+                f_y =   float( re_fs_y.group(1) )
+                
             f = np.array([f_x, f_y, 0.0])
             f = f * (pixel_size / np.linalg.norm(f))
+            
+            # ss
+            re_ss_x = re.search('%s/ss\s+=.*?((.)?\d+.\d+)x' % panel, geom_txt)
+            re_ss_y = re.search('%s/ss\s+=.*?((.)?\d+.\d+)y' % panel, geom_txt)
 
-            re_ss = re.search('%s/ss\s+=\s+((.)?\d+.\d+)x\s+((.)?\d+.\d+)y' % panel, geom_txt)
-            s_x = - float( re_ss.group(1) )
-            s_y =   float( re_ss.group(3) )
+            if (re_ss_x is None) and (re_ss_y is None):
+                raise IOError('could not find valid ``%s/ss`` field' % panel)
+
+            if re_ss_x is None:
+                s_x = 0.0
+            else:
+                s_x = - float( re_ss_x.group(1) )
+                
+            if re_ss_y is None:
+                s_y = 0.0
+            else:
+                s_y =   float( re_ss_y.group(1) )
+            
             s = np.array([s_x, s_y, 0.0])
             s = s * (pixel_size / np.linalg.norm(s))
             
+            
+            # min_fs & min_ss
             re_min_fs = re.search('%s/min_fs = (\d+)' % panel, geom_txt)
             re_max_fs = re.search('%s/max_fs = (\d+)' % panel, geom_txt)
             

@@ -167,7 +167,17 @@ class TestTranslate(object):
 
         os.remove('ref_files/temp.geom')
 
+
+    def test_crystefel_nonstandard(self):
+        # (1) panel names in crystfel may not begin with "p"
+        # (2) ss and fs fields may have only x or y, and assume the other is 0.0
         
+        geom = camera.CompoundAreaCamera.from_crystfel_file('ref_files/pnccd/pnccd2.geom')
+        print(geom.xyz.shape)
+        assert geom.xyz.shape == (2, 1024, 512, 3), geom.xyz.shape
+        geom.to_crystfel_file('ref_files/temp.geom', coffset=2.0)
+        os.remove('ref_files/temp.geom')
+
     
     def test_2x2_cheetah_roundtrip(self):
         
