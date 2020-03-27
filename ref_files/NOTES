@@ -1,9 +1,0 @@
-
-Currently refgeom_cheetah was generated from refgeom_crystfel
-using the CrystFEL make_pixelmap-0.0.3 utility.
-
-The other two geometries (psana, text) have no relation to
-these two. Hope to change that soon.
-
--- TJL 7/15/15
-

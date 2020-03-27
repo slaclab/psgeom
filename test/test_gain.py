@@ -12,12 +12,12 @@ class TestGain:
     def test_cheetah_roundtrip(self):
         
         r = np.random.randint(2, size=(32,185,388))
-        gain.write_cheetah('../ref_filestmpgain.h5', r)
-        r2 = gain.load_cheetah('../ref_filestmpgain.h5')
+        gain.write_cheetah('ref_files/ref_filestmpgain.h5', r)
+        r2 = gain.load_cheetah('ref_files/ref_filestmpgain.h5')
         
         e = np.sum(np.abs( r - r2 ))
         assert e == 0, e
-        os.remove('../ref_filestmpgain.h5')
+        os.remove('ref_files/ref_filestmpgain.h5')
         
         return
         
@@ -25,19 +25,19 @@ class TestGain:
 
         # DAQ map should be comprised of 1's and 7.2's
         r = np.random.randint(2, size=(32,185,388)) * 6.2 + 1
-        gain.write_daq('../ref_filestmpgain.txt', r)
-        r2 = gain.load_daq('../ref_filestmpgain.txt')
+        gain.write_daq('ref_files/ref_filestmpgain.txt', r)
+        r2 = gain.load_daq('ref_files/ref_filestmpgain.txt')
         
         e = np.sum(np.abs( r - r2 ))
         np.testing.assert_allclose(r, r2)
-        os.remove('../ref_filestmpgain.txt')
+        os.remove('ref_files/ref_filestmpgain.txt')
 
         return
     
     def test_translate_consistency(self):
         
-        cht = gain.load_cheetah('ref_files/200px-gainmap.h5')
-        daq = gain.load_daq('ref_files/200px-gainmap.txt', gain_ratio=7.2)
+        cht = gain.load_cheetah('ref_files/gainmap/200px-gainmap.h5')
+        daq = gain.load_daq('ref_files/gainmap/200px-gainmap.txt', gain_ratio=7.2)
         
         assert np.sum(np.abs(cht - daq)) == 0.0
         

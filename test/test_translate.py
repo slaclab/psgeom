@@ -17,8 +17,8 @@ class TestTranslate(object):
     """
     
     def setup(self):
-        self.cd = camera.CompoundCamera.from_psana_file('ref_files/refgeom_psana.data')
-        self.cspad = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        self.cd = camera.CompoundCamera.from_psana_file('ref_files/cspad/refgeom_psana.data')
+        self.cspad = camera.Cspad.from_psana_file('ref_files/cspad/refgeom_psana.data')
                 
         
     def test_psf_text(self):
@@ -56,7 +56,7 @@ class TestTranslate(object):
         # the cheetah pixels are just the xyz, so we can load them and use them
         # to compare to our implementation
         
-        f = h5py.File('ref_files/refgeom_cheetah.h5', 'r')
+        f = h5py.File('ref_files/cspad/refgeom_cheetah.h5', 'r')
         
         x = -1.0 * translate._cheetah_to_twobyones( np.array(f['x']) * 1000000.0 )
         y = translate._cheetah_to_twobyones( np.array(f['y']) * 1000000.0 )
@@ -65,7 +65,7 @@ class TestTranslate(object):
         f.close()
         
         ref_xyz = np.rollaxis( np.array([x,y,z]), 0, 4) # to shape (32,...,3)
-        tst = camera.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
+        tst = camera.Cspad.from_cheetah_file('ref_files/cspad/refgeom_cheetah.h5')
         tst_xyz = tst.xyz.reshape(32,185,388,3)
                 
         np.testing.assert_allclose(tst_xyz[:,0,0,:],
@@ -92,8 +92,8 @@ class TestTranslate(object):
         # very close but ~1/2 pixel off. Does cheetah plot pixel corners or
         # centers? -- TJL 7/8/15
         
-        cheetah  = camera.Cspad.from_cheetah_file('ref_files/refgeom_cheetah.h5')
-        crystfel = camera.Cspad.from_crystfel_file('ref_files/refgeom_crystfel.geom')
+        cheetah  = camera.Cspad.from_cheetah_file('ref_files/cspad/refgeom_cheetah.h5')
+        crystfel = camera.Cspad.from_crystfel_file('ref_files/cspad/refgeom_crystfel.geom')
         
         print(np.squeeze(cheetah.xyz) - np.squeeze(crystfel.xyz))
         
@@ -151,7 +151,7 @@ class TestTranslate(object):
         
     def test_crystfel_coffset(self):
         
-        geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        geom = camera.Cspad.from_psana_file('ref_files/cspad/refgeom_psana.data')
         geom.to_crystfel_file('ref_files/temp.geom', coffset=2.0)
 
         geom2 = camera.Cspad.from_crystfel_file('ref_files/temp.geom')
@@ -171,7 +171,7 @@ class TestTranslate(object):
     
     def test_2x2_cheetah_roundtrip(self):
         
-        cheetah  = camera.Cspad.from_cheetah_file('ref_files/cspad-2x2-approx1.h5')
+        cheetah  = camera.Cspad.from_cheetah_file('ref_files/cspad-2x2/cspad-2x2-approx1.h5')
         cheetah.to_psana_file('ref_files/tmp_psana.data')
         cheetah2 = camera.Cspad.from_psana_file('ref_files/tmp_psana.data')
         
@@ -184,7 +184,7 @@ class TestTranslate(object):
         
     def test_2x2_crystfel_roundtrip(self):
         
-        crystfel  = camera.Cspad.from_crystfel_file('ref_files/cspad-2x2-approx1.geom')
+        crystfel  = camera.Cspad.from_crystfel_file('ref_files/cspad-2x2/cspad-2x2-approx1.geom')
         crystfel.to_psana_file('ref_files/tmp_psana.data')
         crystfel2 = camera.Cspad.from_psana_file('ref_files/tmp_psana.data')
         
@@ -199,8 +199,8 @@ class TestTranslate(object):
         
         # TJL: I have not verified that these are in fact the same geom
         #      they were provided by users
-        crystfel = camera.Cspad.from_crystfel_file('ref_files/cspad-2x2-approx1.geom')
-        cheetah  = camera.Cspad.from_cheetah_file('ref_files/cspad-2x2-approx1.h5')
+        crystfel = camera.Cspad.from_crystfel_file('ref_files/cspad-2x2/cspad-2x2-approx1.geom')
+        cheetah  = camera.Cspad.from_cheetah_file('ref_files/cspad-2x2/cspad-2x2-approx1.h5')
         
         # compare only x/y, not z
         np.testing.assert_allclose(np.squeeze(crystfel.xyz)[...,:2],
@@ -211,9 +211,9 @@ class TestTranslate(object):
     def test_dials_load(self):
         # TODO make this a real test
         obj = camera.Cspad()
-        a = translate.load_dials(obj, 'ref_files/refgeom_dials.json')
+        a = translate.load_dials(obj, 'ref_files/cspad/refgeom_dials.json')
         assert a.xyz.shape == (4, 8, 185, 388, 3)
 
         obj2 = camera.CompoundAreaCamera()
-        x = translate.load_dials(obj2, 'ref_files/refgeom_dials2.json')
+        x = translate.load_dials(obj2, 'ref_files/cspad/refgeom_dials2.json')
         assert x.xyz.shape == (8, 512, 1024, 3)

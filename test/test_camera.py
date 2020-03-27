@@ -13,7 +13,7 @@ PIXEL_TOLERANCE_um = 10.0
 class TestCompoundCamera(object):
     
     def setup(self):
-        self.geom = camera.CompoundCamera.from_psana_file('ref_files/refgeom_psana.data')
+        self.geom = camera.CompoundCamera.from_psana_file('ref_files/cspad/refgeom_psana.data')
         
     
     def test_read_write(self):
@@ -31,19 +31,19 @@ class TestCompoundCamera(object):
         # ---- get the geometry Mikhail-style
         #try:
         #    from PSCalib.GeometryAccess import GeometryAccess
-        #    ga = GeometryAccess('ref_files/refgeom_psana.data')
+        #    ga = GeometryAccess('ref_files/cspad/refgeom_psana.data')
         #    xyz_old = ga.get_pixel_coords()
         #except:
 
         # if that don't work, load a pre-saved answer
         print('could not use GeometryAccess, loading saved xyz')
-        xyz_old = np.load('ref_files/GA_saved_1-end.npy')
+        xyz_old = np.load('ref_files/cspad/GA_saved_1-end.npy')
         
         # some np-foo to move the 3-d x,y,z axis from first dim to last
         xyz_old = np.rollaxis(np.array(xyz_old), 0, 7) # send 0 --> 7
         xyz_old = np.squeeze(xyz_old)
     
-        geom = camera.CompoundCamera.from_psana_file('ref_files/refgeom_psana.data')
+        geom = camera.CompoundCamera.from_psana_file('ref_files/cspad/refgeom_psana.data')
         xyz_new = np.squeeze(geom.xyz)
     
         assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
@@ -66,7 +66,7 @@ class TestCompoundCamera(object):
 class TestCompoundAreaCamera(TestCompoundCamera):
     
     def setup(self):
-        self.geom = camera.CompoundAreaCamera.from_psana_file('ref_files/refgeom_psana.data')
+        self.geom = camera.CompoundAreaCamera.from_psana_file('ref_files/cspad/refgeom_psana.data')
         self.klass = camera.CompoundAreaCamera
 
 
@@ -91,12 +91,12 @@ class TestCompoundAreaCamera(TestCompoundCamera):
 
         # if that don't work, load a pre-saved answer
         print('could not use GeometryAccess, loading saved xyz')
-        xyz_old = np.load('ref_files/rayonix_saved.npy')
+        xyz_old = np.load('ref_files/rayonix/rayonix_saved.npy')
     
         xyz_old = np.rollaxis(np.array(xyz_old), 0, 5) # send 0 --> end
         xyz_old = np.squeeze(xyz_old)
     
-        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/rayonix.data')
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/rayonix/rayonix.data')
         xyz_new = np.squeeze(geom.xyz)
     
         assert xyz_new.shape == xyz_old.shape, 'shape mismatch %s / %s' % (xyz_new.shape, xyz_old.shape)
@@ -113,11 +113,11 @@ class TestCompoundAreaCamera(TestCompoundCamera):
         
         
     def test_rayonix_crystfel(self):
-        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/rayonix.data')
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/rayonix/rayonix.data')
         geom.to_crystfel_file('ref_files/tmp_rayonix.geom')
         
         # compare to reference created by make_pixelmap
-        f = h5py.File('ref_files/rayonix.h5')
+        f = h5py.File('ref_files/rayonix/rayonix.h5')
         x = np.array(f['/x']) * 1e6
         y = np.array(f['/y']) * 1e6
         #z = np.array(f['/z']) # z currently is not populated by make_pixelmap
@@ -135,7 +135,7 @@ class TestCompoundAreaCamera(TestCompoundCamera):
 
 
     def test_rayonix_big(self):
-        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/big_rayonix.data')
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/rayonix/big_rayonix.data')
         geom.to_crystfel_file('ref_files/tmp_rayonix.geom')
         os.remove('ref_files/tmp_rayonix.geom')
         
@@ -151,12 +151,12 @@ class TestCompoundAreaCamera(TestCompoundCamera):
 
         # if that don't work, load a pre-saved answer
         print('could not use GeometryAccess, loading saved xyz')
-        xyz_old = np.load('ref_files/pnccd_saved.npy')
+        xyz_old = np.load('ref_files/pnccd/pnccd_saved.npy')
 
         xyz_old = np.rollaxis(np.array(xyz_old), 0, 6) # send 0 --> end
         xyz_old = np.squeeze(xyz_old)
 
-        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/pnccd.data')
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/pnccd/pnccd.data')
         xyz_new = np.squeeze(geom.xyz)
 
         assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
@@ -171,9 +171,9 @@ class TestCompoundAreaCamera(TestCompoundCamera):
 
     def test_jungfrau_vs_geometry_access(self):
 
-        xyz_old = np.load('ref_files/jungfrau_saved.npy')
+        xyz_old = np.load('ref_files/jungfrau/jungfrau_saved.npy')
 
-        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/refgeom_jungfrau4m.data')
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/jungfrau/jungfrau4m.data')
         xyz_new = np.squeeze(geom.xyz)
 
         assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
@@ -190,7 +190,7 @@ class TestCompoundAreaCamera(TestCompoundCamera):
 class TestCspad(TestCompoundCamera):
     
     def setup(self):
-        self.geom = camera.Cspad.from_psana_file('ref_files/refgeom_psana.data')
+        self.geom = camera.Cspad.from_psana_file('ref_files/cspad/refgeom_psana.data')
         self.klass = camera.Cspad
     
         

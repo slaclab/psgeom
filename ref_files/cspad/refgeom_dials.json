@@ -1,0 +1,4790 @@
+{
+  "__id__": "ExperimentList", 
+  "experiment": [
+    {
+      "__id__": "Experiment", 
+      "identifier": "", 
+      "beam": 0, 
+      "detector": 0, 
+      "crystal": 0, 
+      "imageset": 0
+    }
+  ], 
+  "imageset": [
+    {
+      "__id__": "ImageSet", 
+      "images": [
+        "/reg/d/psdm/cxi/cxi78513/res/brewster/paper_2017/metrology/t012_rg001_3000_expanding/data/idx-20130301055406284.cbf"
+      ], 
+      "mask": "", 
+      "gain": "", 
+      "pedestal": "", 
+      "dx": "", 
+      "dy": "", 
+      "params": {}
+    }
+  ], 
+  "beam": [
+    {
+      "direction": [
+        -0.0, 
+        -0.0, 
+        1.0
+      ], 
+      "transmission": 1.0, 
+      "polarization_normal": [
+        0.0, 
+        1.0, 
+        0.0
+      ], 
+      "divergence": 0.0, 
+      "polarization_fraction": 0.999, 
+      "flux": 0.0, 
+      "sigma_divergence": 0.0, 
+      "wavelength": 1.27292325424
+    }
+  ], 
+  "detector": [
+    {
+      "hierarchy": {
+        "origin": [
+          -0.0532806613947755, 
+          0.01749600403929793, 
+          -130.12383231399204
+        ], 
+        "fast_axis": [
+          1.0, 
+          0.0, 
+          0.0
+        ], 
+        "name": "AXIS_D0_R", 
+        "raw_image_offset": [
+          0, 
+          0
+        ], 
+        "slow_axis": [
+          0.0, 
+          1.0, 
+          0.0
+        ], 
+        "material": "", 
+        "mask": [], 
+        "thickness": 0.0, 
+        "mu": 0.0, 
+        "gain": 1.0, 
+        "trusted_range": [
+          0.0, 
+          0.0
+        ], 
+        "image_size": [
+          0, 
+          0
+        ], 
+        "px_mm_strategy": {
+          "type": "SimplePxMmStrategy"
+        }, 
+        "identifier": "", 
+        "type": "", 
+        "children": [
+          {
+            "origin": [
+              -50.20660594265801, 
+              41.36423180595194, 
+              -0.12913575620348183
+            ], 
+            "fast_axis": [
+              1.0, 
+              0.0, 
+              0.0
+            ], 
+            "name": "FS_D0Q0", 
+            "raw_image_offset": [
+              0, 
+              0
+            ], 
+            "slow_axis": [
+              0.0, 
+              1.0, 
+              0.0
+            ], 
+            "material": "", 
+            "mask": [], 
+            "thickness": 0.0, 
+            "mu": 0.0, 
+            "gain": 1.0, 
+            "trusted_range": [
+              0.0, 
+              0.0
+            ], 
+            "image_size": [
+              0, 
+              0
+            ], 
+            "px_mm_strategy": {
+              "type": "SimplePxMmStrategy"
+            }, 
+            "identifier": "", 
+            "type": "", 
+            "children": [
+              {
+                "origin": [
+                  11.347994916499047, 
+                  -23.188463464841185, 
+                  0.2850849761398706
+                ], 
+                "fast_axis": [
+                  0.005902494723509126, 
+                  0.9999825801262936, 
+                  0.0
+                ], 
+                "name": "FS_D0Q0S0", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.9999825801262936, 
+                  0.005902494723509126, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 0
+                  }, 
+                  {
+                    "panel": 1
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  34.819481506843815, 
+                  -23.316385467422677, 
+                  0.28508497614058115
+                ], 
+                "fast_axis": [
+                  -0.00025217161107844965, 
+                  0.9999999682047388, 
+                  0.0
+                ], 
+                "name": "FS_D0Q0S1", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.9999999682047388, 
+                  -0.00025217161107844965, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 2
+                  }, 
+                  {
+                    "panel": 3
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -23.56582450810741, 
+                  -10.918249135499732, 
+                  0.2850849761404106
+                ], 
+                "fast_axis": [
+                  0.9999815000213514, 
+                  0.006082730887351857, 
+                  0.0
+                ], 
+                "name": "FS_D0Q0S2", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.006082730887351857, 
+                  0.9999815000213514, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 4
+                  }, 
+                  {
+                    "panel": 5
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -23.5724062623721, 
+                  -34.29319533743566, 
+                  0.2850849761404959
+                ], 
+                "fast_axis": [
+                  0.999999989813045, 
+                  -0.00014273720547100418, 
+                  0.0
+                ], 
+                "name": "FS_D0Q0S3", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.00014273720547100418, 
+                  0.999999989813045, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 6
+                  }, 
+                  {
+                    "panel": 7
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -11.311448309193857, 
+                  24.094332352755288, 
+                  0.28508497614032535
+                ], 
+                "fast_axis": [
+                  0.0025538946649544592, 
+                  -0.9999967388057025, 
+                  0.0
+                ], 
+                "name": "FS_D0Q0S4", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.9999967388057025, 
+                  0.0025538946649544592, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 8
+                  }, 
+                  {
+                    "panel": 9
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -34.67801029314883, 
+                  24.113532632426228, 
+                  0.2850849761403538
+                ], 
+                "fast_axis": [
+                  0.0013429263185921736, 
+                  -0.9999990982740449, 
+                  0.0
+                ], 
+                "name": "FS_D0Q0S5", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.9999990982740449, 
+                  0.0013429263185921736, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 10
+                  }, 
+                  {
+                    "panel": 11
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  23.436084927763662, 
+                  33.189555453723116, 
+                  0.28508497614043904
+                ], 
+                "fast_axis": [
+                  0.9999964049205802, 
+                  -0.0026814447440173337, 
+                  0.0
+                ], 
+                "name": "FS_D0Q0S6", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.0026814447440173337, 
+                  0.9999964049205802, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 12
+                  }, 
+                  {
+                    "panel": 13
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  23.33515464921144, 
+                  9.860317352725723, 
+                  0.2850849761405243
+                ], 
+                "fast_axis": [
+                  0.9999994076866212, 
+                  -0.001088405442253356, 
+                  0.0
+                ], 
+                "name": "FS_D0Q0S7", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.001088405442253356, 
+                  0.9999994076866212, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 14
+                  }, 
+                  {
+                    "panel": 15
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }
+            ], 
+            "pixel_size": [
+              0.0, 
+              0.0
+            ]
+          }, 
+          {
+            "origin": [
+              41.14292150541651, 
+              49.57398416235787, 
+              -0.12913575620353868
+            ], 
+            "fast_axis": [
+              0.9999882415639636, 
+              -0.00484940551121051, 
+              0.0
+            ], 
+            "name": "FS_D0Q1", 
+            "raw_image_offset": [
+              0, 
+              0
+            ], 
+            "slow_axis": [
+              0.00484940551121051, 
+              0.9999882415639636, 
+              0.0
+            ], 
+            "material": "", 
+            "mask": [], 
+            "thickness": 0.0, 
+            "mu": 0.0, 
+            "gain": 1.0, 
+            "trusted_range": [
+              0.0, 
+              0.0
+            ], 
+            "image_size": [
+              0, 
+              0
+            ], 
+            "px_mm_strategy": {
+              "type": "SimplePxMmStrategy"
+            }, 
+            "identifier": "", 
+            "type": "", 
+            "children": [
+              {
+                "origin": [
+                  -23.158918719499315, 
+                  -11.422267924143185, 
+                  0.28508497614052425
+                ], 
+                "fast_axis": [
+                  0.9999913229849855, 
+                  -0.004165807813450026, 
+                  0.0
+                ], 
+                "name": "FS_D0Q1S0", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.004165807813450026, 
+                  0.9999913229849855, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 16
+                  }, 
+                  {
+                    "panel": 17
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -23.20568958514518, 
+                  -34.777014583801126, 
+                  0.2850849761400695
+                ], 
+                "fast_axis": [
+                  0.9999998456956536, 
+                  0.0005555255790602592, 
+                  0.0
+                ], 
+                "name": "FS_D0Q1S1", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.0005555255790602592, 
+                  0.9999998456956536, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 18
+                  }, 
+                  {
+                    "panel": 19
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -10.777669944158761, 
+                  23.207094615502015, 
+                  0.2850849761400979
+                ], 
+                "fast_axis": [
+                  0.001448442783942979, 
+                  -0.9999989510062007, 
+                  0.0
+                ], 
+                "name": "FS_D0Q1S2", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.9999989510062007, 
+                  0.001448442783942979, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 20
+                  }, 
+                  {
+                    "panel": 21
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -34.16691839772188, 
+                  23.25709755377073, 
+                  0.2850849761402969
+                ], 
+                "fast_axis": [
+                  0.0011437049537028822, 
+                  -0.9999993459692756, 
+                  0.0
+                ], 
+                "name": "FS_D0Q1S3", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.9999993459692756, 
+                  0.0011437049537028822, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 22
+                  }, 
+                  {
+                    "panel": 23
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  23.952508732996858, 
+                  11.425396285024505, 
+                  0.2850849761401832
+                ], 
+                "fast_axis": [
+                  -0.9999997730694918, 
+                  -0.0006736920402083906, 
+                  0.0
+                ], 
+                "name": "FS_D0Q1S4", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.0006736920402083906, 
+                  -0.9999997730694918, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 24
+                  }, 
+                  {
+                    "panel": 25
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  24.02358149923202, 
+                  34.88545286837249, 
+                  0.2850849761402969
+                ], 
+                "fast_axis": [
+                  -0.9999998931694843, 
+                  -0.000462234810353377, 
+                  0.0
+                ], 
+                "name": "FS_D0Q1S5", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.000462234810353377, 
+                  -0.9999998931694843, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 26
+                  }, 
+                  {
+                    "panel": 27
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  33.25173882934436, 
+                  -23.302053057096323, 
+                  0.2850849761402969
+                ], 
+                "fast_axis": [
+                  0.0009658958142666184, 
+                  -0.9999995335225293, 
+                  0.0
+                ], 
+                "name": "FS_D0Q1S6", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.9999995335225293, 
+                  0.0009658958142666184, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 28
+                  }, 
+                  {
+                    "panel": 29
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  9.9592306340209, 
+                  -23.323385830658353, 
+                  0.2850849761399274
+                ], 
+                "fast_axis": [
+                  0.0025570597526384173, 
+                  -0.9999967307173667, 
+                  0.0
+                ], 
+                "name": "FS_D0Q1S7", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.9999967307173667, 
+                  0.0025570597526384173, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 30
+                  }, 
+                  {
+                    "panel": 31
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }
+            ], 
+            "pixel_size": [
+              0.0, 
+              0.0
+            ]
+          }, 
+          {
+            "origin": [
+              49.16453686393377, 
+              -41.431926431462934, 
+              -0.1291357562034534
+            ], 
+            "fast_axis": [
+              0.9999983969133008, 
+              -0.0017905783502933602, 
+              0.0
+            ], 
+            "name": "FS_D0Q2", 
+            "raw_image_offset": [
+              0, 
+              0
+            ], 
+            "slow_axis": [
+              0.0017905783502933602, 
+              0.9999983969133008, 
+              0.0
+            ], 
+            "material": "", 
+            "mask": [], 
+            "thickness": 0.0, 
+            "mu": 0.0, 
+            "gain": 1.0, 
+            "trusted_range": [
+              0.0, 
+              0.0
+            ], 
+            "image_size": [
+              0, 
+              0
+            ], 
+            "px_mm_strategy": {
+              "type": "SimplePxMmStrategy"
+            }, 
+            "identifier": "", 
+            "type": "", 
+            "children": [
+              {
+                "origin": [
+                  -11.335657743030108, 
+                  23.12557823563574, 
+                  0.28508497614083694
+                ], 
+                "fast_axis": [
+                  -0.0012536131706918253, 
+                  -0.9999992142267005, 
+                  0.0
+                ], 
+                "name": "FS_D0Q2S0", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.9999992142267005, 
+                  -0.0012536131706918253, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 32
+                  }, 
+                  {
+                    "panel": 33
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -34.70156837310032, 
+                  23.163482884897864, 
+                  0.28508497614046746
+                ], 
+                "fast_axis": [
+                  1.1918682198132268e-05, 
+                  -0.9999999999289725, 
+                  0.0
+                ], 
+                "name": "FS_D0Q2S1", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.9999999999289725, 
+                  1.1918682198132268e-05, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 34
+                  }, 
+                  {
+                    "panel": 35
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  23.375174715150667, 
+                  10.805441973933412, 
+                  0.28508497614029693
+                ], 
+                "fast_axis": [
+                  -0.9999984046251004, 
+                  -0.0017862662887077412, 
+                  0.0
+                ], 
+                "name": "FS_D0Q2S2", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.0017862662887077412, 
+                  -0.9999984046251004, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 36
+                  }, 
+                  {
+                    "panel": 37
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  23.558247087000346, 
+                  34.20955082844438, 
+                  0.28508497614029693
+                ], 
+                "fast_axis": [
+                  -0.9999986720240494, 
+                  0.0016297086051932895, 
+                  0.0
+                ], 
+                "name": "FS_D0Q2S3", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.0016297086051932895, 
+                  -0.9999986720240494, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 38
+                  }, 
+                  {
+                    "panel": 39
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  11.071869908329463, 
+                  -23.88628939572321, 
+                  0.2850849761403822
+                ], 
+                "fast_axis": [
+                  0.00692339798262118, 
+                  0.9999760329929784, 
+                  0.0
+                ], 
+                "name": "FS_D0Q2S4", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.9999760329929784, 
+                  0.00692339798262118, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 40
+                  }, 
+                  {
+                    "panel": 41
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  34.34660305812824, 
+                  -24.053351811353618, 
+                  0.2850849761402401
+                ], 
+                "fast_axis": [
+                  0.0056076480154572395, 
+                  0.9999842770182613, 
+                  0.0
+                ], 
+                "name": "FS_D0Q2S5", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.9999842770182613, 
+                  0.0056076480154572395, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 42
+                  }, 
+                  {
+                    "panel": 43
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -23.524494441571072, 
+                  -33.132803630569015, 
+                  0.2850849761402685
+                ], 
+                "fast_axis": [
+                  -0.9999947672482535, 
+                  0.003235038811398776, 
+                  0.0
+                ], 
+                "name": "FS_D0Q2S6", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.003235038811398776, 
+                  -0.9999947672482535, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 44
+                  }, 
+                  {
+                    "panel": 45
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -23.45902549277156, 
+                  -9.790016584338868, 
+                  0.28508497614032535
+                ], 
+                "fast_axis": [
+                  -0.999999186954132, 
+                  -0.0012751827615035596, 
+                  0.0
+                ], 
+                "name": "FS_D0Q2S7", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.0012751827615035596, 
+                  -0.999999186954132, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 46
+                  }, 
+                  {
+                    "panel": 47
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }
+            ], 
+            "pixel_size": [
+              0.0, 
+              0.0
+            ]
+          }, 
+          {
+            "origin": [
+              -41.49087399364485, 
+              -49.605700272461974, 
+              -0.12913575620348183
+            ], 
+            "fast_axis": [
+              0.9999787729957058, 
+              -0.006515639493005725, 
+              0.0
+            ], 
+            "name": "FS_D0Q3", 
+            "raw_image_offset": [
+              0, 
+              0
+            ], 
+            "slow_axis": [
+              0.006515639493005725, 
+              0.9999787729957058, 
+              0.0
+            ], 
+            "material": "", 
+            "mask": [], 
+            "thickness": 0.0, 
+            "mu": 0.0, 
+            "gain": 1.0, 
+            "trusted_range": [
+              0.0, 
+              0.0
+            ], 
+            "image_size": [
+              0, 
+              0
+            ], 
+            "px_mm_strategy": {
+              "type": "SimplePxMmStrategy"
+            }, 
+            "identifier": "", 
+            "type": "", 
+            "children": [
+              {
+                "origin": [
+                  23.09826834966029, 
+                  11.622647105494353, 
+                  0.28508497613987055
+                ], 
+                "fast_axis": [
+                  -0.9999968633989389, 
+                  -0.002504634161714325, 
+                  0.0
+                ], 
+                "name": "FS_D0Q3S0", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.002504634161714325, 
+                  -0.9999968633989389, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 48
+                  }, 
+                  {
+                    "panel": 49
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  23.1281995720087, 
+                  34.97544956601722, 
+                  0.2850849761403253
+                ], 
+                "fast_axis": [
+                  -0.9999999266089137, 
+                  -0.0003831216090775699, 
+                  0.0
+                ], 
+                "name": "FS_D0Q3S1", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.0003831216090775699, 
+                  -0.9999999266089137, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 50
+                  }, 
+                  {
+                    "panel": 51
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  10.969201154913213, 
+                  -23.532807543093057, 
+                  0.2850849761403537
+                ], 
+                "fast_axis": [
+                  -0.007942014583811163, 
+                  0.9999684617048432, 
+                  0.0
+                ], 
+                "name": "FS_D0Q3S2", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.9999684617048432, 
+                  -0.007942014583811163, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 52
+                  }, 
+                  {
+                    "panel": 53
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  34.3021171955857, 
+                  -23.35430576391943, 
+                  0.2850849761403253
+                ], 
+                "fast_axis": [
+                  -0.004433559512042999, 
+                  0.9999901717267292, 
+                  0.0
+                ], 
+                "name": "FS_D0Q3S3", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.9999901717267292, 
+                  -0.004433559512042999, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 54
+                  }, 
+                  {
+                    "panel": 55
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -24.108780057127603, 
+                  -11.523117735245378, 
+                  0.28508497614024003
+                ], 
+                "fast_axis": [
+                  0.9999949266356223, 
+                  -0.0031853889898263406, 
+                  0.0
+                ], 
+                "name": "FS_D0Q3S4", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.0031853889898263406, 
+                  0.9999949266356223, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 56
+                  }, 
+                  {
+                    "panel": 57
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -24.155934374735526, 
+                  -34.868068374303185, 
+                  0.2850849761402969
+                ], 
+                "fast_axis": [
+                  0.9999999928164005, 
+                  -0.00011986325156699426, 
+                  0.0
+                ], 
+                "name": "FS_D0Q3S5", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  0.00011986325156699426, 
+                  0.9999999928164005, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 58
+                  }, 
+                  {
+                    "panel": 59
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -33.34554797077606, 
+                  23.4239169427948, 
+                  0.28508497614001266
+                ], 
+                "fast_axis": [
+                  -0.006366309085021184, 
+                  0.9999797348489788, 
+                  0.0
+                ], 
+                "name": "FS_D0Q3S6", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.9999797348489788, 
+                  -0.006366309085021184, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 60
+                  }, 
+                  {
+                    "panel": 61
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }, 
+              {
+                "origin": [
+                  -9.918700408204261, 
+                  23.456557091738173, 
+                  0.28508497614024003
+                ], 
+                "fast_axis": [
+                  -0.006333081990062952, 
+                  0.9999799458351689, 
+                  0.0
+                ], 
+                "name": "FS_D0Q3S7", 
+                "raw_image_offset": [
+                  0, 
+                  0
+                ], 
+                "slow_axis": [
+                  -0.9999799458351689, 
+                  -0.006333081990062952, 
+                  0.0
+                ], 
+                "material": "", 
+                "mask": [], 
+                "thickness": 0.0, 
+                "mu": 0.0, 
+                "gain": 1.0, 
+                "trusted_range": [
+                  0.0, 
+                  0.0
+                ], 
+                "image_size": [
+                  0, 
+                  0
+                ], 
+                "px_mm_strategy": {
+                  "type": "SimplePxMmStrategy"
+                }, 
+                "identifier": "", 
+                "type": "", 
+                "children": [
+                  {
+                    "panel": 62
+                  }, 
+                  {
+                    "panel": 63
+                  }
+                ], 
+                "pixel_size": [
+                  0.0, 
+                  0.0
+                ]
+              }
+            ], 
+            "pixel_size": [
+              0.0, 
+              0.0
+            ]
+          }
+        ], 
+        "pixel_size": [
+          0.0, 
+          0.0
+        ]
+      }, 
+      "panels": [
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S0A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S0A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S1A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S1A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S2A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S2A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S3A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S3A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S4A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S4A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S5A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S5A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S6A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S6A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S7A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q0S7A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S0A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S0A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S1A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S1A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S2A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S2A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S3A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S3A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S4A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S4A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S5A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S5A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S6A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S6A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S7A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q1S7A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S0A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S0A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S1A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S1A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S2A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S2A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S3A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S3A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S4A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S4A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S5A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S5A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S6A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S6A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S7A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q2S7A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S0A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S0A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S1A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S1A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S2A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S2A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S3A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S3A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S4A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S4A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S5A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S5A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S6A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S6A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            -21.48936, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S7A0", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }, 
+        {
+          "origin": [
+            0.16488000000000014, 
+            10.1676, 
+            0.0
+          ], 
+          "fast_axis": [
+            1.0, 
+            0.0, 
+            0.0
+          ], 
+          "name": "ARRAY_D0Q3S7A1", 
+          "raw_image_offset": [
+            0, 
+            0
+          ], 
+          "slow_axis": [
+            0.0, 
+            -1.0, 
+            0.0
+          ], 
+          "material": "", 
+          "mask": [], 
+          "thickness": 0.5, 
+          "mu": 8.515707571110404, 
+          "gain": 1.0, 
+          "trusted_range": [
+            -400.0, 
+            90000.0
+          ], 
+          "image_size": [
+            194, 
+            185
+          ], 
+          "px_mm_strategy": {
+            "type": "ParallaxCorrectedPxMmStrategy"
+          }, 
+          "identifier": "", 
+          "type": "", 
+          "pixel_size": [
+            0.10992, 
+            0.10992
+          ]
+        }
+      ]
+    }
+  ], 
+  "goniometer": [], 
+  "scan": [], 
+  "crystal": [
+    {
+      "__id__": "crystal", 
+      "real_space_a": [
+        45.144254387563926, 
+        -32.471214817970356, 
+        -74.76354050574297
+      ], 
+      "real_space_b": [
+        47.931799289554206, 
+        28.13322158894619, 
+        74.78659602369189
+      ], 
+      "real_space_c": [
+        -5.651172521196106, 
+        -120.99050192547575, 
+        49.13612416187146
+      ], 
+      "space_group_hall_symbol": " P 61 2 (x,y,z+5/12)", 
+      "ML_half_mosaicity_deg": 0.025329176021882012, 
+      "ML_domain_size_ang": 5882.44262122173
+    }
+  ], 
+  "profile": [], 
+  "scaling_model": []
+}
