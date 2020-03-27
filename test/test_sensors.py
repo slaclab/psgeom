@@ -10,6 +10,7 @@ from psgeom import sensors
 from psgeom import moveable
 from psgeom import camera
 
+
 class TestPixelArraySensor(object):
     
     def setup(self):
@@ -98,7 +99,79 @@ class TestPixelArraySensor(object):
         
         xyz_ans = np.dot(uxyzd, np.dot(T, R).T)
         np.testing.assert_array_almost_equal(self.PAS.xyz, xyz_ans[...,:3])
+      
+
+class TestPSF:
+
+    def setup(self):
+        self.shape = (128, 128)
+        self.pixel_shape = (1.0, 1.0)
+        self.pas = sensors.PixelArraySensor(self.shape, self.pixel_shape, 
+                                            type_name='Test', id_num=0, 
+                                            parent=None)
+
+    def test_psf(self):
+        r = self.pas.psf
+        assert np.all( r[0] == np.array([-63.5,  63.5 ,    0. ]) ), r[0]
+        assert np.all( r[1] == np.array([ 0., -1.,  0.]) ), r[1]
+        assert np.all( r[2] == np.array([1., 0., 0.]) ), r[2]
+        assert r[3] == self.shape, r[3]
+        
     
+    def test_slow_gap(self):
+        
+        self.pas.add_gap(2.0, 32, 'slow') # size, loc, axis
+        
+        r0 = self.pas.psf[0]
+        r1 = self.pas.psf[1]
+        
+        # check shapes
+        assert r0[3] == (32, 128)
+        assert r1[3] == (128-32, 128)
+        
+        # original vectors
+        assert np.all( r0[0] == np.array([-63.5,  65.0 ,    0. ]) ), r0[0]
+        assert np.all( r0[1] == np.array([ 0., -1.,  0.]) ), r0[1]
+        assert np.all( r0[2] == np.array([1., 0., 0.]) ), r0[2]
+        
+        # gapped vectors
+        assert np.all( r1[0] == np.array([-63.5,  31.0,    0. ]) ), r1[0]
+        assert np.all( r1[1] == np.array([ 0., -1.,  0.]) ), r1[1]
+        assert np.all( r1[2] == np.array([1., 0., 0.]) ), r1[2]
+        
+        
+    def test_fast_gap(self):
+        
+        self.pas.add_gap(2.0, 32, 'fast') # size, loc, axis
+        
+        r0 = self.pas.psf[0]
+        r1 = self.pas.psf[1]
+        
+        # check shapes
+        assert r0[3] == (128, 32)
+        assert r1[3] == (128, 128-32)
+        
+        # original vectors
+        assert np.all( r0[0] == np.array([-65.0,  63.5 ,    0. ]) ), r0[0]
+        assert np.all( r0[1] == np.array([ 0., -1.,  0.]) ), r0[1]
+        assert np.all( r0[2] == np.array([1., 0., 0.]) ), r0[2]
+        
+        # gapped vectors
+        assert np.all( r1[0] == np.array([-31.0,  63.5,    0. ]) ), r1[0]
+        assert np.all( r1[1] == np.array([ 0., -1.,  0.]) ), r1[1]
+        assert np.all( r1[2] == np.array([1., 0., 0.]) ), r1[2]
+        
+        
+    def test_pdf_many_gaps(self):
+        self.pas.add_gap(2.0, 32, 'fast') # size, loc, axis
+        self.pas.add_gap(2.0, 32, 'slow') # size, loc, axis
+        
+        shapes = [ r[3] for r in self.pas.psf ]
+    
+        assert shapes[0] == (32,32)
+        assert shapes[1] == (32,96)
+        assert shapes[2] == (96,32)
+        assert shapes[3] == (96,96)
 
 class TestSens2x1(TestPixelArraySensor):
     

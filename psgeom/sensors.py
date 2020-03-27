@@ -2,6 +2,37 @@
 
 """
 sensors.py
+
+--- THE PSANA CONVENTIONS
+
+In the "psana" convention, an unrotated reference frame has the following
+notations and conventions:
+
+  READOUT   SPACE   AXIS SLICING  |
+  -------   -----   ------------  | for `xyz` we assume the slicing is
+  slow       -y      xyz[*,:,1]   | (slow, fast, x/y/z/)
+  fast       +x      xyz[:,*,0]   |
+
+  so, for example, a JUNGFRAU segment looks like this:
+
+         fast -->
+     [0,0]
+        -------------------------------------------------
+     s  |           |           |           |           |
+     l  | 256 x 256 | 256 x 256 | 256 x 256 | 256 x 256 | 
+     o  |           |           |           |           | 
+     w  -------------------------------------------------  
+     |  |           |           |           |           | 
+        | 256 x 256 | 256 x 256 | 256 x 256 | 256 x 256 | 
+        |           |           |           |           | 
+        -------------------------------------------------  
+        
+   +y ^    
+      |
+      ---> + x      (+ z out of plane)
+
+  This convention has been called the "matrix convention".
+
 """
 
 import abc
@@ -58,8 +89,59 @@ class SensorElement(moveable.MoveableObject):
         raise NotImplementedError('from_type method not implemented')
         return        
         
+# ---- generic sensor implementations  ----------------------------------------
+
+class Gap:
+    """
+    A simple helper class to define a gap in a SensorArray
+    """
     
-# ---- specific sensor implementations  ----------------------------------------
+    def __init__(self, size, location, axis):
+        """
+        Parameters
+        ----------
+        size : float
+            The gap size, in pixel units
+        location : int
+            The location of the gap in the array (integer number of pixels)
+        axis : str
+            Either 'slow' or 'fast'.
+        """
+        self.size     = float(size)
+        self.location = location
+        if axis in ['slow', 'fast']:
+            self.axis = axis
+        else:
+            raise ValueError('`axis` must be either `slow` or `fast`')
+        return
+        
+        
+    @property
+    def slc(self):
+        """
+        This is the slice object that dictates where in the xyz array to
+        place the gap
+        
+        Example
+        -------
+        xyz[gap.slc] += gap.size
+        """
+        if self.axis == 'fast':
+            slc = np.s_[:,self.location:,0] # fast/x
+        elif self.axis == 'slow':
+            slc = np.s_[self.location:,:,1] # slow/y
+        return slc
+        
+    
+    @property
+    def signed_size(self):
+        """
+        ... TODO ...
+        """
+        sign = -1.0 if self.axis == 'slow' else 1.0
+        return sign * self.size
+        
+        
     
 class PixelArraySensor(SensorElement):
     """
@@ -126,36 +208,91 @@ class PixelArraySensor(SensorElement):
         self.shape        = tuple(shape)
         self._pixel_shape = np.array(pixel_shape)
         
+        self.gaps = []
+        
         return
     
+        
+    def add_gap(self, size, location, axis):
+        """
+        Add a gap to the sensor definition.
+        
+        Parameters
+        ----------
+        size : float
+            The gap size, in pixel units
+        location : int
+            The location of the gap in the array (integer number of pixels)
+        axis : str
+            Either 'slow' or 'fast'.
+        """
+        gp = Gap(size, location, axis)
+        self.gaps.append(gp)
+        return
+        
         
     @property
     def num_pixels(self):
         return np.product(self.shape)
+        
+    
+    @property
+    def num_gaps(self):
+        return len(self.gaps)
     
 
+    # @property
+    # def untransformed_xyz(self):
+    #     """
+    #     Return the xyz coordinates of the element in the reference frame, that
+    #     is before any translation/rotation operations have been applied.
+    #     """
+    #
+    #     # convention that x/row/first-index is the SLOW varying dimension
+    #     # y/column/second-index is FAST and z is perpendicular to the sensor
+    #     # completing a right handed coordinate system in the untransformed view
+    #
+    #     xy = np.mgrid[0.0:float(self.shape[0]),0.0:float(self.shape[1])]
+    #     xy = np.rollaxis(xy, 0, start=3)
+    #
+    #     xy[:,:,0] *= self.pixel_shape[0]
+    #     xy[:,:,1] *= self.pixel_shape[1]
+    #
+    #     # add the z dimension (just flat)
+    #     z = np.zeros([self.shape[0], self.shape[1], 1])
+    #     xyz = np.concatenate([xy, z], axis=-1)
+    #
+    #     return xyz
+        
     @property
     def untransformed_xyz(self):
         """
         Return the xyz coordinates of the element in the reference frame, that
         is before any translation/rotation operations have been applied.
         """
-                
-        # convention that x/row/first-index is the SLOW varying dimension
-        # y/column/second-index is FAST and z is perpendicular to the sensor 
-        # completing a right handed coordinate system in the untransformed view
-        
-        xy = np.mgrid[0.0:float(self.shape[0]),0.0:float(self.shape[1])]
-        xy = np.rollaxis(xy, 0, start=3)
+
+        xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])].T
+        xy[:,:,:] = xy[::-1,:,:] # <bleeping> psana convention (matrix)
         
         xy[:,:,0] *= self.pixel_shape[0]
         xy[:,:,1] *= self.pixel_shape[1]
-        
+
         # add the z dimension (just flat)
         z = np.zeros([self.shape[0], self.shape[1], 1])
         xyz = np.concatenate([xy, z], axis=-1)
-        
-        return xyz   
+
+        # add any gaps
+        for gap in self.gaps:
+            xyz[gap.slc] += gap.signed_size * self.pixel_shape[gap.slc[2]]
+
+        # and, finally, for some reason M [psana] measures rotations from the
+        # center of the 2x1 but the corner of the quad. So we center the
+        # sensor elements
+        xyz[:,:,0] -= np.mean(xyz[:,:,0])
+        xyz[:,:,1] -= np.mean(xyz[:,:,1])
+
+        return xyz
+           
         
     @property
     def psf(self):
@@ -175,6 +312,9 @@ class PixelArraySensor(SensorElement):
         f : np.ndarray
             A 3-vector pointing along the slow scan direction. The size of the
             vector is the size of the pixel in this direction.
+        
+        shp : tuple
+            A 2-tuple of the sensor shape
         """
         
         xyz = self.xyz
@@ -182,8 +322,46 @@ class PixelArraySensor(SensorElement):
         p = xyz[0,0,:]
         s = xyz[1,0,:] - p
         f = xyz[0,1,:] - p
+        
+        if self.num_gaps == 0:            
+            ret = (p, s, f, self.shape)
             
-        return p, s, f
+        else: # we have many grids, need to split!
+        
+            grids = [ [p, s, f, self.shape] ] # list to allow assignment
+            
+            # for each gap...
+            for gap in self.gaps:
+                new_grids = []
+                
+                # ... split each grid into two
+                for grid in grids:
+                    
+                    p   = grid[0]
+                    shp = grid[3]
+                    
+                    if gap.axis == 'slow':
+                        new_p   = p + s * (gap.location + gap.size)
+                        new_shp = (shp[0] - gap.location, shp[1])
+                        mod_shp = (gap.location,          shp[1])
+                        
+                    elif gap.axis == 'fast':
+                        new_p   = p + f * (gap.location + gap.size)
+                        new_shp = (shp[0], shp[1] - gap.location)
+                        mod_shp = (shp[0], gap.location)
+                        
+                    else:
+                        raise ValueError('gap axis: %s' % str(gap.axis))
+                    
+                    grid[3] = mod_shp # cut down shape of split grid
+                    new_grids.append( [new_p, s, f, new_shp] )
+                    
+                grids = grids + new_grids
+            
+            assert len(grids) == 2 * self.num_gaps
+            ret = [ tuple(g) for g in grids ] # convert to tuples
+            
+        return ret
 
 
     @classmethod
@@ -201,7 +379,7 @@ class PixelArraySensor(SensorElement):
                    translation=translation)
 
 
-# ---- specific sensor implementations  ------------------------------------------------
+# ---- specific sensor implementations  ---------------------------------------
 
 class Cspad2x1(PixelArraySensor):
     """
