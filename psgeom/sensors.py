@@ -3,7 +3,7 @@
 """
 sensors.py
 
---- THE PSANA CONVENTIONS
+--- THE PSANA SENSOR CONVENTION
 
 In the "psana" convention, an unrotated reference frame has the following
 notations and conventions:
@@ -30,8 +30,6 @@ notations and conventions:
    +y ^    
       |
       ---> + x      (+ z out of plane)
-
-  This convention has been called the "matrix convention".
 
 """
 
@@ -285,29 +283,6 @@ class PixelArraySensor(SensorElement):
         fgs.sort(key=lambda g : g.location, reverse=True)
         return fgs
     
-
-    # @property
-    # def untransformed_xyz(self):
-    #     """
-    #     Return the xyz coordinates of the element in the reference frame, that
-    #     is before any translation/rotation operations have been applied.
-    #     """
-    #
-    #     # convention that x/row/first-index is the SLOW varying dimension
-    #     # y/column/second-index is FAST and z is perpendicular to the sensor
-    #     # completing a right handed coordinate system in the untransformed view
-    #
-    #     xy = np.mgrid[0.0:float(self.shape[0]),0.0:float(self.shape[1])]
-    #     xy = np.rollaxis(xy, 0, start=3)
-    #
-    #     xy[:,:,0] *= self.pixel_shape[0]
-    #     xy[:,:,1] *= self.pixel_shape[1]
-    #
-    #     # add the z dimension (just flat)
-    #     z = np.zeros([self.shape[0], self.shape[1], 1])
-    #     xyz = np.concatenate([xy, z], axis=-1)
-    #
-    #     return xyz
         
     @property
     def untransformed_xyz(self):
@@ -605,44 +580,6 @@ class Cspad2x1(FixedArraySensor):
         self.add_gap(3.0, 194, 'fast')
                                        
         return
-
-    
-    # @property
-    # def untransformed_xyz(self):
-    #     """
-    #     Return the xyz coordinates of the element in the reference frame, that
-    #     is before any translation/rotation operations have been applied.
-    #     """
-    #
-    #     # of course, the CSPAD layout is different
-    #     xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])].T
-    #     xy[:,:,:] = xy[::-1,:,:]
-    #     xy[:,:,0] *= self.pixel_shape[0]
-    #     xy[:,:,1] *= self.pixel_shape[1]
-    #
-    #     # add the z dimension (just flat)
-    #     z = np.zeros([self.shape[0], self.shape[1], 1])
-    #     xyz = np.concatenate([xy, z], axis=-1)
-    #
-    #     # the CSPAD's central pixels are bigger than usual along the x dim
-    #     # normal pixels are 109.92 x 109.92 um, the middle two columns are
-    #     # 109.92 x 274.8 um. By translating the 2nd ASIC, we get most of the
-    #     # pixels right, but the central columns will be a bit off
-    #
-    #     # this is equivalent to a 3-pixel shift
-    #     # note that 2 * (274.80 - 109.92) = 329.76
-    #     # gap is between pixel indices 193 & 194
-    #
-    #     xyz[:,194:,0] += 2.0 * (274.8 - 109.92)
-    #
-    #     # and, finally, for some reason M measures rotations from the
-    #     # center of the 2x1 but the corner of the quad. So we center the
-    #     # sensor elements
-    #
-    #     xyz[:,:,0] -= np.mean(xyz[:,:,0])
-    #     xyz[:,:,1] -= np.mean(xyz[:,:,1])
-    #
-    #     return xyz
     
             
 class PnccdQuad(FixedArraySensor):
@@ -754,53 +691,4 @@ class JungfrauSegment(FixedArraySensor):
         self.add_gap(2.0, 256, 'slow')
 
         return
-
-
-    # @property
-    # def untransformed_xyz(self):
-    #     """
-    #     Return the xyz coordinates of the element in the reference frame, that
-    #     is before any translation/rotation operations have been applied.
-    #     """
-    #
-    #     # JUNGFRAU 1M SENSOR LOOKS LIKE THIS
-    #     #
-    #     # all lines are a 2 pixel gap
-    #     #
-    #     #        fast -> (axis 1)
-    #     #     -------------------------------------------------
-    #     #  s  |           |           |           |           |
-    #     #  l  | 256 x 256 | 256 x 256 | 256 x 256 | 256 x 256 |
-    #     #  o  |           |           |           |           |
-    #     #  w  -------------------------------------------------
-    #     #  |  |           |           |           |           |
-    #     #  0  | 256 x 256 | 256 x 256 | 256 x 256 | 256 x 256 |
-    #     #     |           |           |           |           |
-    #     #     -------------------------------------------------
-    #
-    #
-    #     xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])].T
-    #     xy[:,:,:] = xy[::-1,:,:]
-    #     xy[:,:,0] *= self.pixel_shape[0]
-    #     xy[:,:,1] *= self.pixel_shape[1]
-    #
-    #     # add the z dimension (just flat)
-    #     z = np.zeros([self.shape[0], self.shape[1], 1])
-    #     xyz = np.concatenate([xy, z], axis=-1)
-    #
-    #     # add the two pixel gaps
-    #     gap_size = 2.0
-    #
-    #     xyz[:,256:,0] += gap_size * self.pixel_shape[1]
-    #     xyz[:,512:,0] += gap_size * self.pixel_shape[1]
-    #     xyz[:,768:,0] += gap_size * self.pixel_shape[1]
-    #     xyz[256:,:,1] -= gap_size * self.pixel_shape[0] # minus due to flip convention
-    #
-    #     # and, finally, for some reason M measures rotations from the
-    #     # center of the 2x1 but the corner of the quad. So we center the
-    #     # sensor elements
-    #     xyz[:,:,0] -= np.mean(xyz[:,:,0])
-    #     xyz[:,:,1] -= np.mean(xyz[:,:,1])
-    #
-    #     return xyz
 

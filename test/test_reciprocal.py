@@ -15,12 +15,12 @@ from psgeom import fitting
 
 def test_bg_as_array():
     # prob not necessary
-    geom = camera.Cspad.from_psana_file('ref_files/cspad/refgeom_psana.data')
+    geom = camera.CompoundAreaCamera.from_psana_file('ref_files/cspad/refgeom_psana.data')
     bg = geom.to_basisgrid()
     assert bg.as_array().shape == (64, 11)
 
 def test_bg_from_array():
-    geom = camera.Cspad.from_psana_file('ref_files/cspad/refgeom_psana.data')
+    geom = camera.CompoundAreaCamera.from_psana_file('ref_files/cspad/refgeom_psana.data')
     bg = geom.to_basisgrid()
     bg2 = basisgrid.BasisGrid.from_array( bg.as_array() )
     assert np.all( bg.to_explicit() == bg2.to_explicit() )
@@ -170,7 +170,7 @@ class TestFitting(object):
 
         # load 3x geometires
         filenames = ['origin.geom', 'coffset05.geom', 'coffset10.geom']
-        cameras = [camera.Cspad.from_crystfel_file('ref_files/distance_series/' + f) for f in filenames]
+        cameras = [camera.CompoundAreaCamera.from_crystfel_file('ref_files/distance_series/' + f) for f in filenames]
         motor_z = np.array([0.0, 0.5, 1.0])
 
         bgi = fitting.BasisGridInterpolator([g.to_basisgrid() for g in cameras], motor_z)

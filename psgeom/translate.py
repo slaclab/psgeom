@@ -764,7 +764,7 @@ def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
     """
     Parameters
     ----------
-    detector : cspad.CompoundAreaCamera
+    detector : camera.CompoundAreaCamera
         The detector geometry to write to disk
         
     filname : str
@@ -1102,6 +1102,7 @@ def load_dials(obj, filename, scale_factor=1000.0):
             bg.add_grid(*bg_tmp[k])
         else:
             print('WARNING: panel %d seems to be missing' % k)
+    
     geom_instance = obj.from_basisgrid(bg)
 
     return geom_instance

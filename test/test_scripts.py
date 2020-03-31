@@ -37,7 +37,7 @@ class TestGeoconv:
         os.system("geoconv --cspad -f hdf5 ./ref_files/cspad/refgeom_psana.data tmp.hdf5")
         with h5py.File('tmp.hdf5', 'r') as f:
             cspad2 = f['xyz']
-            assert np.max(np.abs( np.squeeze(self.cd.xyz[...,:2]).reshape(32,185,388,2) - \
+            assert np.max(np.abs( np.squeeze(self.cd.xyz[...,:2]) - \
                np.squeeze(cspad2[...,:2]) )) < 1.0
         os.remove("tmp.hdf5")
         

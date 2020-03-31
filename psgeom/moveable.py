@@ -349,5 +349,3 @@ def _angles_from_rotated_frame(xp, yp, zp, return_units='degrees',
     return gamma, beta, alpha
 
 
-    
-

@@ -11,8 +11,6 @@ import numpy as np
 from psgeom import basisgrid
 
 
-
-
 def load_to_basisgrid(metrology_file):
 	"""
 	Convert a CSPAD Metrology file to a basis grid object.
