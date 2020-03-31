@@ -287,18 +287,8 @@ class TestJungfrau:
         assert bg.num_grids == 8 * 8
         new = self.klass.from_basisgrid(bg, element_type=sensors.JungfrauSegment)
 
-        # for c in self.geom.children:
-        #     print(c.rotation_angles)
-        #
-        # for c in new.children:
-        #     print(c.rotation_angles)
-
         ref_xyz = self.geom.xyz
         new_xyz = new.xyz
-        print(new_xyz.shape)
-        
-        for i in range(8):
-            print(i, ref_xyz[i,0,0,:], new_xyz[i,0,0,:])
         
         assert self.geom.num_pixels == new.num_pixels
         assert ref_xyz.shape == new_xyz.shape
@@ -306,3 +296,31 @@ class TestJungfrau:
         np.testing.assert_allclose(ref_xyz, 
                                    new_xyz,
                                    atol=PIXEL_TOLERANCE_um)
+                                   
+                                   
+    def test_basisgrid_roundtrip_random(self):
+        
+        geom = camera.CompoundAreaCamera()
+        rand_trans = np.random.randn(3)
+        rand_rot   = 90.0 * np.random.rand(3)
+        
+        pas = sensors.JungfrauSegment(parent=geom, id_num=0,
+                                      rotation_angles=rand_rot,
+                                      translation=rand_trans)
+                                      
+        bg = geom.to_basisgrid()
+        assert bg.num_grids == 8
+        new = camera.CompoundAreaCamera.from_basisgrid(bg, element_type=sensors.JungfrauSegment)
+                                              
+        ref_xyz = geom.xyz
+        new_xyz = new.xyz
+        
+        assert ref_xyz.shape == new_xyz.shape
+        
+        np.testing.assert_allclose(ref_xyz, 
+                                   new_xyz,
+                                   atol=PIXEL_TOLERANCE_um)                              
+        
+
+        
+        
