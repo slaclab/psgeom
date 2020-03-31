@@ -79,11 +79,14 @@ class TestPixelArraySensor(object):
     
     
     def test_untransformed_xyz(self):
+        
         uxyz = self.PAS.untransformed_xyz
         assert uxyz.shape[:-1] == self.shape, '%s %s' % (uxyz.shape, self.shape)
-        # remember, slow is x convention... (changed 8-28-16 by TJL)
-        assert np.max(uxyz[...,0]) == (self.shape[0]-1) * self.pixel_shape[0]
-        assert np.max(uxyz[...,1]) == (self.shape[1]-1) * self.pixel_shape[1]
+        
+        # remember, slow is y convention... (changed Mar 27, 2020 by TJL)
+        #           and sensor is centered
+        assert np.max(uxyz[...,1]) == (self.shape[0]-1) * self.pixel_shape[0]/2.0
+        assert np.max(uxyz[...,0]) == (self.shape[1]-1) * self.pixel_shape[1]/2.0
         
     
     def test_xyz(self):
@@ -111,11 +114,58 @@ class TestPSF:
                                             parent=None)
 
     def test_psf(self):
-        r = self.pas.psf
+        r = self.pas.psf[0]
         assert np.all( r[0] == np.array([-63.5,  63.5 ,    0. ]) ), r[0]
         assert np.all( r[1] == np.array([ 0., -1.,  0.]) ), r[1]
         assert np.all( r[2] == np.array([1., 0., 0.]) ), r[2]
         assert r[3] == self.shape, r[3]
+        
+    
+    def test_gap_access(self):
+        
+        self.pas.add_gap(2.0, 32, 'slow') # size, loc, axis
+        self.pas.add_gap(2.0, 64, 'slow') # size, loc, axis
+        self.pas.add_gap(2.0, 32, 'fast') # size, loc, axis
+        self.pas.add_gap(2.0, 8, 'slow') # size, loc, axis
+        self.pas.add_gap(2.0, 35, 'fast') # size, loc, axis
+        
+        sgs = self.pas._slow_gaps
+        fgs = self.pas._fast_gaps
+        
+        assert len(sgs) == 3
+        assert len(fgs) == 2
+        
+        cp = self.pas.shape[0]
+        for g in sgs:
+            assert g.location < cp
+            cp = g.location
+            
+        cp = self.pas.shape[1]
+        for g in fgs:
+            assert g.location < cp
+            cp = g.location
+        
+        
+    def test_dimensions(self):
+        
+        self.pas.add_gap(2.5, 32, 'slow') # size, loc, axis
+        
+        d = self.pas.dimensions
+        assert d[0] == 128.0 + 2.5
+        assert d[1] == 128.0
+        
+        shp2 = (64, 64)
+        ps2  = (0.5, 0.5)
+        pas2 = sensors.PixelArraySensor(shp2, ps2, 
+                                        type_name='Test', id_num=0, 
+                                        parent=None)
+        pas2.add_gap(2.5, 3, 'fast')
+        pas2.add_gap(2.5, 5, 'fast')
+        
+        d2 = pas2.dimensions
+        assert d2[0] == 32.0
+        assert d2[1] == 34.5
+        
         
     
     def test_slow_gap(self):

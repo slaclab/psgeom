@@ -16,7 +16,7 @@ composing a CompoundCamera` instance can be SensorElements or other
 CompoundCameras.
 
 A note about how the heirarchical geometry orientation is applied. Each node
-in the graph contains a rotation and translation with respect to it's parent.
+in the graph contains a rotation and translation with respect to its parent.
 The translation is applied *first*. So if T is a translation operator, and
 R is a rotation,
 
@@ -333,9 +333,9 @@ class CompoundAreaCamera(CompoundCamera):
                 raise TypeError('basisgrid representation is only compatible '
                                 'with detectors that are entirely comprised of '
                                 'PixelArrayElements')
-                           
-            p, s, f = sensor.psf 
-            bg.add_grid(p, s, f, sensor.shape)
+            
+            for g in sensor.psf:               
+                bg.add_grid(*g)
     
         return bg
     
@@ -366,32 +366,70 @@ class CompoundAreaCamera(CompoundCamera):
         cd = cls(type_name='root_frame', id_num=0, parent=None)
     
     
-        for g in range(bg.num_grids):
-        
-            p, s, f, shape = bg.get_grid(g)
+        # loop over grids, possibly skipping some due to gaps...
+        grid_index  = 0
+        panel_index = 0
+        while grid_index < bg.num_grids:
+            
+            p, s, f, shape = bg.get_grid(grid_index)
         
             pixel_shape = (np.linalg.norm(s),
                            np.linalg.norm(f))
+            
+            # FixedArraySensors know their shape/pixel_shape before hand and
+            # can therefore convert basisgrids to gapped sensor geometries,
+            # while the "else" clause attempts to be general and allow inference
+            # of these values
+            if issubclass(element_type, sensors.FixedArraySensor):
+                pas = element_type(id_num=panel_index,
+                                   parent=cd)
+            else:
+                pas = element_type(shape,
+                                   pixel_shape,
+                                   id_num=panel_index,
+                                   parent=cd)
         
-            # to compute the rotation, find the 
+        
+            # >>> determine panel rotation
             us = s / pixel_shape[0] # unit vector
             uf = f / pixel_shape[1] # unit vector
-            n  = np.cross(us, uf)   # tested for orthog. in next fxn
-        
-            # remember: in the matrix convention (Mikhail uses), +x is slow
-            # and +y is fast
-            ra = moveable._angles_from_rotated_frame(us, uf, n)
-
-            # translation is just p
-            tr = p
-        
-            pas = element_type(shape, 
-                               pixel_shape, 
-                               id_num=g, 
-                               parent=cd,
-                               rotation_angles=ra, 
-                               translation=tr)
-
+            n  = np.cross(uf, -us)  # tested for orthog. in next fxn
+            
+            ra = moveable._angles_from_rotated_frame(uf, -us, n)
+            
+            # >>> determine panel translation
+            dims = pas.dimensions
+            
+            # center (-pixel_shape is due to the "half pixel" added by p)
+            tr = p + (dims[0]-pixel_shape[0]) * us / 2.0 +\
+                     (dims[1]-pixel_shape[1]) * uf / 2.0 
+            print('***', grid_index, p, tr)
+            
+            pas._rotation_angles = ra
+            pas._translation     = tr
+            
+            panel_index += 1
+                
+            # >>> deal with gaps
+            # if gapped, we need to assemble many bgs into one sensor
+            if pas.num_gaps > 0:
+                    
+                    # check s/f vectors are all the same
+                    for ig in range(pas.num_gaps * 2): # each gap > 2 panels
+                        
+                        p2, s2, f2, shape2 = bg.get_grid( grid_index + ig )
+                        
+                        if not np.all(s2 == s) and np.all(f2 == f):
+                            raise ValueError('BasisGrid `bg` not compatible '
+                                             'with `element_type`: %s, s/f '
+                                             'vectors of gapped grids do not '
+                                             'match' % str(element_type))
+                
+                    grid_index += ig + 1 # increment bg counter
+                    
+            # if no gaps, just goto next grid
+            else: 
+                grid_index  += 1
     
         return cd
     
@@ -773,7 +811,7 @@ class Cspad(CompoundAreaCamera):
                                 'with detectors that are entirely comprised of '
                                 'PixelArrayElements')
                                
-            p, s, f = sensor.psf 
+            p, s, f, shp = sensor.psf[0] # TODO
             
             # add the first ASIC of a 2x1...
             bg.add_grid(p, s, f, (185, 194))
