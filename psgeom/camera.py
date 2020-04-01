@@ -400,8 +400,10 @@ class Cspad(CompoundAreaCamera):
     @classmethod
     def from_basisgrid(cls, bg):
         
-        cspad = super().from_basisgrid(bg, element_type=sensors.Cspad2x1, 
-                                       strict=False, type_name='CSPAD:V1')
+        cspad = super(Cspad, self).from_basisgrid(bg, 
+                                                  element_type=sensors.Cspad2x1, 
+                                                  strict=False, 
+                                                  type_name='CSPAD:V1')
         
         # enforce the CSPAD quad/asic heirarchy, which cannot be inferred from
         # the basisgrid alone
