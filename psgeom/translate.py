@@ -364,8 +364,20 @@ def _cheetah_to_asics(cheetah_image):
     
     new_image = np.zeros((4,16,185,194), dtype=cheetah_image.dtype)
     
-    for q in range(4):
-        for twoXone in range(8):
+    shape = (185, 388)
+    
+    num_quads = int(cheetah_image.shape[1] / shape[1])
+    if cheetah_image.shape[1] % shape[1] != 0:
+        raise IOError('Unexpected geometry array shape: %s. Could not infer '
+                      'number of quads.' % str(cheetah_image.shape))
+    
+    num_twoXones = int(cheetah_image.shape[0] / shape[0])
+    if cheetah_image.shape[0] % shape[0] != 0:
+        raise IOError('Unexpected geometry array shape: %s. Could not infer '
+                      'number of two-by-ones.' % str(cheetah_image.shape))
+    
+    for q in range(num_quads):
+        for twoXone in range(num_twoXones):
             
             x_start = 388 * q
             x_stop  = 388 * (q+1)
@@ -397,7 +409,8 @@ def _cheetah_to_twobyones(cheetah_image):
         raise IOError('Unexpected geometry array shape: %s. Could not infer '
                       'number of two-by-ones.' % str(cheetah_image.shape))
     
-    new_image = np.zeros((num_quads*num_twoXones,185,388), dtype=cheetah_image.dtype)
+    new_image = np.zeros((num_quads*num_twoXones,185,388), 
+                         dtype=cheetah_image.dtype)
     
     for q in range(num_quads):
         for twoXone in range(num_twoXones):
@@ -441,41 +454,41 @@ def load_cheetah(obj, filename, pixel_size=109.92):
 
     # convert m --> um, ends up not mattering tho...
     # also flip the sign of x : cheetah uses +x away from hutch door
-    x = -1.0 * _cheetah_to_twobyones( np.array(f['x']) * 1000000.0 )
-    y =        _cheetah_to_twobyones( np.array(f['y']) * 1000000.0 )
+    x = -1.0 * _cheetah_to_asics( np.array(f['x']) * 1000000.0 )
+    y =        _cheetah_to_asics( np.array(f['y']) * 1000000.0 )
 
     # for some reason z is in microns, so leave it
-    z = _cheetah_to_twobyones( np.array(f['z']) )
+    z = _cheetah_to_asics( np.array(f['z']) )
 
     f.close()
 
     bg = basisgrid.BasisGrid()
-    shape = (185, 388) # will always be this for each two-by-one
+    shape = (185, 388) # will always be this for each asic
     
     # find out how many quads/asics we expect based on the size of the maps
+    # we need this logic here to deal with both big and 2x2 CSPADs
     num_quads = int(cheetah_shape[1] / shape[1])
     if cheetah_shape[1] % shape[1] != 0:
         raise IOError('Unexpected geometry array shape: %s. Could not infer '
                       'number of quads.' % str(cheetah_shape))
     
-    num_twoXones = int(cheetah_shape[0] / shape[0])
+    num_asics = int(cheetah_shape[0] / shape[0]) * 2
     if cheetah_shape[0] % shape[0] != 0:
         raise IOError('Unexpected geometry array shape: %s. Could not infer '
                       'number of two-by-ones.' % str(cheetah_shape))
 
-    # loop over each twoXones, and convert it into a basis grid
+    # loop over each asic, and convert it into a basis grid
+    print('xxx', x.shape)
     for i in range(num_quads):
-        for j in range(num_twoXones):
-
-            k = i * num_twoXones + j
+        for j in range(num_asics):
 
             # extract all the corner positions (code ineligant but explicit)
             # corners are numbered 0 -> 4, starting top left and continuing cw
             corners = np.zeros(( 4, 3 ))
-            corners[0,:] = ( x[k,0,0],   y[k,0,0],   z[k,0,0]   )
-            corners[1,:] = ( x[k,0,-1],  y[k,0,-1],  z[k,0,-1]  )
-            corners[2,:] = ( x[k,-1,-1], y[k,-1,-1], z[k,-1,-1] )
-            corners[3,:] = ( x[k,-1,0],  y[k,-1,0],  z[k,-1,0]  )
+            corners[0,:] = ( x[i,j,0,0],   y[i,j,0,0],   z[i,j,0,0]   )
+            corners[1,:] = ( x[i,j,0,-1],  y[i,j,0,-1],  z[i,j,0,-1]  )
+            corners[2,:] = ( x[i,j,-1,-1], y[i,j,-1,-1], z[i,j,-1,-1] )
+            corners[3,:] = ( x[i,j,-1,0],  y[i,j,-1,0],  z[i,j,-1,0]  )
 
             # average the vectors formed by the corners to find f/s vects
             # the fast scan direction is the last index, s is next
@@ -605,7 +618,7 @@ def load_crystfel(obj, filename, verbose=True):
 
 
     # measure the absolute detector offset
-    re_pz_global = re.search('\ncoffset\s+=\s+(\d+.\d+)', geom_txt) 
+    re_pz_global = re.search(r'\ncoffset\s+=\s+(\d+.\d+)', geom_txt) 
     if re_pz_global == None:
         print("WARNING: Could not find `coffset` field, defaulting z-offset to 0.0")
         p_z_global = 0.0
@@ -616,7 +629,7 @@ def load_crystfel(obj, filename, verbose=True):
 
 
     # figure out the pixel size
-    re_pixel_size = re.search('\nres\s+=\s+(\d+.\d+)', geom_txt) 
+    re_pixel_size = re.search(r'\nres\s+=\s+(\d+.\d+)', geom_txt) 
     if re_pixel_size == None:
         pixel_size = None
     else:
@@ -628,7 +641,7 @@ def load_crystfel(obj, filename, verbose=True):
     # find out which panels we have to look for
     #   > try to do this in a general way by looking at the unique set of items
     #   > with a corner field    
-    panels = re.findall('(\S+)/corner', geom_txt)
+    panels = re.findall(r'(\S+)/corner', geom_txt)
     panels = _natural_sort(list(set( panels )))
     
     if len(panels) == 0:
@@ -644,7 +657,7 @@ def load_crystfel(obj, filename, verbose=True):
             
             # get pixel size on a per-panel basis
             if pixel_size is None:
-                re_pixel_size = re.search('%s/res\s+=\s+(\d+.\d+)' % panel, geom_txt) 
+                re_pixel_size = re.search(r'%s/res\s+=\s+(\d+.\d+)' % panel, geom_txt) 
                 if re_pixel_size == None:
                     raise IOError('could not find required `res` field in file')
                 else:
@@ -656,8 +669,8 @@ def load_crystfel(obj, filename, verbose=True):
 
             # match f/s vectors (TODO probably should make this a fxn)
             # fs
-            re_fs_x = re.search('%s/fs\s+=.*?((.)?\d+.\d+)x' % panel, geom_txt)
-            re_fs_y = re.search('%s/fs\s+=.*?((.)?\d+.\d+)y' % panel, geom_txt)
+            re_fs_x = re.search(r'%s/fs\s+=.*?((.)?\d+.\d+)x' % panel, geom_txt)
+            re_fs_y = re.search(r'%s/fs\s+=.*?((.)?\d+.\d+)y' % panel, geom_txt)
 
             if (re_fs_x is None) and (re_fs_y is None):
                 raise IOError('could not find valid ``%s/fs`` field' % panel)
@@ -676,8 +689,8 @@ def load_crystfel(obj, filename, verbose=True):
             f = f * (pixel_size / np.linalg.norm(f))
             
             # ss
-            re_ss_x = re.search('%s/ss\s+=.*?((.)?\d+.\d+)x' % panel, geom_txt)
-            re_ss_y = re.search('%s/ss\s+=.*?((.)?\d+.\d+)y' % panel, geom_txt)
+            re_ss_x = re.search(r'%s/ss\s+=.*?((.)?\d+.\d+)x' % panel, geom_txt)
+            re_ss_y = re.search(r'%s/ss\s+=.*?((.)?\d+.\d+)y' % panel, geom_txt)
 
             if (re_ss_x is None) and (re_ss_y is None):
                 raise IOError('could not find valid ``%s/ss`` field' % panel)
@@ -697,11 +710,11 @@ def load_crystfel(obj, filename, verbose=True):
             
             
             # min_fs & min_ss
-            re_min_fs = re.search('%s/min_fs = (\d+)' % panel, geom_txt)
-            re_max_fs = re.search('%s/max_fs = (\d+)' % panel, geom_txt)
+            re_min_fs = re.search(r'%s/min_fs = (\d+)' % panel, geom_txt)
+            re_max_fs = re.search(r'%s/max_fs = (\d+)' % panel, geom_txt)
             
-            re_min_ss = re.search('%s/min_ss = (\d+)' % panel, geom_txt)
-            re_max_ss = re.search('%s/max_ss = (\d+)' % panel, geom_txt)
+            re_min_ss = re.search(r'%s/min_ss = (\d+)' % panel, geom_txt)
+            re_max_ss = re.search(r'%s/max_ss = (\d+)' % panel, geom_txt)
             
             shp = ( np.abs(int(re_max_ss.group(1)) - int(re_min_ss.group(1))) + 1, 
                     np.abs(int(re_max_fs.group(1)) - int(re_min_fs.group(1))) + 1)
@@ -724,16 +737,16 @@ def load_crystfel(obj, filename, verbose=True):
         
         try:
             
-            re_cx = re.search('%s/corner_x\s+=\s+((.)?\d+(.\d+)?)' % panel, geom_txt)
+            re_cx = re.search(r'%s/corner_x\s+=\s+((.)?\d+(.\d+)?)' % panel, geom_txt)
             p_x = - float( re_cx.group(1) ) * pixel_size + 0.5 * (s[0] + f[0])
 
-            re_cy = re.search('%s/corner_y\s+=\s+((.)?\d+(.\d+)?)' % panel, geom_txt)
+            re_cy = re.search(r'%s/corner_y\s+=\s+((.)?\d+(.\d+)?)' % panel, geom_txt)
             p_y =   float( re_cy.group(1) ) * pixel_size + 0.5 * (s[1] + f[1])
             
             
             # it's allowed to also have individual z-offsets for
             # each panel, so look for those (CrystFEL units: meters)                
-            re_cz = re.search('%s/coffset\s+=\s+((.)?\d+.\d+)' % panel, geom_txt)
+            re_cz = re.search(r'%s/coffset\s+=\s+((.)?\d+.\d+)' % panel, geom_txt)
             if re_cz == None:
                 if verbose:
                     print('Could not find z data for %s' % panel)
@@ -987,7 +1000,7 @@ def write_cspad_crystfel(detector, filename, coffset=None, intensity_file_type='
                 dist = float(p[2]) / 1e6
             else:
                 dist = coffset
-            of.write("%s = %f" % (tagcz, dist ))
+            of.write("%s = %f\n" % (tagcz, dist ))
             
             # this tells CrystFEL to use this panel
             of.write("%s/no_index = 0\n" % panel_name)

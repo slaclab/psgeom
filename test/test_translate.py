@@ -110,12 +110,13 @@ class TestTranslate(object):
         self.cspad.to_crystfel_file('ref_files/tmp_crystfel.geom')
         cd2 = camera.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
         
-        print(self.cspad.xyz[...,2], cd2.xyz[...,:2])
+        print('HERE1', self.cspad.xyz.shape, cd2.xyz.shape)
         
         # be sure error is less than 1 micron in x/y, 0.2 mm in z
         assert np.max(np.abs( np.squeeze(self.cspad.xyz[...,:2]) - np.squeeze(cd2.xyz[...,:2]) )) < 1.0
         assert np.max(np.abs( np.squeeze(self.cspad.xyz) - np.squeeze(cd2.xyz) )) < 200.0
-        
+
+        print('HERE2')        
         
         # CrystFEL's geometry assumes all panels are orthogonal to the beam. To
         # do a fair comparison, therefore, we set all the z-rotations to zero
