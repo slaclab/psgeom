@@ -9,8 +9,6 @@ from psgeom import metrology
 from psgeom import camera
 
 def test_load_metrology():
-    
-    raise unittest.SkipTest
 
     # To do: these are just smoke tests, can we make them
     #        real tests?
