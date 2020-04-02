@@ -396,9 +396,12 @@ class Cspad(CompoundAreaCamera):
     we want to interact with.
     """
 
-
     @classmethod
-    def from_basisgrid(cls, bg):
+    def from_basisgrid(cls, bg, element_type=sensors.Cspad2x1):
+        
+        # we want the element_type kwarg to maintain interface homogeneity
+        # if element_type != sensors.Cspad2x1:
+        #     raise RuntimeError('trying to create a CSPAD without Cspad2x1 elements!')
         
         cspad = super(Cspad, cls).from_basisgrid(bg, 
                                                  element_type=sensors.Cspad2x1, 
@@ -467,7 +470,7 @@ class Cspad(CompoundAreaCamera):
 
 
     @classmethod
-    def from_cheetah_file(cls, filename):
+    def from_cheetah_file(cls, filename, element_type=sensors.Cspad2x1):
         """
         Load a geometry in cheetah format.
 
@@ -481,7 +484,12 @@ class Cspad(CompoundAreaCamera):
         cspad : Cspad
             The Cspad instance
         """
-        return translate.load_cheetah(cls, filename)
+        
+        # we want the element_type kwarg to maintain interface homogeneity
+        # if element_type != sensors.Cspad2x1:
+        #     raise RuntimeError('trying to create a CSPAD without Cspad2x1 elements!')
+            
+        return translate.load_cheetah(cls, filename, element_type=sensors.Cspad2x1)
 
 
     @classmethod

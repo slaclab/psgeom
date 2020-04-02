@@ -55,7 +55,6 @@ import numpy as np
 
 from psgeom import sensors
 from psgeom import basisgrid
-from psgeom import camera
 
 
 def _check_obj(obj):
@@ -502,11 +501,7 @@ def load_cheetah(obj, filename, pixel_size=109.92, element_type=sensors.Mtrx):
             p = corners[0,:]
             bg.add_grid(p, s, f, shape)
             
-            
-    if issubclass(obj, camera.Cspad):
-        geom_instance = obj.from_basisgrid(bg)
-    else:
-        geom_instance = obj.from_basisgrid(bg, element_type=element_type)
+    geom_instance = obj.from_basisgrid(bg, element_type=element_type)
                  
     return geom_instance
 
@@ -769,10 +764,7 @@ def load_crystfel(obj, filename, element_type=sensors.Mtrx, verbose=True):
     if verbose:
         print(" ... successfully converted geometry.")
     
-    if issubclass(obj, camera.Cspad):
-        geom_instance = obj.from_basisgrid(bg)
-    else:
-        geom_instance = obj.from_basisgrid(bg, element_type=element_type)
+    geom_instance = obj.from_basisgrid(bg, element_type=element_type)
     
     return geom_instance
     
