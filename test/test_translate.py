@@ -22,22 +22,22 @@ class TestTranslate(object):
         self.cspad = camera.Cspad.from_psana_file('ref_files/cspad/refgeom_psana.data')
                 
         
-    def test_psf_text(self):
-        
-        raise unittest.SkipTest
-        
-        self.cd.to_text_file('ref_files/cd_psf.txt')
-        self.cspad.to_text_file('ref_files/cspad_psf.txt')
-        
-        # todo : load & ensure consistent
-        cd2 = camera.CompoundCamera.from_text_file('ref_files/cd_psf.txt')
-        cspad2 = camera.CompoundCamera.from_text_file('ref_files/cspad_psf.txt')
-        
-        np.testing.assert_allclose(self.cd.xyz, cd2.xyz)
-        np.testing.assert_allclose(self.cspad.xyz, cspad2.xyz)
-        
-        os.remove('ref_files/cd_psf.txt')
-        os.remove('ref_files/cspad_psf.txt')
+    # def test_psf_text(self):
+    #
+    #     raise unittest.SkipTest
+    #
+    #     self.cd.to_text_file('ref_files/cd_psf.txt')
+    #     self.cspad.to_text_file('ref_files/cspad_psf.txt')
+    #
+    #     # todo : load & ensure consistent
+    #     cd2 = camera.CompoundCamera.from_text_file('ref_files/cd_psf.txt')
+    #     cspad2 = camera.CompoundCamera.from_text_file('ref_files/cspad_psf.txt')
+    #
+    #     np.testing.assert_allclose(self.cd.xyz, cd2.xyz)
+    #     np.testing.assert_allclose(self.cspad.xyz, cspad2.xyz)
+    #
+    #     os.remove('ref_files/cd_psf.txt')
+    #     os.remove('ref_files/cspad_psf.txt')
 
         
     def test_cheetah_roundtrip(self):
