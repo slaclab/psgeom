@@ -370,7 +370,7 @@ class CompoundAreaCamera(CompoundCamera):
         
         
     @classmethod
-    def from_crystfel_file(cls, filename):
+    def from_crystfel_file(cls, filename, element_type=sensors.Mtrx):
         """
         Load a geometry in crystfel format.
 
@@ -384,7 +384,7 @@ class CompoundAreaCamera(CompoundCamera):
         camera : CompoundCamera
             The instance
         """
-        return translate.load_crystfel(cls, filename)
+        return translate.load_crystfel(cls, filename, element_type=element_type)
         
 
 # ---- specific detector implementations ---------------------------------------

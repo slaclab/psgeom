@@ -79,31 +79,6 @@ class TestCompoundAreaCamera:
         f.close()
         np.testing.assert_allclose(self.geom.xyz, xyz2)
         os.remove('ref_files/tmp_hdf.h5')
-        
-        
-    def test_rayonix_crystfel(self):
-        
-        raise unittest.SkipTest
-        
-        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/rayonix/rayonix.data')
-        geom.to_crystfel_file('ref_files/tmp_rayonix.geom')
-        
-        # compare to reference created by make_pixelmap
-        f = h5py.File('ref_files/rayonix/rayonix.h5')
-        x = np.array(f['/x']) * 1e6
-        y = np.array(f['/y']) * 1e6
-        #z = np.array(f['/z']) # z currently is not populated by make_pixelmap
-        f.close()
-        
-        # NOTE: x is flipped in the crystFEL/cheetah convention
-        # as there, z points towards the source of x-rays (not along travel)
-        np.testing.assert_allclose( np.squeeze(geom.xyz[...,0]), -x, atol=10 )
-        np.testing.assert_allclose( np.squeeze(geom.xyz[...,1]),  y, atol=10 )
-        
-        geom2 = camera.CompoundAreaCamera.from_crystfel_file('ref_files/tmp_rayonix.geom')
-        np.testing.assert_allclose(geom.xyz, geom2.xyz, atol=0.001)
-        
-        os.remove('ref_files/tmp_rayonix.geom')
 
 
     def test_rayonix_big(self):

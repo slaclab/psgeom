@@ -6,7 +6,8 @@ import unittest
 import h5py
 
 from psgeom import camera
-from psgeom import translate    
+from psgeom import translate 
+from psgeom import sensors   
     
 PIXEL_TOLERANCE_um = 10.0
 
@@ -232,16 +233,17 @@ class TestTranslate(object):
 
     def test_jungfrau1M_ref_file(self):
         
-        obj = camera.CompoundAreaCamera.from_crystfel_file('ref_files/jungfrau/jungfrau-1M-pan.geom')
-        assert obj.xyz.shape == (512,1024)
+        obj = camera.CompoundAreaCamera.from_crystfel_file('ref_files/jungfrau/jungfrau-1M-pan.geom',
+                                                           element_type=sensors.JungfrauSegment)
+        assert obj.xyz.shape == (2, 512, 1024, 3)
         
         bg = obj.to_basisgrid()
-        assert bg.num_grids == 8
+        assert bg.num_grids == 16
         
         # roundtrip...
         obj.to_crystfel_file('tmp.geom')
-        obj2 = camera.CompoundAreaCamera.from_crystfel_file('tmp.geom')
-        assert np.all(obj.xyz == obj2.xyz)
+        obj2 = camera.CompoundAreaCamera.from_crystfel_file('tmp.geom', element_type=sensors.JungfrauSegment)
+        np.testing.assert_allclose(obj.xyz, obj2.xyz, atol=0.01)
         
         os.remove('tmp.geom')
         

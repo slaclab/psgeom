@@ -55,6 +55,7 @@ import numpy as np
 
 from psgeom import sensors
 from psgeom import basisgrid
+from psgeom import camera
 
 
 def _check_obj(obj):
@@ -425,7 +426,7 @@ def _cheetah_to_twobyones(cheetah_image):
     return new_image
     
     
-def load_cheetah(obj, filename, pixel_size=109.92):
+def load_cheetah(obj, filename, pixel_size=109.92, element_type=sensors.Mtrx):
     """
     Load a geometry in cheetah format.
     
@@ -502,7 +503,10 @@ def load_cheetah(obj, filename, pixel_size=109.92):
             bg.add_grid(p, s, f, shape)
             
             
-    geom_instance = obj.from_basisgrid(bg)
+    if issubclass(obj, camera.Cspad):
+        geom_instance = obj.from_basisgrid(bg)
+    else:
+        geom_instance = obj.from_basisgrid(bg, element_type=element_type)
                  
     return geom_instance
 
@@ -575,7 +579,7 @@ def write_cheetah(detector, filename="pixelmap-cheetah-raw.h5"):
 
 # ---- crystfel --------------------------------------------------------------- 
 
-def load_crystfel(obj, filename, verbose=True):
+def load_crystfel(obj, filename, element_type=sensors.Mtrx, verbose=True):
     """
     Convert a CrystFEL geom file to a Cspad object.
     
@@ -765,7 +769,10 @@ def load_crystfel(obj, filename, verbose=True):
     if verbose:
         print(" ... successfully converted geometry.")
     
-    geom_instance = obj.from_basisgrid(bg)
+    if issubclass(obj, camera.Cspad):
+        geom_instance = obj.from_basisgrid(bg)
+    else:
+        geom_instance = obj.from_basisgrid(bg, element_type=element_type)
     
     return geom_instance
     
