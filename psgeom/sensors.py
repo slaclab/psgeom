@@ -312,8 +312,8 @@ class PixelArraySensor(SensorElement):
             if len(bg_data.shape) == 2:
                 bg_data = bg_data.reshape(1, *bg_data.shape)
                 
-        s_splits = [sg.location for sg in self._slow_gaps]
-        f_splits = [fg.location for fg in self._fast_gaps]
+        s_splits = [sg.location for sg in self._slow_gaps[::-1]]
+        f_splits = [fg.location for fg in self._fast_gaps[::-1]]
         
         n_s = len(s_splits)
         n_f = len(f_splits)
@@ -359,8 +359,8 @@ class PixelArraySensor(SensorElement):
             The reverse operation.
         """
         
-        s_splits = [sg.location for sg in self._slow_gaps]
-        f_splits = [fg.location for fg in self._fast_gaps]
+        s_splits = [sg.location for sg in self._slow_gaps[::-1]]
+        f_splits = [fg.location for fg in self._fast_gaps[::-1]]
         
         if not sensor_data.shape[-2:] == self.shape:
             raise ValueError('passed data is wrong shape, got %s, expected '
@@ -395,7 +395,7 @@ class PixelArraySensor(SensorElement):
         """
 
         xy = np.mgrid[0.0:float(self.shape[1]),0.0:float(self.shape[0])].T
-        xy[:,:,:] = xy[::-1,:,:] # <bleeping> psana convention (matrix)
+        xy[:,:,:] = xy[::-1,:,:] # psana convention
         
         xy[:,:,0] *= self.pixel_shape[0]
         xy[:,:,1] *= self.pixel_shape[1]
@@ -446,20 +446,19 @@ class PixelArraySensor(SensorElement):
         s = xyz[1,0,:] - p
         f = xyz[0,1,:] - p
         
-        # if self.num_gaps == 0:
-        #     ret = [(p, s, f, self.shape),]
-        #
-        # else: # we have many grids, need to split!
-        
         grids = []
         slow_split_grids = []
         
+        # >>> slow scan
         # for each gap along the slow axis create a new grid
+        
         curr_shp = self.shape # track how much is left to divide up
+        for ig, gap in enumerate(self._slow_gaps): # gaps come in rev order
         
-        for gap in self._slow_gaps: # gaps come in rev order
+            # we need to count the spacing for all the "upstream" gaps
+            tot_gap_size = sum( [gx.size for gx in self._slow_gaps[ig:]] )
         
-            new_p    = p + s * (gap.location + gap.size)
+            new_p    = p + s * (gap.location + tot_gap_size)
             new_shp  = (curr_shp[0] - gap.location, curr_shp[1])
             curr_shp = (gap.location,               curr_shp[1])
 
@@ -468,14 +467,19 @@ class PixelArraySensor(SensorElement):
         # add the remaining (first) panel
         slow_split_grids.append( [p, s, f, curr_shp] )
 
-            
+        # >>> fast scan
         # then, for each grid, split along the fast axis gaps
+        
         for grid in slow_split_grids:
         
+            p = grid[0] # use shifted value
             curr_shp = grid[3]
-            for gap in self._fast_gaps: # gaps come in rev order
+            for ig, gap in enumerate(self._fast_gaps): # gaps come in rev order
+            
+                # we need to count the spacing for all the "upstream" gaps
+                tot_gap_size = sum( [gx.size for gx in self._fast_gaps[ig:]] )
 
-                new_p    = p + f * (gap.location + gap.size)
+                new_p    = p + f * (gap.location + tot_gap_size)
                 new_shp  = (curr_shp[0], curr_shp[1] - gap.location)
                 curr_shp = (curr_shp[0], gap.location)
             
@@ -535,9 +539,6 @@ class FixedArraySensor(PixelArraySensor):
         return
         
         
-
-
-
 # ---- specific sensor implementations  ---------------------------------------
 
 
@@ -616,7 +617,7 @@ class Mtrx(PixelArraySensor):
                              'cannot generate Mtrx object from type_name'
                              ' alone')
 
-        s0, s1, ps0, ps1 = type_name.split(':')[1:]
+        s0, s1, ps0, ps1 = type_name.split(':')[-4:]
         shape = (int(s0), int(s1))
         pixel_shape = (float(ps0), float(ps1))
 
@@ -627,9 +628,9 @@ class Mtrx(PixelArraySensor):
 
     @property
     def type_name(self):
-        return 'MTRX:%d:%d:%d:%d' %(self.shape[0], self.shape[1], 
-                                    round(self._pixel_shape[0]),
-                                    round(self._pixel_shape[1]))
+        return 'MTRX:V2:%d:%d:%d:%d' %(self.shape[0], self.shape[1], 
+                                       round(self._pixel_shape[0]),
+                                       round(self._pixel_shape[1]))
 
 
 class Cspad2x1(FixedArraySensor):

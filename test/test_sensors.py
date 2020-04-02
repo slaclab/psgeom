@@ -233,7 +233,7 @@ class TestGaps:
         data = np.random.randn(*self.shape)
         assert np.all(data == self.pas.trans_bg_to_sensor(data)) # no gaps
         
-        self.pas.add_gap(2.0, 32, 'fast') # size, loc, axis
+        self.pas.add_gap(1.0, 32, 'fast') # size, loc, axis
         self.pas.add_gap(2.0, 32, 'slow') # size, loc, axis
         bg_data = [ data[:32,:32], data[:32,32:], data[32:,:32], data[32:,32:] ]
         
@@ -246,7 +246,7 @@ class TestGaps:
         assert np.all(data == self.pas.trans_sensor_to_bg(data)) # no gaps
         
         self.pas.add_gap(2.0, 32, 'fast') # size, loc, axis
-        self.pas.add_gap(2.0, 32, 'slow') # size, loc, axis
+        self.pas.add_gap(1.5, 32, 'slow') # size, loc, axis
         
         td = self.pas.trans_sensor_to_bg(data)
         assert len(td) == 4
@@ -274,7 +274,7 @@ class TestGaps:
         data = np.random.randn(*self.shape)
         
         self.pas.add_gap(2.0, 14,  'fast') # size, loc, axis
-        self.pas.add_gap(2.0, 103, 'slow') # size, loc, axis
+        self.pas.add_gap(1.5, 103, 'slow') # size, loc, axis
         
         s_data = self.pas.trans_sensor_to_bg(data)
         r_data = self.pas.trans_bg_to_sensor(s_data)

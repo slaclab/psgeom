@@ -228,3 +228,21 @@ class TestTranslate(object):
         obj2 = camera.CompoundAreaCamera()
         x = translate.load_dials(obj2, 'ref_files/cspad/refgeom_dials2.json')
         assert x.xyz.shape == (8, 512, 1024, 3)
+
+
+    def test_jungfrau1M_ref_file(self):
+        
+        obj = camera.CompoundAreaCamera.from_crystfel_file('ref_files/jungfrau/jungfrau-1M-pan.geom')
+        assert obj.xyz.shape == (512,1024)
+        
+        bg = obj.to_basisgrid()
+        assert bg.num_grids == 8
+        
+        # roundtrip...
+        obj.to_crystfel_file('tmp.geom')
+        obj2 = camera.CompoundAreaCamera.from_crystfel_file('tmp.geom')
+        assert np.all(obj.xyz == obj2.xyz)
+        
+        os.remove('tmp.geom')
+        
+        

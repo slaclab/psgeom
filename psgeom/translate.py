@@ -71,38 +71,36 @@ def _natural_sort(l):
     return sorted(l, key = alphanum_key)
 
 
-def _twobyones_to_asics():
-    raise NotImplementedError()
-    return
-
-def _asics_to_twobyones():
-    raise NotImplementedError()
-    return
-
-
 # ---- psana -------------------------------------------------------------------
 
-# ------------------------------------------------------------------------------
 # define a "type map" that maps a list of known object identifier strings to
 # the corresponding types
 
-def map_type(element_string):
+def map_type(element_name, version=None):
+    
+    if version is None:
+        try:
+            version = int( re.search('V(\d+)', element_name).group(1) )
+        except Exception as e:
+            print(e)
+            raise IOError('Cannot understand sensor type: %s' % element_name)
 
-    if element_string in ['SENS2X1:V1', 'SENS2X1']:
+    if element_name.startswith('SENS2X1'):
         element_type = sensors.Cspad2x1
-        element_name = 'SENS2X1'
-    elif element_string.startswith('PNCCD'): # known: "PNCCD:V1"
+        
+    elif element_name.startswith('PNCCD'):
         element_type = sensors.PnccdQuad
-        element_name = 'PNCCD'
-    elif element_string.startswith('MTRX'):
+        if version < 2:
+            raise TypeError('psgeom v1.0+ requires PNCCD:V2+, got V%d' % version)
+        
+    elif element_name.startswith('MTRX'):
         element_type = sensors.Mtrx
-        element_name = element_string
-    elif element_string.startswith('JUNGFRAU'):
+        if version < 2:
+            raise TypeError('psgeom v1.0+ requires MTRX:V2+, got V%d' % version)
+        
+    elif element_name.startswith('JUNGFRAU'):
         element_type = sensors.JungfrauSegment
-        element_name = element_string
-    else:
-        raise TypeError('Cannot understand sensor type: %s' % element_string)
-
+        
     return element_type, element_name
 
 
