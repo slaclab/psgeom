@@ -478,7 +478,6 @@ def load_cheetah(obj, filename, pixel_size=109.92):
                       'number of two-by-ones.' % str(cheetah_shape))
 
     # loop over each asic, and convert it into a basis grid
-    print('xxx', x.shape)
     for i in range(num_quads):
         for j in range(num_asics):
 

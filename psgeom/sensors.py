@@ -282,7 +282,110 @@ class PixelArraySensor(SensorElement):
         fgs = [ g for g in self.gaps if g.axis == 'fast' ]
         fgs.sort(key=lambda g : g.location, reverse=True)
         return fgs
+        
     
+    def trans_bg_to_sensor(self, bg_data):
+        """
+        Convert a data array shaped for a basisgrid to one for a sensor,
+        which wants to combine segments that have gaps between them. For example,
+        for a JUNGFRAU 1M segment, this function will reshape data.
+        
+          (8,256,256) --> (n,512,1024) 
+        
+        Parameters
+        ----------
+        bg_data : np.ndarray
+            The data in "basisgrid" format
+        
+        Returns
+        -------
+        sensor_data : np.ndarray
+            The data in "sensor" format
+        
+        See Also
+        --------
+        trans_sensor_to_bg()
+            The reverse operation.
+        """
+        
+        if hasattr(bg_data, 'shape'):
+            if len(bg_data.shape) == 2:
+                bg_data = bg_data.reshape(1, *bg_data.shape)
+                
+        s_splits = [sg.location for sg in self._slow_gaps]
+        f_splits = [fg.location for fg in self._fast_gaps]
+        
+        n_s = len(s_splits)
+        n_f = len(f_splits)
+        
+        panels_per_sensor  = max(1, 2 * n_s * n_f)
+        
+        if len(bg_data) % panels_per_sensor != 0:
+            raise ValueError('`bg_data` has %d panels expected %d'
+                             '' % (len(bg_data), panels_per_sensor))
+        
+        ss_data    = np.split( np.array(bg_data), n_s+1, axis=0)
+        f_combined = [ np.concatenate(e, axis=1) for e in ss_data ]
+        s_combined = np.concatenate(f_combined, axis=0)
+        sensor_data = np.array(s_combined)
+        
+        assert sensor_data.shape[-2:] == self.shape, (sensor_data.shape[-2:], 
+                                                      self.shape)
+  
+        return np.squeeze(sensor_data)
+        
+        
+    def trans_sensor_to_bg(self, sensor_data):
+        """
+        Convert a data array shaped for a sensor to one for a basisgrid,
+        which wants to split segments that have gaps between them. For example,
+        for a JUNGFRAU 1M segment, this function will reshape data.
+        
+          (n,512,1024) --> (8n,256,256)
+        
+        Parameters
+        ----------
+        sensor_data : np.ndarray
+            The data in "basisgrid" format
+        
+        Returns
+        -------
+        bg_data : np.ndarray
+            The data in "sensor" format
+        
+        See Also
+        --------
+        trans_bg_to_sensor()
+            The reverse operation.
+        """
+        
+        s_splits = [sg.location for sg in self._slow_gaps]
+        f_splits = [fg.location for fg in self._fast_gaps]
+        
+        if not sensor_data.shape[-2:] == self.shape:
+            raise ValueError('passed data is wrong shape, got %s, expected '
+                             '%s' % (str(sensor_data.shape, self.shape)))
+            
+        if len(sensor_data.shape) == 2:
+            n_copies = 1
+            sensor_data = sensor_data.reshape(1, *sensor_data.shape)
+        elif len(sensor_data.shape) == 3:
+            n_copies = sensor_data.shape[0]
+        else:
+            raise ValueError('`sensor_data` must be 2D or 3D array')
+        
+        bg_data = []
+        for c in range(n_copies):
+            s_split_data = np.split(sensor_data[c], s_splits, axis=0)
+            for ss in s_split_data:
+                bg_data.extend( np.split(ss, f_splits, axis=1) )
+        
+        shapes = [e.shape for e in bg_data]
+        if len(set(shapes)) == 1:
+            bg_data = np.array(bg_data)
+        
+        return bg_data
+        
         
     @property
     def untransformed_xyz(self):
@@ -430,6 +533,9 @@ class FixedArraySensor(PixelArraySensor):
     def pixel_shape(self):
         # implement this as a @classproperty
         return
+        
+        
+
 
 
 # ---- specific sensor implementations  ---------------------------------------
@@ -513,7 +619,6 @@ class Mtrx(PixelArraySensor):
         s0, s1, ps0, ps1 = type_name.split(':')[1:]
         shape = (int(s0), int(s1))
         pixel_shape = (float(ps0), float(ps1))
-        #print "###: ", shape, pixel_shape
 
         return cls(shape, pixel_shape,
                    id_num=id_num, parent=parent,

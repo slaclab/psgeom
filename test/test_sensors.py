@@ -104,16 +104,19 @@ class TestPixelArraySensor(object):
         np.testing.assert_array_almost_equal(self.PAS.xyz, xyz_ans[...,:3])
       
 
-class TestPSF:
+class TestGaps:
 
     def setup(self):
+        
         self.shape = (128, 128)
         self.pixel_shape = (1.0, 1.0)
         self.pas = sensors.PixelArraySensor(self.shape, self.pixel_shape, 
                                             type_name='Test', id_num=0, 
                                             parent=None)
+                                            
 
     def test_psf(self):
+        
         r = self.pas.psf[0]
         assert np.all( r[0] == np.array([-63.5,  63.5 ,    0. ]) ), r[0]
         assert np.all( r[1] == np.array([ 0., -1.,  0.]) ), r[1]
@@ -126,7 +129,7 @@ class TestPSF:
         self.pas.add_gap(2.0, 32, 'slow') # size, loc, axis
         self.pas.add_gap(2.0, 64, 'slow') # size, loc, axis
         self.pas.add_gap(2.0, 32, 'fast') # size, loc, axis
-        self.pas.add_gap(2.0, 8, 'slow') # size, loc, axis
+        self.pas.add_gap(2.0, 8,  'slow') # size, loc, axis
         self.pas.add_gap(2.0, 35, 'fast') # size, loc, axis
         
         sgs = self.pas._slow_gaps
@@ -213,6 +216,7 @@ class TestPSF:
         
         
     def test_pdf_many_gaps(self):
+        
         self.pas.add_gap(2.0, 32, 'fast') # size, loc, axis
         self.pas.add_gap(2.0, 32, 'slow') # size, loc, axis
         
@@ -222,6 +226,60 @@ class TestPSF:
         assert shapes[1] == (32,96)
         assert shapes[2] == (96,32)
         assert shapes[3] == (96,96)
+        
+        
+    def test_trans_bg_to_sensor(self):
+        
+        data = np.random.randn(*self.shape)
+        assert np.all(data == self.pas.trans_bg_to_sensor(data)) # no gaps
+        
+        self.pas.add_gap(2.0, 32, 'fast') # size, loc, axis
+        self.pas.add_gap(2.0, 32, 'slow') # size, loc, axis
+        bg_data = [ data[:32,:32], data[:32,32:], data[32:,:32], data[32:,32:] ]
+        
+        assert np.all(data == self.pas.trans_bg_to_sensor(bg_data))
+        
+        
+    def test_trans_sensor_to_bg(self):
+        
+        data = np.random.randn(*self.shape)
+        assert np.all(data == self.pas.trans_sensor_to_bg(data)) # no gaps
+        
+        self.pas.add_gap(2.0, 32, 'fast') # size, loc, axis
+        self.pas.add_gap(2.0, 32, 'slow') # size, loc, axis
+        
+        td = self.pas.trans_sensor_to_bg(data)
+        assert len(td) == 4
+        
+        assert td[0].shape == (32,32) # topleft
+        assert np.all(td[0] == data[:32,:32])
+        
+        assert td[1].shape == (32,96) # topright
+        assert np.all(td[1] == data[:32,32:])
+        
+        assert td[2].shape == (96,32) # bottomleft
+        assert np.all(td[2] == data[32:,:32])
+        
+        assert td[3].shape == (96,96) # bottomright
+        assert np.all(td[3] == data[32:,32:])
+        
+        # test multi-panel pass
+        data2 = np.random.randn(*(6,) + self.shape)
+        td2 = self.pas.trans_sensor_to_bg(data2)
+        assert len(td2) == 6 * 4
+        
+
+    def test_trans_consistency(self):
+        
+        data = np.random.randn(*self.shape)
+        
+        self.pas.add_gap(2.0, 14,  'fast') # size, loc, axis
+        self.pas.add_gap(2.0, 103, 'slow') # size, loc, axis
+        
+        s_data = self.pas.trans_sensor_to_bg(data)
+        r_data = self.pas.trans_bg_to_sensor(s_data)
+        assert np.all(data == r_data)
+        
 
 class TestSens2x1(TestPixelArraySensor):
     
