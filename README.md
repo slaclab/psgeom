@@ -43,7 +43,7 @@ Run any script with a `-h` flag to get more information
 A few examples of how to use the code.
 
 ### format conversions ###
-```
+```python
 from psgeom import camera
 
 geom = camera.CompoundAreaCamera.from_psana_file('1-end.data')
@@ -51,7 +51,7 @@ geom.to_crystfel_file('my_new.geom')
 ```
 
 ### looking at pixel positions ###
-```
+```python
 geom = camera.CompoundAreaCamera.from_crystfel_file('my.geom')
 print(geom.xyz) # real-space xyz coords
 ```
@@ -59,14 +59,14 @@ print(geom.xyz) # real-space xyz coords
 ### looking at things in basisgrid format ###
 By "basisgrid", we mean a the geometry is described as a set of panels; each panel by a vector pointing
 to the first pixel to be read from memory, along with two vectors for the slow/fast scan directions.
-```
+```python
 bg = geom.to_basisgrid()
 for g in bg.num_grids:
     print(bg.get_grid(g))
 ```
 
 ### radial averaging ###
-```
+```python
 from psgeom import bin
 
 xyz = geom.xyz
@@ -89,7 +89,7 @@ Iq2 = radavg(data2)
 ```
 
 ### an easier way to compute reciprocal coords ###
-```
+```python
 from psgeom import camera
 from psgeom import reciprocal
 
