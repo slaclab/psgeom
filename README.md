@@ -94,7 +94,8 @@ from psgeom import camera
 from psgeom import reciprocal
 
 geom = camera.CompoundAreaCamera.from_crystfel_file('my.geom')
-d = reciprocal.Geometry(geom)
+eV = 9500.0
+d = reciprocal.Geometry(geom, eV)
 
 d.xyz        # real space cart
 d.polar      # real space polar
