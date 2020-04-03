@@ -12,8 +12,98 @@ import numpy as np
 @six.add_metaclass(abc.ABCMeta)
 class MoveableParent:
     """
-    Just a flag that a specific class can be a parent.
+    A specific class can be a parent.
     """
+    
+    @property
+    def num_children(self):
+        return len(self._children)
+    
+        
+    @property
+    def children(self):
+        return self._children
+
+        
+    def add_child(self, child):
+    
+        # if not (isinstance(child, CompoundCamera) or \
+        #         isinstance(child, sensors.SensorElement)):
+        #         raise TypeError('`child` must be type: SensorElement or '
+        #                         'CompoundCamera')
+    
+        for c in self.children:
+            if c.name == child.name:
+                if c is child:
+                    raise NameError('Child object already registered with parent!')
+                else:
+                    raise NameError('Child with name %s already registered with'
+                                    ' this parent (%s) -- please change the ID'
+                                    ' number to give this object a unique name '
+                                    'and re-register it as a child object' % \
+                                    (child.name, self.name))
+    
+        self.children.append(child)
+        child._parent = self
+    
+        return
+        
+        
+    def remove_child(self, child):
+        self.children.remove(child)
+        child._parent = None
+        return
+            
+    
+    @property
+    def leaves(self):
+        
+        leaves = []
+        
+        def add_leaves(node):
+            for c in node.children:
+                if hasattr(c, 'children'):
+                    add_leaves(c)
+                else:
+                    leaves.append(c)
+                    
+        add_leaves(self)
+                    
+        return leaves
+        
+        
+    def draw_tree(self):
+        """
+        Sketch the camera tree, with this node as the root (higher levels in
+        the heirarchy will not be shown)
+        """
+
+        print("--- " + str(self.name))
+        
+        def draw_child_tree(current, depth):
+        
+            for c in current.children:
+                print(depth * "    " + "|-- " + str(c.name))
+                if hasattr(c, 'children'):
+                    draw_child_tree(c, depth + 1)
+                    
+        draw_child_tree(self, 1)
+        
+        return
+        
+        
+    def _sort_tree(self):
+        """
+        Order the tree by the id_num of each tree node.
+        """
+        
+        self._children = sorted(self._children, key=lambda x : x.id_num)
+        for c in self.children:
+            if hasattr(c, '_sort_tree'):
+                c._sort_tree()
+        
+        return
+    
     
 
 @six.add_metaclass(abc.ABCMeta)
@@ -51,12 +141,7 @@ class MoveableObject:
     @property
     def name(self):
         return '%s-%d' % (self.type_name, self.id)
-    
-    
-    @abc.abstractproperty
-    def xyz(self):
-        pass
-    
+        
         
     def set_parent(self, parent):
         """
@@ -75,9 +160,13 @@ class MoveableObject:
                 raise TypeError('parents of MoveableObject (%s) may only be of type '
                                 'MoveableParent. Got: %s' % (self.name, type(parent)))
             else:
-                parent.add_child(self)
-        
-        self._parent = parent
+                if hasattr(self, '_parent'):
+                    if self._parent is not None:
+                        self._parent.remove_child(self) # remove from old parent
+                parent.add_child(self)    # add to new parent
+                self._parent = parent
+        else:
+            self._parent = None # this is OK too
         
         return
     
@@ -348,6 +437,4 @@ def _angles_from_rotated_frame(xp, yp, zp, return_units='degrees',
 
     return gamma, beta, alpha
 
-
-    
 

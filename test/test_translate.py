@@ -6,7 +6,8 @@ import unittest
 import h5py
 
 from psgeom import camera
-from psgeom import translate    
+from psgeom import translate 
+from psgeom import sensors   
     
 PIXEL_TOLERANCE_um = 10.0
 
@@ -21,22 +22,22 @@ class TestTranslate(object):
         self.cspad = camera.Cspad.from_psana_file('ref_files/cspad/refgeom_psana.data')
                 
         
-    def test_psf_text(self):
-        
-        raise unittest.SkipTest
-        
-        self.cd.to_text_file('ref_files/cd_psf.txt')
-        self.cspad.to_text_file('ref_files/cspad_psf.txt')
-        
-        # todo : load & ensure consistent
-        cd2 = camera.CompoundCamera.from_text_file('ref_files/cd_psf.txt')
-        cspad2 = camera.CompoundCamera.from_text_file('ref_files/cspad_psf.txt')
-        
-        np.testing.assert_allclose(self.cd.xyz, cd2.xyz)
-        np.testing.assert_allclose(self.cspad.xyz, cspad2.xyz)
-        
-        os.remove('ref_files/cd_psf.txt')
-        os.remove('ref_files/cspad_psf.txt')
+    # def test_psf_text(self):
+    #
+    #     raise unittest.SkipTest
+    #
+    #     self.cd.to_text_file('ref_files/cd_psf.txt')
+    #     self.cspad.to_text_file('ref_files/cspad_psf.txt')
+    #
+    #     # todo : load & ensure consistent
+    #     cd2 = camera.CompoundCamera.from_text_file('ref_files/cd_psf.txt')
+    #     cspad2 = camera.CompoundCamera.from_text_file('ref_files/cspad_psf.txt')
+    #
+    #     np.testing.assert_allclose(self.cd.xyz, cd2.xyz)
+    #     np.testing.assert_allclose(self.cspad.xyz, cspad2.xyz)
+    #
+    #     os.remove('ref_files/cd_psf.txt')
+    #     os.remove('ref_files/cspad_psf.txt')
 
         
     def test_cheetah_roundtrip(self):
@@ -110,12 +111,13 @@ class TestTranslate(object):
         self.cspad.to_crystfel_file('ref_files/tmp_crystfel.geom')
         cd2 = camera.Cspad.from_crystfel_file('ref_files/tmp_crystfel.geom')
         
-        print(self.cspad.xyz[...,2], cd2.xyz[...,:2])
+        print('HERE1', self.cspad.xyz.shape, cd2.xyz.shape)
         
         # be sure error is less than 1 micron in x/y, 0.2 mm in z
         assert np.max(np.abs( np.squeeze(self.cspad.xyz[...,:2]) - np.squeeze(cd2.xyz[...,:2]) )) < 1.0
         assert np.max(np.abs( np.squeeze(self.cspad.xyz) - np.squeeze(cd2.xyz) )) < 200.0
-        
+
+        print('HERE2')        
         
         # CrystFEL's geometry assumes all panels are orthogonal to the beam. To
         # do a fair comparison, therefore, we set all the z-rotations to zero
@@ -227,3 +229,22 @@ class TestTranslate(object):
         obj2 = camera.CompoundAreaCamera()
         x = translate.load_dials(obj2, 'ref_files/cspad/refgeom_dials2.json')
         assert x.xyz.shape == (8, 512, 1024, 3)
+
+
+    def test_jungfrau1M_ref_file(self):
+        
+        obj = camera.CompoundAreaCamera.from_crystfel_file('ref_files/jungfrau/jungfrau-1M-pan.geom',
+                                                           element_type=sensors.JungfrauSegment)
+        assert obj.xyz.shape == (2, 512, 1024, 3)
+        
+        bg = obj.to_basisgrid()
+        assert bg.num_grids == 16
+        
+        # roundtrip...
+        obj.to_crystfel_file('tmp.geom')
+        obj2 = camera.CompoundAreaCamera.from_crystfel_file('tmp.geom', element_type=sensors.JungfrauSegment)
+        np.testing.assert_allclose(obj.xyz, obj2.xyz, atol=0.01)
+        
+        os.remove('tmp.geom')
+        
+        
