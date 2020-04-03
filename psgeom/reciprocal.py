@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 
 from psgeom import basisgrid
-from psgeom.camera import arctan3
+from psgeom.camera import arctan3, CompoundAreaCamera
 
 # ------------------------------------------------------------------------------
 # FUNDAMENTAL CONSTANTS
@@ -96,7 +96,7 @@ class Geometry(object):
 
         Parameters
         ----------
-        xyz : ndarray OR BasisGrid
+        xyz : ndarray OR BasisGrid OR CompoundAreaCamera
             An a specification the (x,y,z) positions of each pixel. This can
             either be n x 3 array with the explicit positions of each pixel,
             or a BasisGrid object with a vectorized representation of the
@@ -113,24 +113,32 @@ class Geometry(object):
         """
 
         if type(xyz) == np.ndarray:
-            #print('xyz type: np.ndarray, initializing an explicit detector')
 
             self._pixels = xyz
             self._basis_grid = None
+            self._geom = None
             self.num_pixels = xyz.shape[0]
             self._xyz_type = 'explicit'
 
         elif type(xyz) == basisgrid.BasisGrid:
-            #print('xyz type: BasisGrid, initializing an implicit detector')
 
             self._pixels = None
             self._basis_grid = xyz
+            self._geom = None
             self.num_pixels = self._basis_grid.num_pixels
             self._xyz_type = 'implicit'
 
+        elif isinstance(xyz, CompoundAreaCamera):
+
+            self._pixels = None
+            self._basis_grid = xyz.to_basisgrid()
+            self._geom = xyz
+            self.num_pixels = self._basis_grid.num_pixels
+            self._xyz_type = 'camera'
+
         else:
             raise TypeError("`xyz` type must be one of {'np.ndarray', "
-                            "'thor.xray.BasisGrid'}")
+                            "'BasisGrid', 'CompoundAreaCamera'}")
 
 
         # parse wavenumber
@@ -156,12 +164,12 @@ class Geometry(object):
         return
 
 
-    def implicit_to_explicit(self):
+    def to_explicit(self):
         """
         Convert an implicit Geometry to an explicit one (where the xyz pixels
         are stored in memory).
         """
-        if not self.xyz_type == 'implicit':
+        if not self.xyz_type in ['implicit', 'camera']:
             raise Exception('Geometry must have xyz_type implicit for conversion.')
         self._pixels = self.xyz
         self._xyz_type = 'explicit'
@@ -179,6 +187,8 @@ class Geometry(object):
             return self._pixels
         elif self.xyz_type == 'implicit':
             return self._basis_grid.to_explicit()
+        elif self.xyz_type == 'camera':
+            return self._geom.xyz
 
 
     @property
@@ -200,7 +210,7 @@ class Geometry(object):
     def recpolar(self):
         a = self._real_to_recpolar(self.real)
         # convention: theta is angle of q-vec with plane normal to beam
-        a[:,1] = self.polar[:,1] / 2.0
+        a[...,1] = self.polar[...,1] / 2.0
         return a
 
 
@@ -211,14 +221,14 @@ class Geometry(object):
         """
 
         if self.xyz_type == 'explicit':
-            q_max = np.max(self.recpolar[:,0])
+            q_max = np.max(self.recpolar[...,0])
 
-        elif self.xyz_type == 'implicit':
+        elif self.xyz_type in ['implicit', 'camera']:
             q_max = 0.0
             for i in range(self._basis_grid.num_grids):
                 c  = self._basis_grid.get_grid_corners(i)
                 qc = self._real_to_recpolar(c)
-                q_max = max([q_max, float(np.max(qc[:,0]))])
+                q_max = max([q_max, float(np.max(qc[...,0]))])
 
         return q_max
 
@@ -276,8 +286,8 @@ class Geometry(object):
         Convert the real-space to reciprocal-space in cartesian form.
         """
 
-        assert len(xyz.shape) == 2
-        assert xyz.shape[1] == 3
+        # assert len(xyz.shape) == 2
+        # assert xyz.shape[1] == 3
 
         # generate unit vectors in the pixel direction, origin at sample
         S = self._unit_vector(xyz)
@@ -300,46 +310,17 @@ class Geometry(object):
         """
         Compute the norm of an n x m array of vectors, where m is the dimension.
         """
-        if len(vector.shape) == 2:
-            assert vector.shape[1] == 3
-            norm = np.sqrt( np.sum( np.power(vector, 2), axis=1 ) )
-        elif len(vector.shape) == 1:
-            assert vector.shape[0] == 3
-            norm = np.sqrt( np.sum( np.power(vector, 2) ) )
-        else:
-            raise ValueError('Shape of vector wrong')
+        norm = np.linalg.norm(vector, axis=-1)
         return norm
 
 
     def _unit_vector(self, vector):
         """
         Returns a unit-norm version of `vector`.
-
-        Parameters
-        ----------
-        vector : ndarray, float
-            An n x m vector of floats, where m is assumed to be the dimension
-            of the space.
-
-        Returns
-        -------
-        unit_vectors : ndarray,float
-            An n x m vector, same as before, but now of unit length
         """
-
         norm = self._norm(vector)
-
-        if len(vector.shape) == 1:
-            unit_vectors = vector / norm
-
-        elif len(vector.shape) == 2:
-            unit_vectors = np.zeros( vector.shape )
-            for i in range(vector.shape[0]):
-                unit_vectors[i,:] = vector[i,:] / norm[i]
-
-        else:
-            raise ValueError('invalid shape for `vector`: %s' % str(vector.shape))
-
+        unit_vectors = vector / norm[...,None]
+        assert unit_vectors.shape == vector.shape
         return unit_vectors
 
 
@@ -357,11 +338,11 @@ class Geometry(object):
         # note the below is a little modified from the standard, to take into
         # account the fact that the beam may not be only in the z direction
 
-        polar[:,0] = self._norm(vector)
-        polar[:,1] = np.arccos( np.dot(vector, self.beam_vector) / \
-                                (polar[:,0]+1e-16) )           # cos^{-1}(z.x/r)
-        polar[:,2] = arctan3(vector[:,1] - self.beam_vector[1],
-                             vector[:,0] - self.beam_vector[0])   # y first!
+        polar[...,0] = self._norm(vector)
+        polar[...,1] = np.arccos( np.dot(vector, self.beam_vector) / \
+                                  (polar[...,0]+1e-16) )           # cos^{-1}(z.x/r)
+        polar[...,2] = arctan3(vector[...,1] - self.beam_vector[1],
+                               vector[...,0] - self.beam_vector[0])   # y first!
 
         return polar
 
@@ -399,9 +380,14 @@ class Geometry(object):
         .[1] http://en.wikipedia.org/wiki/Line-plane_intersection
         """
 
-        if not self.xyz_type == 'implicit':
+        if not self.xyz_type in ['implicit', 'camera']:
             raise RuntimeError('intersections can only be computed for implicit'
                                ' detectors')
+                               
+        if not q_vectors.shape[-1] == 3:
+            raise ValueError('last dimension of q_vectors should be size 3 (x/y/z)')
+        original_shape = q_vectors.shape
+        q_vectors = q_vectors.reshape(-1,3)
 
         # compute the scattering vectors corresponding to q_vectors
         S = (q_vectors / self.k) + self.beam_vector
@@ -439,7 +425,7 @@ class Geometry(object):
         #    ( (float(np.sum(intersect)) / float(np.product(intersect.shape)) * 100.0),
         #    grid_index) )
 
-        return pix_n[intersect], intersect
+        return pix_n[intersect], intersect.reshape(*original_shape[:-1])
 
 
     @classmethod

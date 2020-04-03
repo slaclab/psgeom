@@ -4,7 +4,7 @@ import numpy as np
 
 class Averager(object):
     
-    def __init__(self, point_values, mask, n_bins=101):
+    def __init__(self, point_values, mask=None, n_bins=101):
         """
         Parameters
         ----------
@@ -16,6 +16,9 @@ class Averager(object):
         n_bins : int
             The number of bins to employ. If `None` guesses a good value.
         """
+        
+        if mask is None:
+            mask = np.ones(point_values.shape, dtype=np.int8)
 
         if not point_values.shape == mask.shape:
             raise ValueError('`point_values` and `mask` must have same shape')

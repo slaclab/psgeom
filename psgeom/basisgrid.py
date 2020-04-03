@@ -263,22 +263,11 @@ class BasisGrid(object):
 
     def to_explicit(self):
         """
-        Return the entire grid as an n x 3 array, defining the x,y,z positions
+        Return the entire grid as an array, defining the x,y,z positions
         of each pixel.
-
-        Returns
-        -------
-        xyz : np.ndarray, float
-            An N x 3 array of the x,y,z positions of each pixel. Note that this
-            is a flattened version of what you get for each grid individually
-            using `grid_as_explicit`.
-
-        See Also
-        --------
-        grid_as_explicit
         """
-        ex_grids = [ self.grid_as_explicit(i) for i in range(self.num_grids) ]
-        xyz = np.concatenate([ g.reshape((g.shape[0]* g.shape[1], 3)) for g in ex_grids ])
+        xyz = np.array([ self.grid_as_explicit(i) for i in range(self.num_grids) ])
+        #xyz = np.concatenate([ g.reshape((g.shape[0]* g.shape[1], 3)) for g in ex_grids ])
         return xyz
 
 
