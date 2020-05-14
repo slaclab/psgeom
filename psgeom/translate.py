@@ -857,10 +857,11 @@ def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
             # map the data onto the detector :: the default way to do this for
             # a (panels, slow, fast) array is to stack along the slow axis
             #    note  : sp here is just the shape of the basis grid
+            #    note  : fs/ss indices are INCLUSIVE
             of.write("%s/min_fs = %d\n" % (panel_name, 0))
-            of.write("%s/max_fs = %d\n" % (panel_name,  sp[1] - 1))
+            of.write("%s/max_fs = %d\n" % (panel_name, sp[1] - 1))
             of.write("%s/min_ss = %d\n" % (panel_name, prev_ss_index))
-            prev_ss_index += sp[0] - 1 # increment by size
+            prev_ss_index += sp[0] # increment by size
             of.write("%s/max_ss = %d\n" % (panel_name, prev_ss_index))
             
             # this tells CrystFEL to use this panel
