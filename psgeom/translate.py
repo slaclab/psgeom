@@ -80,7 +80,7 @@ def map_type(element_name, version=None):
     
     if version is None:
         try:
-            version = int( re.search('V(\d+)', element_name).group(1) )
+            version = int( re.search(r'V(\d+)', element_name).group(1) )
         except Exception as e:
             print(e)
             raise IOError('Cannot understand sensor type: %s' % element_name)
