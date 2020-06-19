@@ -168,8 +168,22 @@ class TestGaps:
         d2 = pas2.dimensions
         assert d2[0] == 32.0
         assert d2[1] == 34.5
+
+
+    def test_subpanel_shape(self):
+
+        # before any gaps
+        assert self.pas.subpanel_shape == (1,1)
         
-        
+        self.pas.add_gap(2.0, 32, 'slow') # size, loc, axis
+        assert self.pas.subpanel_shape == (2,1)
+
+        self.pas.add_gap(2.0, 64, 'slow') # size, loc, axis
+        self.pas.add_gap(2.0, 32, 'fast') # size, loc, axis
+        self.pas.add_gap(2.0, 8,  'slow') # size, loc, axis
+        self.pas.add_gap(2.0, 35, 'fast') # size, loc, axis
+        assert self.pas.subpanel_shape == (4,3)
+
     
     def test_slow_gap(self):
         

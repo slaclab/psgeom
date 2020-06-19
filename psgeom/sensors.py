@@ -260,7 +260,14 @@ class PixelArraySensor(SensorElement):
     @property
     def num_gaps(self):
         return len(self.gaps)
-        
+
+
+    @property
+    def subpanel_shape(self):
+        ns = len(self._slow_gaps) + 1
+        nf = len(self._fast_gaps) + 1
+        return (ns, nf)
+
     
     @property
     def _slow_gaps(self):
