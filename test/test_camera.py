@@ -33,30 +33,30 @@ class TestCompoundCamera(object):
         #try:
         #    from PSCalib.GeometryAccess import GeometryAccess
         #    ga = GeometryAccess('ref_files/cspad/refgeom_psana.data')
-        #    xyz_old = ga.get_pixel_coords()
+        #    ref_xyz = ga.get_pixel_coords()
         #except:
 
         # if that don't work, load a pre-saved answer
         print('could not use GeometryAccess, loading saved xyz')
-        xyz_old = np.load('ref_files/cspad/GA_saved_1-end.npy')
+        ref_xyz = np.load('ref_files/cspad/GA_saved_1-end.npy')
         
         # some np-foo to move the 3-d x,y,z axis from first dim to last
-        xyz_old = np.rollaxis(np.array(xyz_old), 0, 7) # send 0 --> 7
-        xyz_old = np.squeeze(xyz_old)
+        ref_xyz = np.rollaxis(np.array(ref_xyz), 0, 7) # send 0 --> 7
+        ref_xyz = np.squeeze(ref_xyz)
     
         geom = camera.CompoundCamera.from_psana_file('ref_files/cspad/refgeom_psana.data')
         xyz_new = np.squeeze(geom.xyz)
     
-        assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
+        assert xyz_new.shape == ref_xyz.shape, 'shape mismatch'
     
-        err = np.sum( np.abs(xyz_new - xyz_old) ) / float(np.product(xyz_new.shape))
+        err = np.sum( np.abs(xyz_new - ref_xyz) ) / float(np.product(xyz_new.shape))
         print('Mean Absolute Error: %f um / px' % err)
-        num_more_than_1px_err = np.sum( np.abs(xyz_new - xyz_old) > 109.92 )
+        num_more_than_1px_err = np.sum( np.abs(xyz_new - ref_xyz) > 109.92 )
     
         assert err < 10.0, 'error greater than 10um avg per px (%f)' % err
         assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px'
     
-        #np.testing.assert_allclose(xyz_new, xyz_old, atol=2 * 110.0)
+        #np.testing.assert_allclose(xyz_new, ref_xyz, atol=2 * 110.0)
         
         
     def test_leaves(self):
@@ -89,17 +89,17 @@ class TestCompoundAreaCamera:
 
     def test_jungfrau_vs_geometry_access(self):
 
-        xyz_old = np.load('ref_files/jungfrau/jungfrau_saved.npy')
+        ref_xyz = np.load('ref_files/jungfrau/jungfrau_saved.npy')
 
         geom = camera.CompoundAreaCamera.from_psana_file('ref_files/jungfrau/jungfrau4m.data')
         xyz_new = np.squeeze(geom.xyz)
 
-        assert xyz_new.shape == xyz_old.shape, 'shape mismatch'
-        print((xyz_new - xyz_old)[0])
+        assert xyz_new.shape == ref_xyz.shape, 'shape mismatch'
+        print((xyz_new - ref_xyz)[0])
 
-        err = np.sum( np.abs(xyz_new - xyz_old) ) / float(np.product(xyz_new.shape))
+        err = np.sum( np.abs(xyz_new - ref_xyz) ) / float(np.product(xyz_new.shape))
         print('Mean Absolute Error: %f um / px' % err)
-        num_more_than_1px_err = np.sum( np.abs(xyz_new - xyz_old) > 75.0 )
+        num_more_than_1px_err = np.sum( np.abs(xyz_new - ref_xyz) > 75.0 )
 
         assert err < 10.0, 'error greater than 10um avg per px (%f)' % err
         assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px'
@@ -232,4 +232,32 @@ class TestJungfrau:
         
 
         
-        
+class TestRayonix:
+
+    # effectively tests Mtrx as well
+
+    def test_v1(self):
+
+        geom = camera.CompoundAreaCamera.from_psana_file('ref_files/rayonix/rayonix_mtrxv1.data')
+        ref_xyz = np.load('ref_files/rayonix/rayonix_saved_mtrxv1.npy')
+    
+        ref_xyz = np.rollaxis(np.array(ref_xyz), 0, 5) # send 0 --> end
+        ref_xyz = np.squeeze(ref_xyz)
+        xyz_new = np.squeeze(geom.xyz)
+    
+        assert xyz_new.shape == ref_xyz.shape, 'shape mismatch %s / %s' % (xyz_new.shape, ref_xyz.shape)
+    
+        err = np.sum( np.abs(xyz_new - ref_xyz) ) / float(np.product(xyz_new.shape))
+        print('Mean Absolute Error: %f um / px' % err)
+        num_more_than_1px_err = np.sum( np.abs(xyz_new - ref_xyz) > 89.0 )
+    
+        print('new', xyz_new)
+        print('old', ref_xyz)
+    
+        assert err < 10.0, 'error greater than 10 um avg per px (%f)' % err
+        assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px' 
+
+
+    #def test_v2(self):
+    #    pass
+

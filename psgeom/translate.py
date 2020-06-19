@@ -81,9 +81,10 @@ def map_type(element_name, version=None):
     if version is None:
         try:
             version = int( re.search(r'V(\d+)', element_name).group(1) )
-        except Exception as e:
-            print(e)
-            raise IOError('Cannot understand sensor type: %s' % element_name)
+        except:
+            # most element's version 1 has no "Vx" string
+            # will be "MTRX:X1:Y1:X2:Y2" instead of "MTRX:Vx:X1:Y1:X2:Y2"
+            version = 1
 
     if element_name.startswith('SENS2X1'):
         element_type = sensors.Cspad2x1
@@ -94,9 +95,10 @@ def map_type(element_name, version=None):
             raise TypeError('psgeom v1.0+ requires PNCCD:V2+, got V%d' % version)
         
     elif element_name.startswith('MTRX'):
-        element_type = sensors.Mtrx
-        if version < 2:
-            raise TypeError('psgeom v1.0+ requires MTRX:V2+, got V%d' % version)
+        if version >= 2:
+            element_type = sensors.Mtrx
+        elif version == 1:
+            element_type = sensors.MtrxV1
         
     elif element_name.startswith('JUNGFRAU'):
         element_type = sensors.JungfrauSegment
