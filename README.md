@@ -61,7 +61,7 @@ By "basisgrid", we mean a the geometry is described as a set of panels; each pan
 to the first pixel to be read from memory, along with two vectors for the slow/fast scan directions.
 ```python
 bg = geom.to_basisgrid()
-for g in bg.num_grids:
+for g in range(bg.num_grids):
     print(bg.get_grid(g))
 ```
 
