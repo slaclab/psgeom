@@ -103,7 +103,17 @@ class TestCompoundAreaCamera:
 
         assert err < 10.0, 'error greater than 10um avg per px (%f)' % err
         assert num_more_than_1px_err < 7500, '>7500 pix w err > 1 px'
+
+
+    def test_bg_index_to_camera_index(self):
+        # we have a cspad 2M: 4x4=16 leaves, 2 subpanels/leaf
     
+        assert self.geom._bg_index_to_camera_index(0)  == (0,0)
+        assert self.geom._bg_index_to_camera_index(1)  == (0,1)
+        assert self.geom._bg_index_to_camera_index(2)  == (1,0)
+        assert self.geom._bg_index_to_camera_index(3)  == (1,1)
+        assert self.geom._bg_index_to_camera_index(31) == (15,1)
+
     
 class TestCspad:
     
@@ -153,8 +163,8 @@ class TestCspad:
         xyz2 = np.array(f['/xyz'])
         f.close()
 
-		# we re-shape the xyz to match the way psana
-		# presents CSPAD data
+        # we re-shape the xyz to match the way psana
+        # presents CSPAD data
         assert xyz2.shape == self.geom.xyz.shape
         np.testing.assert_allclose(self.geom.xyz, xyz2)
 
@@ -167,6 +177,15 @@ class TestJungfrau:
         
         self.geom = camera.CompoundAreaCamera.from_psana_file('ref_files/jungfrau/jungfrau4m.data')
         self.klass = camera.CompoundAreaCamera
+
+    def test_bg_index_to_camera_index(self):
+        # we have a JF 4M: 4x2=8 leaves, 8 subpanels/leaf
+
+        for i in range(8):
+            assert self.geom._bg_index_to_camera_index(i) == (0,i)
+        assert self.geom._bg_index_to_camera_index(8)  == (1,0)
+        assert self.geom._bg_index_to_camera_index(63) == (7,7)
+
         
     def test_to_basis_grid(self):
 
