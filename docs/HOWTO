@@ -1,0 +1,14 @@
+
+A quick note on how to build the docs:
+
+0. cd to the base psgeom directory
+1. run: "sphinx-apidoc -f -o docs/source ."
+2. run: "cd docs && build html"
+
+If desired, commit the changes to git.
+
+Sources:
+-- https://docs.readthedocs.io/en/stable/intro/getting-started-with-sphinx.html
+-- https://www.sphinx-doc.org/en/master/usage/extensions/napoleon.html
+
+
