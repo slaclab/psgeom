@@ -220,6 +220,55 @@ class CompoundAreaCamera(CompoundCamera):
 
     def from_hdf5(self, filename):
         raise NotImplementedError()
+
+
+    def _bg_index_to_camera_index(self, bg_index):
+        """
+        Map a basisgrid panel index to a tuple of "camera" indices:
+
+           (leaf_index, subpanel_index)
+
+        This allows one to map "backwards" from a basisgrid to a
+        specific subpanel. For example, a JUNGFRAU sensor element
+        is composed of a 4x2 array of subpanels that each become
+        their own basisgrid elements. Each subpanel will belong
+        to the same "leaf" but have a unique subpanel index.
+
+        Subpanel indices go in slow/fast order as might be expected.
+
+        The leaf index gives the position of the basisgrid panel
+        in CompoundAreaCamrea.leaves
+
+        Parameters
+        ----------
+        bg_index : int
+            An index of the basisgrid that would be generated from
+            CompoundAreaCamera.to_basisgrid() 
+
+        Returns
+        -------
+        camera_index : tuple of ints
+            (leaf_index, subpanel_index)
+        """
+
+        # just count subpanels until we reach "bg_index" number of subpanels
+
+        subpanels_per_leaf = [ np.product(l.subpanel_shape) for l in self.leaves ]
+
+        if bg_index >= np.sum(subpanels_per_leaf):
+            raise ValueError('bg_index requested: %d, but Camera only has %d subpanels'
+                             '' % (bg_index, np.sum(subpanels_per_leaf)))
+
+        c = 0
+        for leaf_index, n_panels in enumerate(subpanels_per_leaf):
+            c += n_panels
+
+            if c > bg_index: # the bg_index is in this leaf
+                subpanels_before_this_leaf = c - n_panels
+                subpanel_index = bg_index - subpanels_before_this_leaf
+                break
+
+        return (leaf_index, subpanel_index)
     
 
     def to_basisgrid(self):
