@@ -811,67 +811,92 @@ def write_generic_crystfel(detector, filename, coffset=None, **kwargs):
             of.write('; mask = /entry_1/data_1/mask\n')
             of.write('; mask_good = 0x0000\n')
             of.write('; mask_bad = 0xffff\n')
+        of.write('\n')
 
+        # remember: cheetah data is flattened along the slowest dimension
+        # so that (n_elements, slow, fast) --> (n_elements * slow, fast)
+        # this final 2d array is called "the slab"
 
-        prev_ss_index = 0 # counter for flat cheetah-style images (see below)
+        grid_index  = 0 # count the basisgrid we are on
+        ss_slab_pos = 0 # the slow index of "the slab"
 
-        for grid_index in range(bg.num_grids):
-            
-            p, s, f, sp = bg.get_grid(grid_index)
-            panel_name = "p%d" % (grid_index)
-            
-            # write the basis vectors           
-            f_sqt = math.sqrt(f[0]**2 + f[1]**2)
-            s_sqt = math.sqrt(s[0]**2 + s[1]**2)
+        for leaf_index, leaf in enumerate(detector.leaves):
 
-            pixel_size = f_sqt
-             
-            of.write("%s/fs = %s%fx %s%fy\n" % ( panel_name,
-                                                 get_sign(-f[0]/f_sqt), abs(f[0]/f_sqt), 
-                                                 get_sign( f[1]/f_sqt), abs(f[1]/f_sqt) ))
-            of.write("%s/ss = %s%fx %s%fy\n" % ( panel_name,
-                                                 get_sign(-s[0]/s_sqt), abs(s[0]/s_sqt), 
-                                                 get_sign( s[1]/s_sqt), abs(s[1]/s_sqt) ))
-            of.write("%s/res = %.3f\n" % (panel_name, 1e6 / pixel_size)) # um --> m
-            
-            # write the corner positions
-            tagcx = "%s/corner_x" % panel_name
-            tagcy = "%s/corner_y" % panel_name
-            tagcz = "%s/coffset"  % panel_name
-        
-            # CrystFEL measures the corner from the actual *corner*, and not
-            # the center of the corner pixel (dont forget to x-flip s[0], f[0])
-            
-            cx = - float(p[0])/pixel_size + 0.5 * (f[0] + s[0])/pixel_size
-            cy =   float(p[1])/pixel_size - 0.5 * (f[1] + s[1])/pixel_size
-            
-            of.write("%s = %f\n" % (tagcx, cx))
-            of.write("%s = %f\n" % (tagcy, cy))
+            sp_shape = leaf.subpanel_shape
+            for sp_ss_index in range(sp_shape[0]):
+                for sp_fs_index in range(sp_shape[1]):
 
-            # the z-axis is in *** meters ***
-            if coffset is None:
-                dist = float(p[2]) / 1e6
-            else:
-                dist = coffset
-            of.write("%s = %f\n" % (tagcz, dist))
+                    subpanel_index = sp_ss_index * sp_shape[1] + sp_fs_index
 
+                    p, s, f, sp = bg.get_grid(grid_index)
+                    panel_name = "p%da%d" % (leaf_index, subpanel_index)
+                    
+                    # write the basis vectors           
+                    f_sqt = math.sqrt(f[0]**2 + f[1]**2)
+                    s_sqt = math.sqrt(s[0]**2 + s[1]**2)
 
-            # map the data onto the detector :: the default way to do this for
-            # a (panels, slow, fast) array is to stack along the slow axis
-            #    note  : sp here is just the shape of the basis grid
-            #    note  : fs/ss indices are INCLUSIVE
-            of.write("%s/min_fs = %d\n" % (panel_name, 0))
-            of.write("%s/max_fs = %d\n" % (panel_name, sp[1] - 1))
-            of.write("%s/min_ss = %d\n" % (panel_name, prev_ss_index))
-            prev_ss_index += sp[0] # increment by size
-            of.write("%s/max_ss = %d\n" % (panel_name, prev_ss_index))
+                    pixel_size = f_sqt
+                     
+                    of.write("%s/fs = %s%fx %s%fy\n" % ( panel_name,
+                                                         get_sign(-f[0]/f_sqt), abs(f[0]/f_sqt), 
+                                                         get_sign( f[1]/f_sqt), abs(f[1]/f_sqt) ))
+                    of.write("%s/ss = %s%fx %s%fy\n" % ( panel_name,
+                                                         get_sign(-s[0]/s_sqt), abs(s[0]/s_sqt), 
+                                                         get_sign( s[1]/s_sqt), abs(s[1]/s_sqt) ))
+                    of.write("%s/res = %.3f\n" % (panel_name, 1e6 / pixel_size)) # um --> m
+                    
+                    # write the corner positions
+                    tagcx = "%s/corner_x" % panel_name
+                    tagcy = "%s/corner_y" % panel_name
+                    tagcz = "%s/coffset"  % panel_name
+                
+                    # CrystFEL measures the corner from the actual *corner*, and not
+                    # the center of the corner pixel (dont forget to x-flip s[0], f[0])
+                    
+                    cx = - float(p[0])/pixel_size + 0.5 * (f[0] + s[0])/pixel_size
+                    cy =   float(p[1])/pixel_size - 0.5 * (f[1] + s[1])/pixel_size
+                    
+                    of.write("%s = %f\n" % (tagcx, cx))
+                    of.write("%s = %f\n" % (tagcy, cy))
+
+                    # the z-axis is in *** meters ***
+                    if coffset is None:
+                        dist = float(p[2]) / 1e6
+                    else:
+                        dist = coffset
+                    of.write("%s = %f\n" % (tagcz, dist))
+
+                    # combine leaf & slow axes
+                    #    note  : sp here is just the shape of the basis grid
+                    #    note  : sp_ss_index/sp_fs_index is where we are in the subpanel
+                    #    note  : fs/ss indices are INCLUSIVE
+
+                    of.write("%s/min_fs = %d\n" % (panel_name, sp[1] * sp_fs_index ))
+                    of.write("%s/max_fs = %d\n" % (panel_name, sp[1] * (1 + sp_fs_index) - 1))
+
+                    # ss_slab_pos is incremented below, outside this loop
+                    of.write("%s/min_ss = %d\n" % (panel_name, ss_slab_pos))
+                    of.write("%s/max_ss = %d\n" % (panel_name, ss_slab_pos + sp[0] - 1))
+                    
+                    # this tells CrystFEL to use this panel
+                    of.write("%s/no_index = 0\n" % panel_name)
+                    
+                    of.write("\n") # new line
+
+                    grid_index += 1
+
+                # // end fs for loop
+                ss_slab_pos += sp[0]
+
+            # // end ss for loop
+        # // end leaves for loop
+    # // end with open(...) statement
+
+    # make sure things add up :)
+    assert grid_index == bg.num_grids, grid_index
             
-            # this tells CrystFEL to use this panel
-            of.write("%s/no_index = 0\n" % panel_name)
-            
-            of.write("\n") # new line
-    
-    return    
+    return
+
 
 def write_cspad_crystfel(detector, filename, coffset=None, intensity_file_type='cheetah',
                          pixel_size=109.92, **kwargs):
