@@ -170,7 +170,10 @@ class TestGaps:
         assert d2[1] == 34.5
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 =======
+=======
+>>>>>>> 28237f9... Added tests for EPIX10KA Segment
 
     def test_subpanel_shape(self):
 
@@ -187,7 +190,12 @@ class TestGaps:
         assert self.pas.subpanel_shape == (4,3)
 
     
+<<<<<<< HEAD
 >>>>>>> 81ed275... subpanel_shape attribute #41
+=======
+=======
+>>>>>>> b9f99e8... Added tests for EPIX10KA Segment
+>>>>>>> 28237f9... Added tests for EPIX10KA Segment
     def test_slow_gap(self):
 
         self.pas.add_gap(2.0, 32, "slow")  # size, loc, axis
@@ -306,7 +314,7 @@ class TestSens2x1(TestPixelArraySensor):
 
         np.testing.assert_array_almost_equal(small1, 109.92)  # px size
         np.testing.assert_array_almost_equal(small2, 109.92)
-        np.testing.assert_array_almost_equal(big, 439.68)  # gap size
+        np.testing.assert_array_almost_equal(big,    439.68) # gap size     
 
 
 class TestEpix10ka(TestPixelArraySensor):
