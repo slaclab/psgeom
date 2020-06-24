@@ -169,6 +169,25 @@ class TestGaps:
         assert d2[0] == 32.0
         assert d2[1] == 34.5
 
+<<<<<<< HEAD
+=======
+
+    def test_subpanel_shape(self):
+
+        # before any gaps
+        assert self.pas.subpanel_shape == (1,1)
+        
+        self.pas.add_gap(2.0, 32, 'slow') # size, loc, axis
+        assert self.pas.subpanel_shape == (2,1)
+
+        self.pas.add_gap(2.0, 64, 'slow') # size, loc, axis
+        self.pas.add_gap(2.0, 32, 'fast') # size, loc, axis
+        self.pas.add_gap(2.0, 8,  'slow') # size, loc, axis
+        self.pas.add_gap(2.0, 35, 'fast') # size, loc, axis
+        assert self.pas.subpanel_shape == (4,3)
+
+    
+>>>>>>> 81ed275... subpanel_shape attribute #41
     def test_slow_gap(self):
 
         self.pas.add_gap(2.0, 32, "slow")  # size, loc, axis
@@ -310,4 +329,3 @@ class TestEpix10ka(TestPixelArraySensor):
         np.testing.assert_array_almost_equal(vertical_gap, 0600.0)
         np.testing.assert_array_almost_equal(horizontal_gap, 600.0)
         np.testing.assert_array_almost_equal(central_gap_diagonal, 848.528137)
-
