@@ -102,7 +102,10 @@ def map_type(element_name, version=None):
         
     elif element_name.startswith('JUNGFRAU'):
         element_type = sensors.JungfrauSegment
-        
+
+    elif element_name.startswith('EPIX10KA'):
+        element_type = sensors.Epix10kaSegment
+
     return element_type, element_name
 
 
