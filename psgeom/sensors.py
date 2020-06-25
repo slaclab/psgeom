@@ -255,12 +255,13 @@ class PixelArraySensor(SensorElement):
     def num_gaps(self):
         return len(self.gaps)
 
+
     @property
     def subpanel_shape(self):
         ns = len(self._slow_gaps) + 1
         nf = len(self._fast_gaps) + 1
         return (ns, nf)
-
+    
     @property
     def _slow_gaps(self):
         """
@@ -547,6 +548,130 @@ class FixedArraySensor(PixelArraySensor):
 
 
 class MtrxV1(PixelArraySensor):
+    """
+    This class is to ensure backwards compatability for "MTRX:V1" sensor 
+    elements.
+
+	These "V1" elements have a different convention as to how the origin
+	and slow/fast axes are placed: 
+       * the origin is at the first pixel
+       * the ss direction is along +x
+       * the fs direction is along +y
+
+    The overwritten method "untransformed_xyz" takes care of this.
+    """
+    
+    def __init__(self, shape, pixel_shape, id_num=0, parent=None,
+                 rotation_angles=np.array([0.0, 0.0, 0.0]), 
+                 translation=np.array([0.0, 0.0, 0.0])):
+        """
+        Create a Mtrx.
+        
+        Parameters
+        ----------
+        type_name : str
+            Give this detector a descriptive name. Often there might be
+            two different instances of CompoundDetector with the same name,
+            if they are identical units. E.g., "RAYONIX:V1".
+            
+        id_num : int
+            The unit should have an index. This is not only a unique identifier
+            but helps order elements within the camera tree, which can change
+            the way someone wants to map pixel intensities (somewhere else in
+            memory) onto the camera geometry.
+            
+        parent : CompoundDetector
+            The parent frame, specified by an instance of CompoundDetector.
+            
+        rotation_angles : np.ndarray
+            Three Cardan angles specifying the local frame rotation operator.
+            Argument must be a one-D 3-vector.
+            
+        translation : np.ndarray
+            The xyz translation of the local frame. Argument must be a one-D 
+            3-vector.
+            
+        Returns
+        -------
+        self : Mtrx
+            The sensor element.
+        """
+                 
+        if shape is None or pixel_shape is None:
+            raise RuntimeError('shape or pixel shape not supplied to Mtrx')
+
+        # TJL 4/9/18
+        # I am not sure why these lines are necessary
+        # but they seem to be to get these attributes set
+        # I would have expected the super init method below to take care of it...
+        self.shape = shape
+        self._pixel_shape = pixel_shape
+
+        super(MtrxV1, self).__init__(shape, pixel_shape, 
+                 type_name='shouldbeoverwritten', 
+                 id_num=id_num, parent=parent,
+                 rotation_angles=rotation_angles, 
+                 translation=translation)
+                                       
+        return
+
+
+    @property
+    def untransformed_xyz(self):
+        """
+        Return the xyz coordinates of the element in the reference frame, that
+        is before any translation/rotation operations have been applied.
+        """
+                
+        # convention that x/row/first-index is the SLOW varying dimension
+        # y/column/second-index is FAST and z is perpendicular to the sensor 
+        # completing a right handed coordinate system in the untransformed view
+        
+        xy = np.mgrid[0.0:float(self.shape[0]),0.0:float(self.shape[1])]
+        xy = np.rollaxis(xy, 0, start=3)
+        
+        xy[:,:,0] *= self.pixel_shape[0]
+        xy[:,:,1] *= self.pixel_shape[1]
+        
+        # add the z dimension (just flat)
+        z = np.zeros([self.shape[0], self.shape[1], 1])
+        xyz = np.concatenate([xy, z], axis=-1)
+        
+        return xyz   
+
+
+    @classmethod
+    def from_type(cls, type_name,
+                  id_num=0, parent=None,
+                  rotation_angles=np.array([0.0, 0.0, 0.0]),
+                  translation=np.array([0.0, 0.0, 0.0])):
+        """
+        Factory function for automatically identifying
+        the sensor based on the `type_name` alone.            
+        """
+
+        if 'MTRX' not in type_name:
+            raise ValueError('`type_name` (%s) does not contain "MTRX"'
+                             'cannot generate Mtrx object from type_name'
+                             ' alone')
+
+        s0, s1, ps0, ps1 = type_name.split(':')[-4:]
+        shape = (int(s0), int(s1))
+        pixel_shape = (float(ps0), float(ps1))
+
+        return cls(shape, pixel_shape,
+                   id_num=id_num, parent=parent,
+                   rotation_angles=rotation_angles,
+                   translation=translation)
+
+    @property
+    def type_name(self):
+        return 'MTRX:%d:%d:%d:%d' %(self.shape[0], self.shape[1], 
+                                    round(self._pixel_shape[0]),
+                                    round(self._pixel_shape[1]))
+
+
+class Mtrx(PixelArraySensor):
     """
     This class is to ensure backwards compatability for "MTRX:V1" sensor 
     elements.
