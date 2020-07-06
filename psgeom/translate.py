@@ -645,6 +645,15 @@ def load_crystfel(obj, filename, element_type=sensors.Mtrx, verbose=True):
     if len(panels) == 0:
         raise IOError('Could not find any panels in file: %s' % filename)
     
+    # read information about quadrants
+    quadrants = {}
+    rgc_quadrants = re.search(r'\nrigid_group_collection_quadrants\s+=\s+((\w+)(,\s*\w+)*)', geom_txt) 
+    for quad in rgc_quadrants.group(1).split(','):
+        rg = re.search(r'\nrigid_group_%s\s+=\s+((\w+)(,\s*\w+)*)' % quad.strip(), geom_txt) 
+        if rg == None:
+            raise IOError('Rigid group {} is declared in a collection but not defined' % quad)
+        quadrants[quad] = rg.group(1).split(',')
+
     # iterate over each quad / ASIC    
     for panel in panels:
 
