@@ -182,7 +182,7 @@ class TestGaps:
         self.pas.add_gap(2.0, 8,  'slow') # size, loc, axis
         self.pas.add_gap(2.0, 35, 'fast') # size, loc, axis
         assert self.pas.subpanel_shape == (4,3)
-
+    
     def test_slow_gap(self):
 
         self.pas.add_gap(2.0, 32, "slow")  # size, loc, axis

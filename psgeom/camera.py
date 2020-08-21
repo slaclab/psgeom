@@ -582,8 +582,7 @@ class Cspad(CompoundAreaCamera):
         return cls.from_basisgrid(bg)
 
 
-
-def load(filename, base=CompoundAreaCamera, infer_base=True):
+def load(filename, sensor_type='none'):
     """
     Load a saved area camera from disk, attempting to interpert the 
     format from the file extension.
@@ -593,13 +592,9 @@ def load(filename, base=CompoundAreaCamera, infer_base=True):
     filename : str
         A path to the camera file on disk.
 
-    base : camera.CompoundCamera
-        The *class* (NOT instance!) that will be used to form
-        the camera object. Must inheret camera.CompoundCamera.
-
-    infer_base : bool
-        If True, attempts to infer the base class (see `base`) 
-        from the file header (#).
+    sensor_type : str
+        A string describing the sensor type. Currently:
+        'cspad', 'epix10ka', 'jungfrau' or 'none'.
 
     Returns
     -------
@@ -607,30 +602,45 @@ def load(filename, base=CompoundAreaCamera, infer_base=True):
         The loaded camera object.
     """
 
-    if infer_base:
-        with open(filename, 'r') as f:
-            text = f.read()
-
-            # check for cspad
-            to_find = re.compile("CSPAD|Cspad|CsPad|cspad")
-            match_obj = to_find.search(text)
-            if match_obj is not None:
-                print(('Found `%s` in file, '
-                      'interpreting geometry as CSPAD' % match_obj.group()))
-                base = Cspad
-    
-
-    if not issubclass(base, CompoundCamera):
-        raise TypeError('`base` of type %s is not an instance of CompoundCamera'
-                        '' % type(base))
-
+    if sensor_type == 'cspad':
+        print('CSPAD sensor type requested: '
+              'attempting to load geometry as a set '
+              'of CSPAD sensors')
+        base = Cspad
+        element_type = sensors.Cspad2x1
+    elif sensor_type == 'epix10ka':
+        print('EPIX10KA sensor type requested: '
+              'attempting to load geometry as a set '
+              'of EPIX10KA sensors')
+        base = CompoundAreaCamera
+        element_type = sensors.Epix10kaSegment
+    elif sensor_type == 'jungfrau':
+        print('Jungfrau sensor type requested: '
+              'attempting to load geometry as a set '
+              'of Jungfrau sensors')
+        base = CompoundAreaCamera
+        element_type = sensors.JungfrauSegment
+    elif sensor_type == 'none':
+        print('No specific sensor type requested: '
+              'attempting to load geometry as a set '
+              'of generic area sensors')
+        base = CompoundAreaCamera
+        element_type = sensors.Mtrx
+    else:
+        raise ValueError(
+            'Could not understand sensor-type: '
+            '%s' % sensor_type
+        )
 
     if filename.endswith('.data'):
         camera = base.from_psana_file(filename)
     elif filename.endswith('.txt'):
         camera = base.from_text_file(filename)
     elif filename.endswith('.geom'):
-        camera = base.from_crystfel_file(filename)
+        camera = base.from_crystfel_file(
+            filename,
+            element_type=element_type
+        )
     elif filename.endswith('.h5'):
         camera = base.from_cheetah_file(filename)
     else:

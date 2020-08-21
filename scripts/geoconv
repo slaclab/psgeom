@@ -24,17 +24,12 @@ parser.add_argument('outfile',
                     help='Output geometry file path (format specified by -f/--format.)')
 parser.add_argument('-f', '--format', choices=['psana', 'crystfel', 'cheetah', 'hdf5'],
                     help='Output file format, one of: "psana", "crystfel", "cheetah", "hdf5"')
-parser.add_argument('-c', '--cspad', action='store_true',
-                    help='Toggle this to force loading as a CSPAD')
+parser.add_argument('-s', '--sensor-type', choices=['cspad', 'epix10ka', 'jungfrau', 'none'],
+                    default='none',
+                    help='Output sensor type, one of: "cspad", "epix10ka-2m", "jungfrau", "none"')
 args = parser.parse_args()
 
-
-if args.cspad:
-    print('CSPAD requested, attempting to load geometry as CSPAD')
-    geom = camera.load(args.infile, base=camera.Cspad)
-else:
-    geom = camera.load(args.infile)
-
+geom = camera.load(args.infile, args.sensor_type)
 
 if args.format == 'psana':
     geom.to_psana_file(args.outfile)
