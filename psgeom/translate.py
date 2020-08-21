@@ -307,7 +307,7 @@ def write_psana(detector, filename, title='geometry'):
 # PARAM:12    TILT_Y     - object tilt angle [deg] around Y axis of the parent frame
 # PARAM:13    TILT_X     - object tilt angle [deg] around X axis of the parent frame
 # HDR         PARENT IND        OBJECT IND     X0[um]   Y0[um]   Z0[um]   ROT-Z ROT-Y ROT-X     TILT-Z   TILT-Y   TILT-X
-    """ % (title, author, date, time)
+""" % (title, author, date, time)
 
     f.write(header + '\n')
 
