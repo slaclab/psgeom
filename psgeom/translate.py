@@ -244,18 +244,19 @@ def _mikhail_ordering(list_of_lines):
     sensors = []
     quads   = []
     other   = []
+    root    = []
     
     for line in list_of_lines:
         if 'QUAD' in line[16:]:
             quads.append(line)
         elif 'SENS' in line[16:]:
             sensors.append(line)
+        elif 'root' in line[16:]:
+            root.append(line)
         else:
             other.append(line)
     
-    other.reverse()
-    
-    ordered_list = sensors + quads + other
+    ordered_list = sensors + quads + other + root
     
     assert len(ordered_list) == len(list_of_lines)
     for e in list_of_lines:
@@ -348,7 +349,7 @@ def write_psana(detector, filename, title='geometry'):
                 write_children(child)
 
     write_children(detector)
-    
+   
     # temporary -- for compatability with legacy code -- todo
     # flip the ordering of the lines so that the sensor elements come first,
     # as a lot of existing code requires this ordering
