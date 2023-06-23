@@ -1250,6 +1250,8 @@ data = /entry_1/data_1/data
 dim0 = %
 dim1 = ss
 dim2 = fs
+
+peak_list = /entry_1/result_1
 """
 
 generic_header_noClen = """
